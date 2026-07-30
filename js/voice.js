@@ -26,9 +26,9 @@ If the question contains Korean Hangul (한글), you MUST answer 100% in Korean.
 If Japanese kana/kanji → answer in Japanese. If Spanish → Spanish. If English → English.
 If the user says "일본어로 말해줘" / "in Japanese" / "en español", switch to that language.
 Do not mix languages. Do not translate Korean questions into English answers.
-CONTEXT AWARE: You may receive current time and the employee's next incomplete task. Use this to give practical "what should I do now" advice (e.g. after arriving at work → Start Day cash count, cooler check, then monitor Messages).
+CONTEXT AWARE: You may receive current time and the employee's next incomplete task. Use this to give practical "what should I do now" advice.
 IMPORTANT: Use plain text only. Never use markdown formatting such as **bold**, *italic*, # headings, or bullet symbols like - or *. Write in simple sentences or numbered steps (1. 2. 3.).
-SCRIPTS RULE: When quoting sales or phone scripts from the manuals, always show the exact English wording from the manual. Do not shorten, paraphrase, or translate the official scripts.
+SCRIPTS RULE: When quoting sales or phone scripts from the manuals, always show the exact English wording from the manual.
 
 === GOLDEN RULES ===
 1. Always prioritize orders based on Due Time.
@@ -40,72 +40,42 @@ SCRIPTS RULE: When quoting sales or phone scripts from the manuals, always show 
 === BMS LOGIN ===
 Shop Code: S0940000
 Username & Password: Assigned by Management
-Register 1 must be used for Auto-Print of SuperTicket. Only one workstation should use Register 1.
+Register 1 must be used for Auto-Print of SuperTicket.
 
 === START DAY ===
 Home → Start Day / End Day → Open Cash Drawer (password 123456).
 Enter the QUANTITY of each denomination (not the dollar amount).
 Start Day Amount must always equal $200.00.
-If cash does not equal $200.00: take a photo, send to (213) 610-1004, and continue WITHOUT adjustment.
-Never adjust the cash count to match the expected amount.
+If cash does not equal $200.00: take a photo, send to (213) 610-1004, continue WITHOUT adjustment.
 
 === END DAY ===
-Leave exactly $200.00 in the cash drawer.
-Print the Summary Receipt.
-Place all cash over $200.00 in the deposit envelope.
-Write Date, Employee Name, Cash Sales, and Drop on the envelope, seal it, put in the safe.
-Then click End Register Session and exit BMS.
+Leave exactly $200.00 in the cash drawer. Print Summary Receipt. Place excess cash in deposit envelope → safe. End Register Session.
 
 === ORDER FLOW (Wire-In) ===
-Messages counter increases when Wire-In arrives.
-1. Open Messages → review details → click Mark Read
-2. Go to In Wire → review → click Accept (Never click Reject without manager approval)
-3. Order moves to To Be Designed + SuperTicket auto-prints (if Register 1)
-4. After design + attachments verified → Set As Awaiting Delivery/Pick-up
+1. Open Messages → review → Mark Read
+2. In Wire → Accept (Never Reject without manager approval)
+3. SuperTicket auto-prints (Register 1)
+4. Design + attachments → Set As Awaiting Delivery
 5. Create Delivery Trip
 
 === SUPERTICKET ===
-Primary production document. Contains Recipient Information, White Sheet (full production info + Special Instructions), and Small Ticket.
-Never design without the printed SuperTicket.
-White Sheet stays attached until ALL attachments are verified and attached.
+Primary production document. Never design without the printed SuperTicket.
 
 === ATTACHMENTS ===
-Check Product Detail on White Sheet for: Balloons, Chocolates, Plush, CardIsle Greeting Cards, other gifts.
-If attachments required: do NOT remove White Sheet until everything is verified and attached.
-CardIsle: Find PickupCodeID in Special Instructions or BMS → go to cardisle.com → enter code → Preview → Print.
-After printing, match the code on the back of the card with PickupCodeID before attaching.
-1800Flowers CardIsle: $5.99 / In-Store: $6.99
+Check Product Detail on White Sheet. Do not remove White Sheet until all attachments verified.
+CardIsle: PickupCodeID → cardisle.com → Print.
 
 === DELIVERY ===
-Standard (non-funeral): Provider = Walmart GoLocal, 3Hr Delivery Window, choose earliest available, Set Trip as Out for Delivery.
-Funeral: Provider = Uber, ASAP. When driver arrives, explain transport and instruct to take confirmation photo after setup.
+Standard: Walmart GoLocal, 3Hr Window. Funeral: Uber ASAP.
 
-=== SALES & CUSTOMER SERVICE ===
+=== SALES ===
 Greeting: "Welcome! How can I help you today?"
-Ask only: "Who's going to receive the flowers?" to understand relationship and recommend color scheme.
-Color schemes:
-- Romance → Red / Hot Pink
-- Family → Light Pink
-- Friends / Get Well → Bright Colors
-- Sympathy → White / Soft Pastels
-Size recommendation (present price last):
-- Small ($40–60): desk or side table
-- Medium ($60–80): standard recommendation
-- Large (from $100): milestone events, centerpiece
-Never ask "What is the occasion?" – the card message usually tells the occasion.
-Enter card message exactly as provided. Do not change spelling or grammar.
-Order types: Delivery, Carry-Out, QuickSale, Wire-Out.
-Wire-Out: Customer selects from 1800Flowers product guide. No discounts. Always call the receiving florist first to confirm product, date, and fee before sending via BloomLink.
-
-=== DAILY ROUTINE PRIORITY ===
-1. Walk-in customer
-2. Phone call
-3. Shop operations / prep work
-Always pause other tasks immediately when a customer walks in or the phone rings.
+Ask: "Who's going to receive the flowers?"
+Colors: Romance→Red/Hot Pink, Family→Light Pink, Friends→Bright, Sympathy→White/Pastels
+Sizes: Small $40–60, Medium $60–80, Large from $100.
 
 === COOLER ===
-Check water level, replace cloudy water, remove damaged flowers, re-cut stems ~0.5 inch when changing water.
-Keep cooler clean, organized, and visually attractive.`;
+Check water, remove damaged flowers, re-cut stems ~0.5 inch.`;
 
       try {
         const res = await fetch('/.netlify/functions/ask', {
@@ -122,10 +92,9 @@ Keep cooler clean, organized, and visually attractive.`;
         });
         if (!res.ok) {
           const err = await res.text();
-          console.error('ask function error', err);
           let detail = err;
           try { detail = JSON.parse(err).error || err; } catch (_) {}
-          return '서버 오류 (' + res.status + '): ' + (detail || 'Functions 응답 실패. Netlify에 XAI_API_KEY 환경변수가 있는지, 재배포했는지 확인하세요.');
+          return '서버 오류 (' + res.status + '): ' + (detail || 'Functions 응답 실패');
         }
         const data = await res.json();
         if (data.error) {
@@ -133,12 +102,10 @@ Keep cooler clean, organized, and visually attractive.`;
         }
         return data.choices?.[0]?.message?.content || '답변을 받지 못했습니다.';
       } catch (e) {
-        console.error(e);
-        return '네트워크/Functions 오류: ' + (e.message || e) + ' — /.netlify/functions/ask 가 배포됐는지 확인하세요.';
+        return '네트워크/Functions 오류: ' + (e.message || e);
       }
     }
 
-    const originalDoSearch = typeof doSearch === 'function' ? doSearch : null;
     async function doSearch() {
       const q = document.getElementById('search-input').value.trim();
       if (!q) return;
@@ -168,7 +135,7 @@ Keep cooler clean, organized, and visually attractive.`;
       const ql = q.toLowerCase();
       const results = knowledge.filter(k => k.keys.some(key => key.includes(ql) || ql.includes(key)));
       if (results.length === 0) {
-        box.innerHTML = `<div class="alert alert-info">${currentLang==='ko'?'결과가 없습니다. API Key를 등록하면 Grok이 답변합니다.':'No local results. Add API Key for Grok answers.'}</div>`;
+        box.innerHTML = `<div class="alert alert-info">${currentLang==='ko'?'결과가 없습니다.':'No results.'}</div>`;
         return;
       }
       box.innerHTML = results.map(r => `
@@ -180,7 +147,6 @@ Keep cooler clean, organized, and visually attractive.`;
       logQuestion(q);
     }
 
-    // ========== CONTEXT + LANGUAGE ==========
     function buildUserMessage(question) {
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -190,11 +156,9 @@ Keep cooler clean, organized, and visually attractive.`;
       const qLang = detectLang(question);
       return `Current time: ${timeStr}. Next incomplete task: ${nextTitle}. Already completed today: ${doneList}.
 Detected question language: ${qLang}. You MUST answer entirely in this language (${qLang === 'ko' ? 'Korean' : qLang === 'ja' ? 'Japanese' : qLang === 'es-ES' ? 'Spanish' : 'English'}).
-If detected language is ko, write every sentence in Korean Hangul. Do not answer in English.
 Question: ${question}`;
     }
 
-    // ========== TEXT TO SPEECH (xAI natural voice first) ==========
     let currentAudio = null;
 
     function detectLang(text) {
@@ -258,6 +222,8 @@ Question: ${question}`;
       const audioEl = new Audio();
       audioEl.setAttribute('playsinline', 'true');
       audioEl.preload = 'auto';
+      audioEl.volume = 1.0;
+      audioEl.muted = false;
       currentAudio = audioEl;
 
       try {
@@ -271,9 +237,22 @@ Question: ${question}`;
           })
         });
         if (res.ok) {
-          const buf = await res.arrayBuffer();
+          const ct = (res.headers.get('content-type') || '').toLowerCase();
+          let buf = await res.arrayBuffer();
+          // Legacy: if server returned base64 text, decode it
+          if (buf && buf.byteLength > 100 && !ct.includes('audio') && !ct.includes('mpeg') && !ct.includes('wav') && !ct.includes('ogg')) {
+            try {
+              const textBody = new TextDecoder().decode(buf);
+              if (/^[A-Za-z0-9+/=\s]+$/.test(textBody.slice(0, 200))) {
+                const bin = atob(textBody.replace(/\s/g, ''));
+                const arr = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+                buf = arr.buffer;
+              }
+            } catch (_) {}
+          }
           if (buf && buf.byteLength > 100) {
-            const blob = new Blob([buf], { type: res.headers.get('content-type') || 'audio/mpeg' });
+            const blob = new Blob([buf], { type: ct.includes('audio') ? ct : 'audio/mpeg' });
             const url = URL.createObjectURL(blob);
             audioEl.src = url;
             audioEl.onended = () => {
@@ -318,7 +297,6 @@ Question: ${question}`;
           const preferred = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(prefix));
           if (preferred) utter.voice = preferred;
           utter.onend = () => { if (stopBtn) stopBtn.style.display = 'none'; };
-          utter.onerror = (ev) => { console.warn('utter error', ev); };
           window.speechSynthesis.speak(utter);
           played = true;
           if (statusEl) statusEl.textContent = '브라우저 음성으로 재생 중...';
@@ -337,7 +315,6 @@ Question: ${question}`;
       }
     }
 
-    // ========== FLOATING MIC ==========
     let mediaRecorder = null;
     let mediaStream = null;
     let audioChunks = [];
@@ -415,7 +392,7 @@ Question: ${question}`;
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (res.status === 404) {
-          throw new Error('Voice STT function not found (404). Redeploy the site so /.netlify/functions/stt is live.');
+          throw new Error('Voice STT function not found (404). Redeploy so /.netlify/functions/stt is live.');
         }
         throw new Error(data.error || ('STT ' + res.status));
       }
@@ -444,7 +421,6 @@ Question: ${question}`;
         if (detectLang(clean) === 'ko') currentLang = 'ko';
         document.getElementById('float-answer').textContent = clean;
         document.getElementById('float-speak-btn').style.display = 'inline-block';
-        // TTS only when user taps "읽어주기" (no auto-play)
         setFloatStatus('Q: ' + text + ' · 🔊 읽어주기 버튼을 누르세요');
       } else {
         document.getElementById('float-answer').textContent = '답변을 받지 못했습니다.';
