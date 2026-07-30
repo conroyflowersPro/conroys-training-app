@@ -1,9 +1,13 @@
-Conroy's Flowers Training App - v1.12.1
+Conroy's Flowers Training App - v1.14.0
 
-Admin 로그인 후 → 더보기 탭 → 「👔 Admin 관리」 → 계정 관리 열기
+Admin login → More tab → Admin management → Open account management
 
-기본 계정: admin / admin7890
-Admin PIN (백업): 7890
+Default: admin / admin7890
+Admin PIN: 7890
 
-Netlify 배포만 하면 됩니다. 별도 대시보드 설정은 필요 없습니다.
-(Blobs는 자동으로 활성화됩니다)
+v1.14.0:
+- Version number fixed
+- Admin pages only for Admin login
+- First visit always English
+- Voice 404 fixed (Functions v2)
+- Add/delete staff updates the list correctly
