@@ -1,7 +1,7 @@
 /**
  * Netlify Function: stt (Functions v2)
  * Proxies to xAI Speech-to-Text
- * v1.14.0
+ * v1.14.3 — language hint support
  */
 
 const corsHeaders = {
@@ -46,11 +46,15 @@ export default async (req) => {
 
     const audioBuffer = Buffer.from(body.audio, "base64");
     const contentType = body.contentType || "audio/webm";
+    const langHint = (body.language || "auto").toString().slice(0, 10);
 
     const form = new FormData();
     const blob = new Blob([audioBuffer], { type: contentType });
     form.append("file", blob, "speech.webm");
     form.append("model", "grok-stt");
+    if (langHint && langHint !== "auto") {
+      form.append("language", langHint);
+    }
 
     const res = await fetch("https://api.x.ai/v1/stt", {
       method: "POST",
@@ -75,7 +79,7 @@ export default async (req) => {
     const transcript = data.text || data.transcript || data.result || "";
     return jsonResponse(200, {
       text: transcript,
-      language: data.language || null,
+      language: data.language || data.lang || langHint || null,
       raw: data
     });
   } catch (e) {

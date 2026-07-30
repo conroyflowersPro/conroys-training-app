@@ -1,6 +1,5 @@
 /* Conroy's Training App - core part A */
 // ========== AUTH / USERS ==========
-    // Default accounts (seeded on first use / when blob is empty)
     const DEFAULT_USERS = [
       { username: 'admin',     password: 'admin7890', name: 'Admin' },
       { username: 'employee1', password: 'conroy1',   name: 'Employee 1' },
@@ -10,9 +9,8 @@
       { username: 'employee5', password: 'conroy5',   name: 'Employee 5' }
     ];
 
-    // Runtime list (local cache). Server (Netlify Blobs) is source of truth when deployed.
     let users = [];
-    let serverAvailable = null; // null = unknown, true/false after first check
+    let serverAvailable = null;
 
     function isNetlifyHost() {
       const h = location.hostname || '';
@@ -75,23 +73,22 @@
       }
     }
 
-    // ========== STATE ==========
     let currentUser = null;
     let currentLang = 'en';
     let stamps = {};
     let recognition = null;
     let isListening = false;
 
-    // ========== INIT ==========
     function detectBrowserLang() {
       return 'en';
     }
     async function init() {
       await loadUsers();
-      currentLang = localStorage.getItem('cf_lang') || 'en';
+      // Login screen ALWAYS English
+      currentLang = 'en';
       applyI18n();
       const langSel = document.getElementById('lang-select');
-      if (langSel) langSel.value = currentLang;
+      if (langSel) langSel.value = 'en';
       const pwInput = document.getElementById('login-password');
       if (pwInput) {
         pwInput.addEventListener('keydown', (e) => {
@@ -150,12 +147,14 @@
         if (btn) {
           btn.disabled = false;
           const d = i18n[currentLang] || i18n.en;
-          btn.textContent = d.login_btn || '로그인';
+          btn.textContent = d.login_btn || 'Log in';
         }
       }
     }
 
     function startApp() {
+      // Restore preferred language after login
+      currentLang = localStorage.getItem('cf_lang') || 'en';
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
       document.getElementById('header-user').textContent = currentUser + ' · ' + new Date().toLocaleDateString();
@@ -174,6 +173,11 @@
     function logout() {
       localStorage.removeItem('cf_currentUser');
       currentUser = null;
+      // Login screen always English
+      currentLang = 'en';
+      applyI18n();
+      const langSel = document.getElementById('lang-select');
+      if (langSel) langSel.value = 'en';
       document.getElementById('app').classList.add('hidden');
       document.getElementById('login-screen').classList.remove('hidden');
       const adminCard = document.getElementById('admin-card');
@@ -187,7 +191,6 @@
       setTimeout(() => { if (u) u.focus(); }, 200);
     }
 
-    // ========== STAMPS ==========
     function todayKey() {
       return new Date().toISOString().slice(0,10);
     }
