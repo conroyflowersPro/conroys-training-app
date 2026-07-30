@@ -1,7 +1,7 @@
 /**
  * Netlify Function: tts (Functions v2)
- * Proxies to xAI TTS
- * v1.14.0
+ * Proxies to xAI TTS — returns RAW audio bytes (not base64 text)
+ * v1.14.2
  */
 
 const corsHeaders = {
@@ -62,16 +62,16 @@ export default async (req) => {
       return jsonResponse(res.status, { error: errText || "TTS failed" });
     }
 
+    // Return RAW binary audio — browser Audio element needs real bytes, not base64 text
     const arrayBuffer = await res.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString("base64");
     const contentType = res.headers.get("content-type") || "audio/mpeg";
 
-    return new Response(base64, {
+    return new Response(arrayBuffer, {
       status: 200,
       headers: {
         ...corsHeaders,
         "Content-Type": contentType,
-        "Content-Transfer-Encoding": "base64"
+        "Cache-Control": "no-store"
       }
     });
   } catch (e) {
