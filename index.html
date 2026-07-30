@@ -11,29 +11,30 @@
   <style>
     :root {
       --primary: #2d5a3d;
+      --primary-light: #3d7a52;
       --accent: #e8a0bf;
       --bg: #f7f9f7;
       --card: #ffffff;
-      --text: #1a1a1a;
-      --muted: #6b7280;
-      --border: #e5e7eb;
+      --text: #1a2e22;
+      --muted: #6b7c6e;
       --success: #22c55e;
       --warning: #f59e0b;
       --danger: #ef4444;
-      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+      --border: #e2e8e4;
+      --shadow: 0 2px 12px rgba(45,90,61,0.08);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
       min-height: 100dvh;
-      padding-bottom: 80px;
+      padding-bottom: 72px;
+      line-height: 1.45;
     }
     .hidden { display: none !important; }
+    /* Login */
     #login-screen {
-      min-height: 100vh;
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
@@ -43,48 +44,56 @@
       background: linear-gradient(180deg, #f0f7f2 0%, #fff 100%);
     }
     #login-screen img.header-img {
-      width: 100%;
-      max-width: 280px;
+      width: min(320px, 90vw);
       border-radius: 16px;
-      margin-bottom: 20px;
+      margin-bottom: 28px;
       box-shadow: var(--shadow);
     }
     #login-screen h1 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       color: var(--primary);
       margin-bottom: 8px;
       text-align: center;
     }
     #login-screen p { color: var(--muted); margin-bottom: 24px; text-align: center; font-size: 0.95rem; }
-    .login-form { width: 100%; max-width: 320px; }
-    .login-form input {
+    .login-form {
       width: 100%;
+      max-width: 340px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .login-form input {
       padding: 14px 16px;
-      margin-bottom: 12px;
       border: 2px solid var(--border);
       border-radius: 12px;
-      font-size: 1rem;
+      font-size: 1.05rem;
+      width: 100%;
+      background: var(--card);
     }
-    .login-form input:focus { outline: none; border-color: var(--primary); }
+    .login-form input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(45,90,61,0.12);
+    }
     #login-error {
       color: var(--danger);
       font-size: 0.9rem;
-      margin-bottom: 12px;
       text-align: center;
+      min-height: 1.2em;
     }
     .btn {
       background: var(--primary);
       color: white;
       border: none;
       border-radius: 12px;
-      padding: 14px 20px;
+      padding: 12px 20px;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.15s;
+      transition: background 0.15s;
     }
-    .btn:active { opacity: 0.85; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn:active { background: var(--primary-light); }
     .btn-outline {
       background: transparent;
       color: var(--primary);
@@ -93,6 +102,7 @@
     .btn-sm { padding: 8px 14px; font-size: 0.9rem; }
     .btn-success { background: var(--success); }
     .btn-warning { background: var(--warning); color: #111; }
+    /* Header */
     .app-header {
       position: sticky;
       top: 0;
@@ -114,6 +124,7 @@
       padding: 6px 10px;
       font-size: 0.85rem;
     }
+    /* Main content */
     .main { padding: 16px; max-width: 640px; margin: 0 auto; }
     .card {
       background: var(--card);
@@ -133,44 +144,40 @@
     }
     .progress-bar {
       height: 10px;
-      background: #e5e7eb;
-      border-radius: 999px;
+      background: #e2e8e4;
+      border-radius: 99px;
       overflow: hidden;
-      margin-top: 8px;
+      margin: 8px 0 4px;
     }
     .progress-fill {
       height: 100%;
       background: linear-gradient(90deg, var(--primary), var(--success));
-      border-radius: 999px;
-      transition: width 0.3s;
+      border-radius: 99px;
+      transition: width 0.3s ease;
     }
-    .stamp-list { display: flex; flex-direction: column; gap: 10px; }
     .stamp-item {
       display: flex;
       align-items: flex-start;
       gap: 12px;
-      padding: 12px;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      background: #fff;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
     }
-    .stamp-item.done {
-      border-color: var(--success);
-      background: #f0fdf4;
-    }
-    .stamp-check {
-      width: 28px;
-      height: 28px;
+    .stamp-item:last-child { border-bottom: none; }
+    .stamp-btn {
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       border: 2px solid var(--border);
+      background: white;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 1.3rem;
       flex-shrink: 0;
-      font-size: 0.9rem;
       cursor: pointer;
+      transition: all 0.2s;
     }
-    .stamp-item.done .stamp-check {
+    .stamp-btn.done {
       background: var(--success);
       border-color: var(--success);
       color: white;
@@ -179,30 +186,49 @@
     .stamp-title { font-weight: 600; font-size: 0.98rem; }
     .stamp-desc { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
     .stamp-time { font-size: 0.75rem; color: var(--success); margin-top: 4px; }
+    .stamp-item.next-task {
+      background: #eef6f0;
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      padding: 12px 10px;
+      margin: 4px -4px;
+    }
+    .stamp-item.next-task .stamp-title::before {
+      content: "👉 ";
+    }
     .next-banner {
       background: linear-gradient(135deg, #2d5a3d, #3d7a52);
       color: white;
       border-radius: 14px;
       padding: 14px 16px;
       margin-bottom: 14px;
+      font-weight: 600;
+      font-size: 0.98rem;
       display: flex;
       align-items: center;
       gap: 10px;
+      box-shadow: var(--shadow);
     }
-    .next-label {
+    .next-banner .next-label {
       background: rgba(255,255,255,0.2);
-      padding: 4px 10px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 500;
     }
     .eod-banner {
-      background: #fff7ed;
-      border: 2px solid #fdba74;
+      background: #fef3c7;
+      border: 2px solid #f59e0b;
       border-radius: 14px;
       padding: 14px 16px;
       margin-bottom: 14px;
+      font-size: 0.95rem;
+      color: #92400e;
+      display: none;
     }
+    .eod-banner.show { display: block; }
+    .eod-banner strong { display: block; margin-bottom: 6px; }
+    /* Quick actions */
     .quick-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -210,19 +236,22 @@
       margin-bottom: 14px;
     }
     .quick-btn {
-      padding: 16px 12px;
-      border-radius: 14px;
+      background: var(--card);
       border: 2px solid var(--border);
-      background: white;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
+      border-radius: 14px;
+      padding: 16px 12px;
       text-align: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.15s;
     }
-    .quick-btn.customer { border-color: #93c5fd; background: #eff6ff; color: #1e40af; }
-    .quick-btn.phone { border-color: #c4b5fd; background: #f5f3ff; color: #5b21b6; }
+    .quick-btn:active { transform: scale(0.97); }
+    .quick-btn.customer { border-color: #f9a8d4; background: #fdf2f8; color: #9d174d; }
+    .quick-btn.phone { border-color: #93c5fd; background: #eff6ff; color: #1e40af; }
     .quick-btn.messages { border-color: #fcd34d; background: #fffbeb; color: #92400e; }
-    .quick-btn.back { border-color: #a7f3d0; background: #ecfdf5; color: #065f46; }
+    .quick-btn.back { border-color: var(--primary); background: #eef6f0; color: var(--primary); }
+    /* Bottom nav */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -241,33 +270,76 @@
       flex-direction: column;
       align-items: center;
       gap: 2px;
-      background: none;
-      border: none;
       font-size: 0.7rem;
       color: var(--muted);
+      background: none;
+      border: none;
+      padding: 4px 8px;
       cursor: pointer;
-      padding: 6px 10px;
       min-width: 56px;
     }
     .nav-item.active { color: var(--primary); font-weight: 600; }
-    .nav-item .icon { font-size: 1.35rem; }
+    .nav-item span.icon { font-size: 1.35rem; }
+    /* Content pages */
     .page { display: none; }
     .page.active { display: block; }
-    .alert {
+    .script-box {
+      background: #f0f7f2;
+      border-left: 4px solid var(--primary);
       padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      margin-bottom: 10px;
+      border-radius: 0 10px 10px 0;
+      margin: 10px 0;
+      font-size: 0.95rem;
     }
-    .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-    .alert-warn { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+    .img-guide {
+      width: 100%;
+      border-radius: 12px;
+      margin: 10px 0;
+      box-shadow: var(--shadow);
+    }
+    .checklist label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 0.95rem;
+    }
+    .checklist input { width: 20px; height: 20px; }
+    /* Forms */
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; }
+    .form-group input[type="number"],
+    .form-group input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 1.1rem;
+    }
+    .photo-preview {
+      width: 100%;
+      max-height: 200px;
+      object-fit: contain;
+      border-radius: 10px;
+      margin-top: 8px;
+      border: 1px solid var(--border);
+    }
+    .alert {
+      padding: 12px;
+      border-radius: 10px;
+      margin: 10px 0;
+      font-size: 0.9rem;
+    }
+    .alert-warn { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .alert-info { background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; }
     .alert-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
-    .search-row {
+    /* Search */
+    .search-box {
       display: flex;
       gap: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
-    .search-row input {
+    .search-box input {
       flex: 1;
       padding: 12px 14px;
       border: 2px solid var(--border);
@@ -277,19 +349,25 @@
     .voice-btn {
       width: 48px;
       height: 48px;
-      border-radius: 12px;
-      border: none;
+      border-radius: 50%;
       background: var(--primary);
       color: white;
+      border: none;
       font-size: 1.3rem;
       cursor: pointer;
-      flex-shrink: 0;
     }
     .voice-btn.listening { background: var(--danger); animation: pulse 1s infinite; }
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.08); }
     }
+    .result-item {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .result-item:active { background: #f0f7f2; }
+    /* Modal */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -298,33 +376,38 @@
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      padding: 0;
     }
-    .modal-content {
+    .modal {
       background: white;
-      border-radius: 20px 20px 0 0;
-      padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
       width: 100%;
-      max-width: 640px;
-      max-height: 85vh;
+      max-width: 500px;
+      max-height: 90dvh;
+      border-radius: 20px 20px 0 0;
+      padding: 20px;
       overflow-y: auto;
-      position: relative;
     }
+    .modal h3 { margin-bottom: 14px; color: var(--primary); }
     .close-modal {
-      position: absolute;
-      top: 12px;
-      right: 16px;
+      float: right;
       background: none;
       border: none;
-      font-size: 1.6rem;
-      color: var(--muted);
+      font-size: 1.5rem;
       cursor: pointer;
-      line-height: 1;
+      color: var(--muted);
     }
+    /* Summary */
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    /* Floating mic */
     .float-mic {
       position: fixed;
+      bottom: 80px;
       right: 16px;
-      bottom: 90px;
       width: 56px;
       height: 56px;
       border-radius: 50%;
@@ -332,49 +415,1942 @@
       color: white;
       border: none;
       font-size: 1.5rem;
-      box-shadow: 0 4px 16px rgba(45,90,61,0.4);
+      box-shadow: 0 4px 16px rgba(45,90,61,0.35);
       z-index: 90;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .float-mic.listening {
+      background: var(--danger);
+      animation: pulse 1s infinite;
     }
     .float-mic-panel {
       position: fixed;
+      bottom: 145px;
       right: 16px;
-      bottom: 160px;
-      width: min(340px, calc(100vw - 32px));
+      left: 16px;
+      max-width: 360px;
+      margin-left: auto;
       background: white;
       border-radius: 16px;
       padding: 14px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-      z-index: 95;
+      z-index: 91;
       display: none;
-      border: 1px solid var(--border);
     }
-    .float-mic-panel.open { display: block; }
-    .speak-controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-    img.content-img {
-      width: 100%;
-      border-radius: 12px;
-      margin: 10px 0;
-      border: 1px solid var(--border);
+    .float-mic-panel.show { display: block; }
+    .speak-controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
-  <!-- This is a temporary minimal shell. The complete v1.14.0 index.html is in the release zip. -->
+  <!-- LOGIN SCREEN -->
   <div id="login-screen">
     <img src="header.jpg" alt="Conroy's Flowers Training" class="header-img">
-    <h1>Employee Login</h1>
+    <h1 data-i18n="login_title">직원 로그인</h1>
     <p style="font-size:0.8rem;color:var(--muted);margin-bottom:4px">v1.14.0</p>
-    <p>Enter your ID and password</p>
+    <p data-i18n="login_desc">아이디와 비밀번호를 입력하세요</p>
     <div class="login-form">
-      <input type="text" id="login-username" placeholder="Username" autocomplete="username" autocapitalize="none">
-      <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+      <input type="text" id="login-username" placeholder="아이디" data-i18n-placeholder="username_ph" autocomplete="username" autocapitalize="none">
+      <input type="password" id="login-password" placeholder="비밀번호" data-i18n-placeholder="password_ph" autocomplete="current-password">
       <div id="login-error" class="hidden"></div>
-      <button class="btn" style="width:100%;margin-top:4px" onclick="alert('Full app is being restored. Please wait for the next deploy or use the v1.14.0 zip.')">Log in</button>
+      <button class="btn" style="width:100%;margin-top:4px" onclick="doLogin()" data-i18n="login_btn">로그인</button>
     </div>
   </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <header class="app-header">
+      <div>
+        <div style="font-weight:700;font-size:1.05rem;">Conroy's Training <span style="font-size:0.75rem;opacity:0.8;font-weight:500" onclick="onVersionTap()">v1.14.0</span></div>
+        <div class="user-info" id="header-user"></div>
+      </div>
+      <select class="lang-select" id="lang-select" onchange="changeLang(this.value)" aria-label="Language">
+        <option value="en">EN</option>
+        <option value="ko">한국어</option>
+        <option value="ja">日本語</option>
+        <option value="es">ES</option>
+      </select>
+    </header>
+
+    <div class="main">
+      <!-- HOME / ROUTINE -->
+      <div id="page-home" class="page active">
+        <div class="card">
+          <h2>📋 <span data-i18n="today_routine">오늘의 루틴</span></h2>
+          <div id="progress-text" style="font-size:0.9rem;color:var(--muted)"></div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        </div>
+
+        <div id="eod-banner" class="eod-banner">
+          <strong id="eod-title">⏰ 퇴근 시간이 가까워요</strong>
+          <span id="eod-desc">오늘 요약을 확인하고 End Day를 완료해주세요.</span>
+          <button class="btn btn-sm" id="eod-btn" style="margin-top:10px;background:#f59e0b;color:#111" onclick="showSummary()">오늘 요약 보기</button>
+        </div>
+
+        <div id="next-banner" class="next-banner hidden">
+          <span class="next-label" id="next-label">다음</span>
+          <span id="next-task-text"></span>
+        </div>
+
+        <div class="quick-grid">
+          <button class="quick-btn customer" onclick="showPage('customer')">👤 <span data-i18n="customer">손님 응대</span></button>
+          <button class="quick-btn phone" onclick="showPage('phone')">📞 <span data-i18n="phone">전화 받기</span></button>
+          <button class="quick-btn messages" onclick="showPage('messages')">💬 <span data-i18n="messages">Messages 확인</span></button>
+          <button class="quick-btn back" onclick="showPage('home')">↩️ <span data-i18n="back_routine">루틴으로</span></button>
+        </div>
+
+        <div class="card" id="stamp-list"></div>
+
+        <div class="card">
+          <h2>🏁 <span data-i18n="day_end_summary">하루 마무리</span></h2>
+          <button class="btn btn-outline" style="width:100%" onclick="showSummary()" data-i18n="view_summary">오늘 요약 보기</button>
+        </div>
+      </div>
+
+      <!-- CUSTOMER -->
+      <div id="page-customer" class="page">
+        <div class="card">
+          <h2>👤 <span data-i18n="customer_title">손님 응대 가이드</span></h2>
+          <div class="alert alert-info" data-i18n="customer_priority">고객 우선! 하던 일을 멈추고 즉시 인사하세요.</div>
+          <p style="font-weight:600;margin:10px 0 4px" data-i18n="greeting">인사말</p>
+          <div class="script-box">"Welcome! How can I help you today?"</div>
+          <p style="font-weight:600;margin:12px 0 4px" data-i18n="needs">니즈 파악</p>
+          <div class="script-box">"Who's going to receive the flowers?"</div>
+          <p style="font-weight:600;margin:12px 0 4px" data-i18n="color_guide">색상 추천</p>
+          <img src="colors.jpg" class="img-guide" alt="Color schemes">
+          <ul style="padding-left:18px;font-size:0.92rem;margin-top:8px">
+            <li>Romance → Red / Hot Pink</li>
+            <li>Family → Light Pink</li>
+            <li>Friends / Get Well → Bright Colors</li>
+            <li>Sympathy → White / Soft Pastels</li>
+          </ul>
+          <p style="font-weight:600;margin:12px 0 4px" data-i18n="size_guide">사이즈 추천 스크립트</p>
+          <div class="script-box">
+            <strong>Small ($40–60)</strong><br>
+            "I'd recommend one of our small vase arrangements, perfect for a desk or side table, filled with fresh garden flowers in our appropriate color scheme. The price range is between $40 and $60."
+          </div>
+          <div class="script-box">
+            <strong>Medium ($60–80)</strong> — Standard recommendation<br>
+            "I'd recommend a medium vase arrangement, perfect for a desk or end table, filled with fresh garden flowers in our appropriate color scheme. The price range is between $60 and $80."
+          </div>
+          <div class="script-box">
+            <strong>Large (from $100)</strong><br>
+            "For an occasion this special, I'd recommend one of our large vase arrangements. It's perfect as a centerpiece for a dining table or entryway and is designed to make a lasting impression. We create it using premium fresh garden flowers in our appropriate color scheme. Our large arrangements are priced starting from $100."
+          </div>
+          <button class="btn" style="width:100%;margin-top:12px" onclick="showPage('home')" data-i18n="back_routine">루틴으로 돌아가기</button>
+        </div>
+      </div>
+
+      <!-- PHONE -->
+      <div id="page-phone" class="page">
+        <div class="card">
+          <h2>📞 <span data-i18n="phone_title">전화 응대</span></h2>
+          <div class="alert alert-info" data-i18n="phone_priority">손님이 매장에 있으면 먼저 손님을 도와주세요.</div>
+          <p style="font-weight:600;margin:10px 0 4px" data-i18n="phone_greeting">인사말</p>
+          <div class="script-box">"Thank you for calling Conroy's Flowers. How may I help you?"</div>
+          <p style="font-weight:600;margin:12px 0 4px" data-i18n="phone_hold">홀드할 때</p>
+          <div class="script-box">"Thank you for calling Conroy's. May I place you on a brief hold?"</div>
+          <button class="btn" style="width:100%;margin-top:12px" onclick="showPage('home')" data-i18n="back_routine">루틴으로 돌아가기</button>
+        </div>
+      </div>
+
+      <!-- MESSAGES -->
+      <div id="page-messages" class="page">
+        <div class="card">
+          <h2>💬 <span data-i18n="messages_title">Messages / In Wire 확인</span></h2>
+          <div class="alert alert-warn" data-i18n="messages_warn">Wire-In 주문이 들어오면 Messages와 In Wire 카운터가 올라갑니다. 수시로 확인하세요!</div>
+          <ol style="padding-left:20px;font-size:0.95rem">
+            <li data-i18n="msg_step1">Messages 열기 → 내용 확인 (받는 분, 주소, 배송일, 특별지시)</li>
+            <li data-i18n="msg_step2">Mark Read 클릭</li>
+            <li data-i18n="msg_step3">In Wire로 이동 → 주문 검토 후 Accept</li>
+            <li data-i18n="msg_step4">Accept 후 To Be Designed로 이동 + SuperTicket 자동 출력 (Register 1)</li>
+          </ol>
+          <div class="alert alert-info" style="margin-top:12px" data-i18n="msg_reject">Reject는 매니저 승인 없이 절대 누르지 마세요.</div>
+          <img src="superticket.jpg" class="img-guide" alt="SuperTicket">
+          <p style="font-size:0.85rem;color:var(--muted);text-align:center" data-i18n="superticket_caption">SuperTicket 예시 – 디자인 시작 전 반드시 출력된 티켓을 확인하세요.</p>
+          <button class="btn" style="width:100%;margin-top:12px" onclick="markMessagesChecked(); showPage('home')" data-i18n="checked_back">확인 완료 & 루틴으로</button>
+        </div>
+      </div>
+
+      <!-- SEARCH -->
+      <div id="page-search" class="page">
+        <div class="card">
+          <h2>🔍 <span data-i18n="search_title">질문하기 / 검색</span></h2>
+          <div class="search-box">
+            <input type="text" id="search-input" placeholder="예: SuperTicket, CardIsle, 배달..." data-i18n-placeholder="search_ph">
+            <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="음성 인식">🎤</button>
+          </div>
+          <button class="btn" style="width:100%;margin-bottom:12px" onclick="doSearch()" data-i18n="search_btn">검색</button>
+          <div id="search-results"></div>
+        </div>
+        <div class="card">
+          <h2>📚 <span data-i18n="quick_topics">자주 찾는 주제</span></h2>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('superticket')">SuperTicket</button>
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('attachment')">첨부물</button>
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('cardisle')">CardIsle</button>
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('delivery')">배달</button>
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('startday')">Start Day</button>
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('funeral')">Funeral</button>
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('wireout')">Wire-Out</button>
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('golden')">Golden Rules</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MORE / TRAINING -->
+      <div id="page-more" class="page">
+        <!-- Admin only section -->
+        <div class="card hidden" id="admin-card" style="border:2px solid var(--primary);background:#f0f7f2">
+          <h2 style="color:var(--primary)">👔 Admin 관리</h2>
+          <p style="font-size:0.9rem;color:var(--muted);margin-bottom:12px">직원 아이디 / 비밀번호를 생성하고 관리합니다.</p>
+          <button class="btn" style="width:100%;margin-bottom:8px" onclick="openAdminPanel()">계정 관리 열기</button>
+          <p style="font-size:0.8rem;color:var(--muted)">※ 이 메뉴는 Admin 계정으로 로그인했을 때만 보입니다.</p>
+        </div>
+
+        <div class="card">
+          <h2>📖 <span data-i18n="training_title">트레이닝 & 가이드</span></h2>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('attachments')" data-i18n="att_check">첨부물 확인 체크리스트</button>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('bmsflow')" data-i18n="bms_flow">BMS 주문 처리 흐름</button>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('delivery')" data-i18n="delivery_guide">배달 가이드</button>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('golden')" data-i18n="golden_rules">Golden Rules</button>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('decision')" data-i18n="decision_helper">모르겠을 때 도우미</button>
+        </div>
+
+        <div class="card">
+          <button class="btn btn-outline" style="width:100%" onclick="exportProgress()">내 진행 상황 내보내기 (JSON)</button>
+        </div>
+
+        <div class="card">
+          <h2>💬 <span data-i18n="feedback_title">피드백 / 업그레이드</span></h2>
+          <textarea id="feedback-text" rows="3" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:10px;font-size:0.95rem" data-i18n-placeholder="feedback_ph" placeholder="앱에서 부족한 점이나 자주 헷갈리는 질문을 적어주세요"></textarea>
+          <button class="btn" style="width:100%;margin-top:8px" onclick="saveFeedback()" data-i18n="save_feedback">저장하기</button>
+        </div>
+        <div class="card">
+          <button class="btn btn-outline" style="width:100%" onclick="logout()" data-i18n="logout">로그아웃</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-page="home" onclick="showPage('home')"><span class="icon">🏠</span><span data-i18n="nav_home">루틴</span></button>
+      <button class="nav-item" data-page="customer" onclick="showPage('customer')"><span class="icon">👤</span><span data-i18n="nav_customer">손님</span></button>
+      <button class="nav-item" data-page="messages" onclick="showPage('messages')"><span class="icon">💬</span><span data-i18n="nav_msg">Messages</span></button>
+      <button class="nav-item" data-page="search" onclick="showPage('search')"><span class="icon">🔍</span><span data-i18n="nav_search">검색</span></button>
+      <button class="nav-item" data-page="more" onclick="showPage('more')"><span class="icon">☰</span><span data-i18n="nav_more">더보기</span></button>
+    </nav>
+
+    <!-- Floating mic button (always visible after login) -->
+    <button class="float-mic" id="float-mic" onclick="toggleFloatMic()" title="음성으로 질문">🎤</button>
+    <div class="float-mic-panel" id="float-mic-panel">
+      <div style="font-weight:600;margin-bottom:8px">음성으로 질문하기</div>
+      <div id="float-status" style="font-size:0.9rem;color:var(--muted);margin-bottom:8px">🎤 누르고 말하세요 (언어 자동 인식)</div>
+      <div id="float-answer" style="font-size:0.92rem;white-space:pre-wrap;max-height:180px;overflow-y:auto"></div>
+      <div class="speak-controls">
+        <button class="btn btn-sm" id="float-speak-btn" style="display:none" onclick="speakText(window._lastGrokAnswer, this)">🔊 읽어주기</button>
+        <button class="btn btn-sm btn-outline" id="float-stop-btn" style="display:none" onclick="stopSpeaking()">⏹ 중지</button>
+        <button class="btn btn-sm btn-outline" onclick="closeFloatPanel()">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this) closeModal()">
+    <div class="modal" id="modal-content"></div>
+  </div>
+
   <script>
-    console.log('Temporary index - full version coming');
+    // ========== DATA & I18N ==========
+    const i18n = {
+      ko: {
+        login_title: "직원 로그인", login_desc: "아이디와 비밀번호를 입력하세요",
+        username_ph: "아이디", password_ph: "비밀번호", login_btn: "로그인",
+        login_error: "아이디 또는 비밀번호가 올바르지 않습니다.",
+        today_routine: "오늘의 루틴", customer: "손님 응대", phone: "전화 받기",
+        messages: "Messages 확인", back_routine: "루틴으로", day_end_summary: "하루 마무리",
+        view_summary: "오늘 요약 보기", customer_title: "손님 응대 가이드",
+        customer_priority: "고객 우선! 하던 일을 멈추고 즉시 인사하세요.",
+        greeting: "인사말", greeting_script: '"Welcome! How can I help you today?" / "안녕하세요! 무엇을 도와드릴까요?"',
+        needs: "니즈 파악", needs_script: '"Who\'s going to receive the flowers?" (받는 분이 누구신가요?)',
+        color_guide: "색상 추천", color_romance: "Romance → Red / Hot Pink",
+        color_family: "Family → Light Pink", color_friends: "Friends / Get Well → Bright Colors",
+        color_sympathy: "Sympathy → White / Soft Pastels", size_guide: "사이즈 추천 스크립트",
+        size_small: "작은 화병 어레인지먼트를 추천드려요. 책상이나 사이드 테이블에 딱 좋고, 신선한 가든 플라워로 구성됩니다. $40–60.",
+        size_medium_rec: "가장 기본 추천", size_medium: "미디엄 화병 어레인지먼트를 추천드려요. 책상이나 사이드 테이블에 완벽하고, 신선한 가든 플라워로 구성됩니다. $60–80.",
+        size_large: "특별한 날에는 라지 화병 어레인지먼트를 추천드려요. 테이블 센터피스나 입구에 잘 어울리고, 프리미엄 신선한 꽃으로 만들어 깊은 인상을 남깁니다. $100부터.",
+        phone_title: "전화 응대", phone_priority: "손님이 매장에 있으면 먼저 손님을 도와주세요.",
+        phone_greeting: "인사말", phone_script: '"Thank you for calling Conroy\'s Flowers. How may I help you?"',
+        phone_hold: "홀드할 때", phone_hold_script: '"Thank you for calling Conroy\'s. May I place you on a brief hold?"',
+        messages_title: "Messages / In Wire 확인",
+        messages_warn: "Wire-In 주문이 들어오면 Messages와 In Wire 카운터가 올라갑니다. 수시로 확인하세요!",
+        msg_step1: "Messages 열기 → 내용 확인 (받는 분, 주소, 배송일, 특별지시)",
+        msg_step2: "Mark Read 클릭", msg_step3: "In Wire로 이동 → 주문 검토 후 Accept",
+        msg_step4: "Accept 후 To Be Designed로 이동 + SuperTicket 자동 출력 (Register 1)",
+        msg_reject: "Reject는 매니저 승인 없이 절대 누르지 마세요.",
+        superticket_caption: "SuperTicket 예시 – 디자인 시작 전 반드시 출력된 티켓을 확인하세요.",
+        checked_back: "확인 완료 & 루틴으로", search_title: "질문하기 / 검색",
+        search_ph: "예: SuperTicket, CardIsle, 배달...", search_btn: "검색",
+        quick_topics: "자주 찾는 주제", training_title: "트레이닝 & 가이드",
+        att_check: "첨부물 확인 체크리스트", bms_flow: "BMS 주문 처리 흐름",
+        delivery_guide: "배달 가이드", golden_rules: "Golden Rules", decision_helper: "모르겠을 때 도우미",
+        feedback_title: "피드백 / 업그레이드", feedback_ph: "앱에서 부족한 점이나 자주 헷갈리는 질문을 적어주세요",
+        save_feedback: "저장하기", logout: "로그아웃",
+        nav_home: "루틴", nav_customer: "손님", nav_msg: "Messages", nav_search: "검색", nav_more: "더보기"
+      },
+      en: {
+        login_title: "Employee Login", login_desc: "Enter your ID and password",
+        username_ph: "Username", password_ph: "Password", login_btn: "Log in",
+        login_error: "Invalid username or password.",
+        today_routine: "Today's Routine", customer: "Customer", phone: "Phone",
+        messages: "Check Messages", back_routine: "Back to Routine", day_end_summary: "End of Day",
+        view_summary: "View Today's Summary", customer_title: "Customer Service Guide",
+        customer_priority: "Customer first! Stop what you're doing and greet immediately.",
+        greeting: "Greeting", greeting_script: '"Welcome! How can I help you today?"',
+        needs: "Understanding Needs", needs_script: '"Who\'s going to receive the flowers?"',
+        color_guide: "Color Recommendations", color_romance: "Romance → Red / Hot Pink",
+        color_family: "Family → Light Pink", color_friends: "Friends / Get Well → Bright Colors",
+        color_sympathy: "Sympathy → White / Soft Pastels", size_guide: "Size Recommendation Scripts",
+        size_small: "I'd recommend one of our small vase arrangements, perfect for a desk or side table, filled with fresh garden flowers. $40–60.",
+        size_medium_rec: "Standard recommendation", size_medium: "I'd recommend a medium vase arrangement, perfect for a desk or end table, filled with fresh garden flowers. $60–80.",
+        size_large: "For an occasion this special, I'd recommend one of our large vase arrangements. Perfect as a centerpiece. Starting from $100.",
+        phone_title: "Phone Handling", phone_priority: "If a customer is in the store, help them first.",
+        phone_greeting: "Greeting", phone_script: '"Thank you for calling Conroy\'s Flowers. How may I help you?"',
+        phone_hold: "Putting on Hold", phone_hold_script: '"Thank you for calling Conroy\'s. May I place you on a brief hold?"',
+        messages_title: "Messages / In Wire Check",
+        messages_warn: "When a Wire-In order arrives, Messages and In Wire counters increase. Check frequently!",
+        msg_step1: "Open Messages → Review details (recipient, address, delivery date, special instructions)",
+        msg_step2: "Click Mark Read", msg_step3: "Go to In Wire → Review and click Accept",
+        msg_step4: "After Accept → moves to To Be Designed + SuperTicket auto-prints (Register 1)",
+        msg_reject: "Never click Reject without manager approval.",
+        superticket_caption: "SuperTicket example – Always check the printed ticket before designing.",
+        checked_back: "Checked & Back to Routine", search_title: "Ask / Search",
+        search_ph: "e.g. SuperTicket, CardIsle, delivery...", search_btn: "Search",
+        quick_topics: "Quick Topics", training_title: "Training & Guides",
+        att_check: "Attachment Checklist", bms_flow: "BMS Order Flow",
+        delivery_guide: "Delivery Guide", golden_rules: "Golden Rules", decision_helper: "If Unsure Helper",
+        feedback_title: "Feedback / Upgrade", feedback_ph: "Note anything missing or confusing questions",
+        save_feedback: "Save", logout: "Log out",
+        nav_home: "Routine", nav_customer: "Customer", nav_msg: "Messages", nav_search: "Search", nav_more: "More"
+      },
+      ja: {
+        login_title: "従業員ログイン", login_desc: "IDとパスワードを入力してください",
+        username_ph: "ユーザーID", password_ph: "パスワード", login_btn: "ログイン",
+        login_error: "IDまたはパスワードが正しくありません。",
+        today_routine: "今日のルーティン", customer: "来客対応", phone: "電話対応",
+        messages: "Messages確認", back_routine: "ルーティンに戻る", day_end_summary: "一日のまとめ",
+        view_summary: "今日のサマリーを見る", customer_title: "来客対応ガイド",
+        customer_priority: "お客様優先！作業を止めてすぐに挨拶してください。",
+        greeting: "挨拶", greeting_script: '"Welcome! How can I help you today?"',
+        needs: "ニーズ把握", needs_script: '"Who\'s going to receive the flowers?"',
+        color_guide: "色の推奨", color_romance: "Romance → Red / Hot Pink",
+        color_family: "Family → Light Pink", color_friends: "Friends / Get Well → Bright Colors",
+        color_sympathy: "Sympathy → White / Soft Pastels", size_guide: "サイズ推奨スクリプト",
+        size_small: "小さな花瓶アレンジメントをおすすめします。デスクやサイドテーブルに最適、$40–60。",
+        size_medium_rec: "標準推奨", size_medium: "ミディアム花瓶アレンジメントをおすすめします。$60–80。",
+        size_large: "特別な機会にはラージをおすすめします。$100から。",
+        phone_title: "電話対応", phone_priority: "店内にお客様がいる場合は先にお客様を優先してください。",
+        phone_greeting: "挨拶", phone_script: '"Thank you for calling Conroy\'s Flowers. How may I help you?"',
+        phone_hold: "保留する時", phone_hold_script: '"Thank you for calling Conroy\'s. May I place you on a brief hold?"',
+        messages_title: "Messages / In Wire 確認",
+        messages_warn: "Wire-In注文が入るとMessagesとIn Wireのカウンターが増えます。頻繁に確認してください！",
+        msg_step1: "Messagesを開く → 内容確認", msg_step2: "Mark Readをクリック",
+        msg_step3: "In Wireへ → 確認後Accept", msg_step4: "Accept後 To Be Designedへ + SuperTicket自動印刷",
+        msg_reject: "マネージャーの承認なしにRejectを押さないでください。",
+        superticket_caption: "SuperTicket例 – デザイン前に必ず印刷されたチケットを確認。",
+        checked_back: "確認完了 & ルーティンに戻る", search_title: "質問 / 検索",
+        search_ph: "例: SuperTicket, CardIsle, 配達...", search_btn: "検索",
+        quick_topics: "よく探すトピック", training_title: "トレーニング & ガイド",
+        att_check: "添付物チェックリスト", bms_flow: "BMS注文処理フロー",
+        delivery_guide: "配達ガイド", golden_rules: "Golden Rules", decision_helper: "迷った時のヘルパー",
+        feedback_title: "フィードバック", feedback_ph: "不足している点やよく迷う質問を書いてください",
+        save_feedback: "保存", logout: "ログアウト",
+        nav_home: "ルーティン", nav_customer: "来客", nav_msg: "Messages", nav_search: "検索", nav_more: "もっと"
+      },
+      es: {
+        login_title: "Inicio de sesión", login_desc: "Ingrese su ID y contraseña",
+        username_ph: "Usuario", password_ph: "Contraseña", login_btn: "Iniciar sesión",
+        login_error: "Usuario o contraseña incorrectos.",
+        today_routine: "Rutina de hoy", customer: "Cliente", phone: "Teléfono",
+        messages: "Revisar Messages", back_routine: "Volver a rutina", day_end_summary: "Fin del día",
+        view_summary: "Ver resumen de hoy", customer_title: "Guía de atención al cliente",
+        customer_priority: "¡Cliente primero! Detenga lo que está haciendo y salude de inmediato.",
+        greeting: "Saludo", greeting_script: '"Welcome! How can I help you today?"',
+        needs: "Necesidades", needs_script: '"Who\'s going to receive the flowers?"',
+        color_guide: "Recomendación de colores", color_romance: "Romance → Red / Hot Pink",
+        color_family: "Family → Light Pink", color_friends: "Friends / Get Well → Bright Colors",
+        color_sympathy: "Sympathy → White / Soft Pastels", size_guide: "Scripts de tamaño",
+        size_small: "Recomiendo un arreglo pequeño en jarrón, perfecto para escritorio. $40–60.",
+        size_medium_rec: "Recomendación estándar", size_medium: "Recomiendo un arreglo mediano. $60–80.",
+        size_large: "Para una ocasión especial, recomiendo un arreglo grande. Desde $100.",
+        phone_title: "Atención telefónica", phone_priority: "Si hay un cliente en la tienda, ayúdelo primero.",
+        phone_greeting: "Saludo", phone_script: '"Thank you for calling Conroy\'s Flowers. How may I help you?"',
+        phone_hold: "Poner en espera", phone_hold_script: '"Thank you for calling Conroy\'s. May I place you on a brief hold?"',
+        messages_title: "Messages / In Wire",
+        messages_warn: "Cuando llega un pedido Wire-In, aumentan los contadores. ¡Revise con frecuencia!",
+        msg_step1: "Abrir Messages → Revisar detalles", msg_step2: "Clic en Mark Read",
+        msg_step3: "Ir a In Wire → Revisar y Accept", msg_step4: "Después de Accept → To Be Designed + SuperTicket se imprime",
+        msg_reject: "Nunca haga clic en Reject sin aprobación del gerente.",
+        superticket_caption: "Ejemplo de SuperTicket – Siempre verifique el ticket impreso antes de diseñar.",
+        checked_back: "Revisado y volver a rutina", search_title: "Preguntar / Buscar",
+        search_ph: "ej. SuperTicket, CardIsle, entrega...", search_btn: "Buscar",
+        quick_topics: "Temas frecuentes", training_title: "Capacitación y guías",
+        att_check: "Lista de adjuntos", bms_flow: "Flujo de pedidos BMS",
+        delivery_guide: "Guía de entrega", golden_rules: "Golden Rules", decision_helper: "Si no está seguro",
+        feedback_title: "Comentarios", feedback_ph: "Anote lo que falta o preguntas confusas",
+        save_feedback: "Guardar", logout: "Cerrar sesión",
+        nav_home: "Rutina", nav_customer: "Cliente", nav_msg: "Messages", nav_search: "Buscar", nav_more: "Más"
+      }
+    };
+
+    // Routine stamps definition
+    const routineTasks = [
+      { id: 'open_shop', title: {ko:'가게 문/조명 확인', en:'Open gate/lights if needed', ja:'門・照明確認', es:'Abrir puerta/luces'}, desc: {ko:'필요시 외부 게이트/조명 켜기', en:'Open outside gate/fence, turn on lights', ja:'必要に応じて門と照明', es:'Abrir portón y luces si es necesario'} },
+      { id: 'start_day', title: {ko:'Start Day (캐시 카운트)', en:'Start Day (Cash Count)', ja:'Start Day（現金確認）', es:'Start Day (Conteo de efectivo)'}, desc: {ko:'$200.00 맞추고 금액+사진 저장', en:'Count to $200.00, enter amount + photo', ja:'$200.00を確認し金額＋写真', es:'Contar $200.00, ingresar monto + foto'}, special: 'startday' },
+      { id: 'cooler_vase', title: {ko:'쿨러 화병 점검', en:'Cooler Vase Check', ja:'クーラー花瓶チェック', es:'Revisión de jarrones'}, desc: {ko:'물 갈기, 손상된 꽃 제거, 줄기 재절단', en:'Check water, remove damaged flowers, re-cut stems', ja:'水替え・傷んだ花除去', es:'Revisar agua, quitar flores dañadas'} },
+      { id: 'cooler_loose', title: {ko:'루스 플라워 점검', en:'Loose Flower Buckets', ja:'切り花バケツ確認', es:'Cubos de flores sueltas'}, desc: {ko:'물 보충, 손상 꽃 제거, 색상별 정리', en:'Refill water, remove damaged, organize by color', ja:'水補充・整理', es:'Rellenar agua y organizar'} },
+      { id: 'messages_check', title: {ko:'Messages / In Wire 확인', en:'Messages / In Wire Check', ja:'Messages確認', es:'Revisar Messages'}, desc: {ko:'수시로 확인 – 빠른 버튼 사용 가능', en:'Check frequently – use quick button', ja:'頻繁に確認', es:'Revisar con frecuencia'} },
+      { id: 'monitor_orders', title: {ko:'주문 모니터링', en:'Monitor Incoming Orders', ja:'注文モニタリング', es:'Monitorear pedidos'}, desc: {ko:'Due Time 우선순위로 처리', en:'Prioritize by Due Time', ja:'Due Time優先', es:'Priorizar por Due Time'} },
+      { id: 'attachments', title: {ko:'첨부물 확인 습관화', en:'Attachment Verification Habit', ja:'添付物確認', es:'Verificar adjuntos'}, desc: {ko:'풍선·초콜릿·인형·CardIsle 확인', en:'Balloons, chocolates, plush, CardIsle', ja:'バルーン・チョコ・ぬいぐるみ・カード', es:'Globos, chocolates, peluche, CardIsle'} },
+      { id: 'end_day', title: {ko:'End Day (마감)', en:'End Day (Close)', ja:'End Day（締め）', es:'End Day (Cierre)'}, desc: {ko:'$200 남기고 금액+사진 저장, 봉투 처리', en:'Leave $200, amount + photo, deposit envelope', ja:'$200残し金額＋写真', es:'Dejar $200, monto + foto'}, special: 'endday' }
+    ];
+
+    // Knowledge base for search
+    const knowledge = [
+      { keys: ['superticket', '슈퍼티켓', 'ticket', '티켓'], title: {ko:'SuperTicket', en:'SuperTicket', ja:'SuperTicket', es:'SuperTicket'},
+        body: {ko:'SuperTicket은 주문 수락 후 자동 출력되는 생산 문서입니다. Recipient Info, White Sheet, Small Ticket으로 구성. 디자인 시작 전 반드시 출력된 티켓을 확인하세요. Register 1에서만 Auto-Print됩니다.', en:'SuperTicket is the primary production document printed after Accept. Contains Recipient Info, White Sheet, Small Ticket. Never design without a printed ticket. Only Register 1 has Auto-Print.', ja:'SuperTicketはAccept後に自動印刷される生産文書です。デザイン前に必ず確認。', es:'SuperTicket es el documento de producción principal. Nunca diseñe sin el ticket impreso.'} },
+      { keys: ['attachment', '첨부', '첨부물', 'balloon', 'chocolate', 'plush', 'cardisle'], title: {ko:'첨부물 확인', en:'Attachment Verification', ja:'添付物確認', es:'Verificación de adjuntos'},
+        body: {ko:'White Sheet의 Product Detail을 보고 첨부물(풍선, 초콜릿, 인형, CardIsle 카드 등)이 있는지 확인. 첨부물이 있으면 White Sheet를 떼지 말고 모두 확인·부착 후 Set As Awaiting Delivery. CardIsle은 PickupCodeID로 cardisle.com에서 인쇄.', en:'Check Product Detail on White Sheet for balloons, chocolates, plush, CardIsle cards. Do not remove White Sheet until all attachments are verified and attached. CardIsle: use PickupCodeID on cardisle.com.', ja:'White Sheetで添付物を確認。すべて取り付けてからWhite Sheetを外す。', es:'Revise Product Detail. No quite la White Sheet hasta verificar todos los adjuntos.'} },
+      { keys: ['cardisle', '카드', 'greeting card', 'pickupcode'], title: {ko:'CardIsle 인사카드', en:'CardIsle Greeting Card', ja:'CardIsleカード', es:'Tarjeta CardIsle'},
+        body: {ko:'PickupCodeID는 White Sheet 하단 Special Instructions 또는 BMS에서 확인. cardisle.com 접속 → 코드 입력 → Preview → Print. 인쇄 후 카드 뒷면 코드와 일치하는지 확인 후 부착. 1800Flowers $5.99 / 매장 $6.99', en:'Find PickupCodeID in Special Instructions or BMS. Go to cardisle.com → enter code → Preview → Print. Match code on back of card before attaching.', ja:'PickupCodeIDを確認しcardisle.comで印刷。コード一致を確認。', es:'Busque PickupCodeID, imprima en cardisle.com y verifique el código.'} },
+      { keys: ['delivery', '배달', 'walmart', 'uber', 'trip'], title: {ko:'배달 트립 생성', en:'Create Delivery Trip', ja:'配達トリップ', es:'Crear viaje de entrega'},
+        body: {ko:'일반 배달: Provider = Walmart GoLocal, 3Hr Window, 가장 빠른 창 선택 후 Set Trip as Out for Delivery. 장례(Funeral): Provider = Uber, ASAP. 드라이버 도착 시 운반 방법 설명 + 확인 사진 요청.', en:'Standard: Walmart GoLocal + 3Hr Window, earliest available. Funeral: Uber + ASAP. Instruct driver on setup and ask for confirmation photo.', ja:'通常: Walmart GoLocal 3時間。葬儀: Uber ASAP。', es:'Estándar: Walmart GoLocal 3h. Funeral: Uber ASAP.'} },
+      { keys: ['startday', 'start day', '캐시', 'cash', '200'], title: {ko:'Start Day', en:'Start Day', ja:'Start Day', es:'Start Day'},
+        body: {ko:'Home → Start Day / End Day. Open Cash Drawer (비번 123456). 권종별 수량 입력 (금액 아님). Start Day Amount = 항상 $200.00. 안 맞으면 사진 찍어서 (213) 610-1004로 보내고 조정 없이 진행.', en:'Enter quantity of each denomination (not dollar amount). Must equal $200.00. If not, take photo, send to (213) 610-1004, continue without adjustment.', ja:'各金種の数量を入力。必ず$200.00。合わない場合は写真を送信。', es:'Ingrese cantidad de cada denominación. Debe ser $200.00. Si no, tome foto y envíe.'} },
+      { keys: ['endday', 'end day', '마감'], title: {ko:'End Day', en:'End Day', ja:'End Day', es:'End Day'},
+        body: {ko:'정확히 $200.00을 드로어에 남김. Summary Receipt 출력 → 초과 현금을 봉투에 넣고 날짜·이름·Cash Sales·Drop 적어서 봉인 → 금고 보관 → End Register Session.', en:'Leave exactly $200.00 in drawer. Print Summary Receipt, put excess cash in deposit envelope with Date, Name, Cash Sales, Drop → safe → End Register Session.', ja:'$200.00を残し、超過分を封筒に入れて金庫へ。', es:'Deje exactamente $200.00. Sobre de depósito al seguro.'} },
+      { keys: ['funeral', '장례', 'uber'], title: {ko:'Funeral 배달', en:'Funeral Delivery', ja:'葬儀配達', es:'Entrega de funeral'},
+        body: {ko:'시간 민감. Provider: Uber, ASAP로 요청. 드라이버 도착 시 운반 방법 설명하고, 배치 후 확인 사진 찍도록 지시.', en:'Time-sensitive. Use Uber + ASAP. Explain transport to driver and request confirmation photo after setup.', ja:'Uber ASAP。ドライバーに説明と写真を依頼。', es:'Usar Uber ASAP. Explicar al conductor y pedir foto.'} },
+      { keys: ['wireout', 'wire-out', 'wire out'], title: {ko:'Wire-Out 주문', en:'Wire-Out Order', ja:'Wire-Out注文', es:'Pedido Wire-Out'},
+        body: {ko:'다른 꽃집이 이행. 고객은 1800Flowers 제품 가이드에서 선택. 할인 불가. 전송 전 반드시 받는 꽃집에 전화해서 제품·배송일·배송비 확인 후 BloomLink로 전송.', en:'Another florist fulfills. Customer selects from 1800Flowers guide. No discounts. Always call receiving florist to confirm availability, date, fee before sending via BloomLink.', ja:'受取花屋に電話確認後に送信。割引不可。', es:'Llame al florista receptor antes de enviar. Sin descuentos.'} },
+      { keys: ['golden', 'rule', '규칙'], title: {ko:'Golden Rules', en:'Golden Rules', ja:'Golden Rules', es:'Golden Rules'},
+        body: {ko:'1. Due Time 기준 우선순위. 2. 인쇄된 Design Ticket 없이 디자인 시작 금지. 3. 모든 작업 끝나기 전 Complete 금지. 4. 배송일 변경 전 Delivery Attempted 메시지 전송. 5. 확신이 없으면 매니저에게 먼저 문의.', en:'1. Prioritize by Due Time. 2. Never design without printed ticket. 3. Do not complete until all work finished. 4. Send Delivery Attempted before changing date. 5. If unsure, contact manager first.', ja:'Due Time優先。チケットなしデザイン禁止。不明な時はマネージャーに。', es:'Priorizar por Due Time. Nunca diseñar sin ticket. Si duda, pregunte al gerente.'} },
+      { keys: ['reject', '거절'], title: {ko:'주문 Reject', en:'Order Reject', ja:'Reject', es:'Rechazar pedido'},
+        body: {ko:'매니저 승인 없이 Reject를 누르지 마세요. 반드시 매니저에게 먼저 확인하세요.', en:'Never click Reject without management approval.', ja:'マネージャー承認なしにRejectしない。', es:'Nunca rechace sin aprobación del gerente.'} }
+    ];
+
+    // ========== AUTH / USERS ==========
+    // Default accounts (seeded on first use / when blob is empty)
+    const DEFAULT_USERS = [
+      { username: 'admin',     password: 'admin7890', name: 'Admin' },
+      { username: 'employee1', password: 'conroy1',   name: 'Employee 1' },
+      { username: 'employee2', password: 'conroy2',   name: 'Employee 2' },
+      { username: 'employee3', password: 'conroy3',   name: 'Employee 3' },
+      { username: 'employee4', password: 'conroy4',   name: 'Employee 4' },
+      { username: 'employee5', password: 'conroy5',   name: 'Employee 5' }
+    ];
+
+    // Runtime list (local cache). Server (Netlify Blobs) is source of truth when deployed.
+    let users = [];
+    let serverAvailable = null; // null = unknown, true/false after first check
+
+    function isNetlifyHost() {
+      const h = location.hostname || '';
+      return h.includes('netlify.app') || h.includes('netlify.com') || !!window.NETLIFY;
+    }
+
+    function usersApiUrl() {
+      // When deployed on Netlify this path works. Local file:// or plain server → fallback to local only.
+      if (isNetlifyHost()) return '/.netlify/functions/users';
+      return null;
+    }
+
+    async function callUsersApi(payload) {
+      const url = usersApiUrl();
+      if (!url) throw new Error('Not on Netlify');
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+      return data;
+    }
+
+    function loadUsersLocal() {
+      try {
+        const saved = localStorage.getItem('cf_users');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            users = parsed;
+            return;
+          }
+        }
+      } catch (e) {}
+      users = JSON.parse(JSON.stringify(DEFAULT_USERS));
+      saveUsersLocal();
+    }
+
+    function saveUsersLocal() {
+      localStorage.setItem('cf_users', JSON.stringify(users));
+    }
+
+    // Load: try server first when on Netlify, else local
+    async function loadUsers() {
+      loadUsersLocal(); // always have something immediately
+      if (!usersApiUrl()) {
+        serverAvailable = false;
+        return;
+      }
+      try {
+        const data = await callUsersApi({ action: 'list', adminPin: '7890' });
+        if (data.ok && Array.isArray(data.users)) {
+          users = data.users;
+          saveUsersLocal(); // cache
+          serverAvailable = true;
+        }
+      } catch (e) {
+        console.warn('Server users unavailable, using local:', e.message);
+        serverAvailable = false;
+      }
+    }
+
+    // ========== STATE ==========
+    let currentUser = null;
+    let currentLang = 'en';
+    let stamps = {}; // { taskId: { done: true, time: '...', amount?: number, photo?: base64 } }
+    let recognition = null;
+    let isListening = false;
+
+    // ========== INIT ==========
+    function detectBrowserLang() {
+      // First visit always starts in English (user request). Browser lang is only a soft hint after user changes language.
+      return 'en';
+    }
+    async function init() {
+      await loadUsers();
+      // Always show login screen (no auto-login)
+      // Rule: first visit (no saved lang) → always English. After user picks a language it is remembered.
+      currentLang = localStorage.getItem('cf_lang') || 'en';
+      applyI18n();
+      const langSel = document.getElementById('lang-select');
+      if (langSel) langSel.value = currentLang;
+      // Enter key support
+      const pwInput = document.getElementById('login-password');
+      if (pwInput) {
+        pwInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') doLogin();
+        });
+      }
+      const userInput = document.getElementById('login-username');
+      if (userInput) {
+        userInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') document.getElementById('login-password').focus();
+        });
+        setTimeout(() => userInput.focus(), 300);
+      }
+    }
+
+    async function doLogin() {
+      const username = (document.getElementById('login-username').value || '').trim().toLowerCase();
+      const password = document.getElementById('login-password').value || '';
+      const errEl = document.getElementById('login-error');
+      const dict = i18n[currentLang] || i18n.en;
+      const btn = document.querySelector('#login-screen .btn');
+      if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
+      try {
+        // 1) Prefer server when available
+        if (usersApiUrl()) {
+          try {
+            const data = await callUsersApi({ action: 'login', username, password });
+            if (data.ok) {
+              currentUser = data.name;
+              localStorage.setItem('cf_currentUser', currentUser);
+              document.getElementById('login-password').value = '';
+              errEl.classList.add('hidden');
+              startApp();
+              return;
+            }
+          } catch (e) {
+            // fall through to local
+            console.warn('Server login failed, trying local', e.message);
+          }
+        }
+
+        // 2) Local fallback
+        const user = users.find(u => u.username.toLowerCase() === username && u.password === password);
+        if (!user) {
+          errEl.textContent = dict.login_error || 'Invalid username or password.';
+          errEl.classList.remove('hidden');
+          document.getElementById('login-password').value = '';
+          document.getElementById('login-password').focus();
+          return;
+        }
+        errEl.classList.add('hidden');
+        errEl.textContent = '';
+        currentUser = user.name;
+        localStorage.setItem('cf_currentUser', currentUser);
+        document.getElementById('login-password').value = '';
+        startApp();
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          const d = i18n[currentLang] || i18n.en;
+          btn.textContent = d.login_btn || '로그인';
+        }
+      }
+    }
+
+    function startApp() {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      document.getElementById('header-user').textContent = currentUser + ' · ' + new Date().toLocaleDateString();
+      // Show Admin management card only for Admin user
+      const adminCard = document.getElementById('admin-card');
+      if (adminCard) {
+        if (currentUser === 'Admin') adminCard.classList.remove('hidden');
+        else adminCard.classList.add('hidden');
+      }
+      const langSel = document.getElementById('lang-select');
+      if (langSel) langSel.value = currentLang;
+      loadStamps();
+      renderStamps();
+      applyI18n();
+    }
+
+    function logout() {
+      localStorage.removeItem('cf_currentUser');
+      currentUser = null;
+      document.getElementById('app').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      const adminCard = document.getElementById('admin-card');
+      if (adminCard) adminCard.classList.add('hidden');
+      const u = document.getElementById('login-username');
+      const p = document.getElementById('login-password');
+      if (u) u.value = '';
+      if (p) p.value = '';
+      const errEl = document.getElementById('login-error');
+      if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+      setTimeout(() => { if (u) u.focus(); }, 200);
+    }
+
+    // ========== STAMPS ==========
+    function todayKey() {
+      return new Date().toISOString().slice(0,10);
+    }
+    function stampKey() {
+      return `cf_stamps_${currentUser}_${todayKey()}`;
+    }
+    function loadStamps() {
+      stamps = JSON.parse(localStorage.getItem(stampKey()) || '{}');
+    }
+    function saveStamps() {
+      localStorage.setItem(stampKey(), JSON.stringify(stamps));
+    }
+    function getNextTask() {
+      return routineTasks.find(t => !stamps[t.id]?.done) || null;
+    }
+
+    function renderStamps() {
+      const container = document.getElementById('stamp-list');
+      let html = '';
+      let doneCount = 0;
+      const nextTask = getNextTask();
+
+      routineTasks.forEach(task => {
+        const s = stamps[task.id] || {};
+        if (s.done) doneCount++;
+        const title = task.title[currentLang] || task.title.en;
+        const desc = task.desc[currentLang] || task.desc.en;
+        const isNext = nextTask && nextTask.id === task.id;
+        html += `
+          <div class="stamp-item ${isNext ? 'next-task' : ''}" id="stamp-${task.id}">
+            <button class="stamp-btn ${s.done ? 'done' : ''}" onclick="toggleStamp('${task.id}')">
+              ${s.done ? '✓' : ''}
+            </button>
+            <div class="stamp-content">
+              <div class="stamp-title">${title}</div>
+              <div class="stamp-desc">${desc}</div>
+              ${s.done && s.time ? `<div class="stamp-time">✓ ${s.time}${s.amount != null ? ' · $' + s.amount : ''}</div>` : ''}
+              <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+                <button class="btn btn-sm btn-outline" onclick="showTaskDetail('${task.id}')">${{ko:'자세히 보기',en:'Details',ja:'詳細を見る',es:'Ver detalles'}[currentLang]||'Details'}</button>
+                ${task.special && !s.done ? `<button class="btn btn-sm" onclick="openSpecial('${task.special}')">${{ko:'금액+사진 입력',en:'Enter amount + photo',ja:'金額+写真入力',es:'Monto + foto'}[currentLang]||'Enter amount + photo'}</button>` : ''}
+              </div>
+              ${task.special && s.done && s.photo ? `<img src="${s.photo}" class="photo-preview" style="max-height:100px;margin-top:6px">` : ''}
+            </div>
+          </div>`;
+      });
+      container.innerHTML = html;
+
+      const pct = Math.round((doneCount / routineTasks.length) * 100);
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('progress-text').textContent = `${doneCount} / ${routineTasks.length} ${currentLang==='ko'?'완료':'completed'} (${pct}%)`;
+
+      // 다음 할 일 배너 업데이트
+      const nextBanner = document.getElementById('next-banner');
+      const nextText = document.getElementById('next-task-text');
+      if (nextTask) {
+        nextBanner.classList.remove('hidden');
+        nextText.textContent = nextTask.title[currentLang] || nextTask.title.en;
+      } else {
+        nextBanner.classList.add('hidden');
+        nextText.textContent = currentLang === 'ko' ? '오늘 루틴을 모두 완료했습니다! 🎉' : 'All routines completed! 🎉';
+        nextBanner.classList.remove('hidden');
+      }
+
+      // 퇴근 시간 안내 체크
+      checkEndOfDayReminder();
+    }
+
+    function toggleStamp(id) {
+      const task = routineTasks.find(t => t.id === id);
+      if (task && task.special && !stamps[id]?.done) {
+        openSpecial(task.special);
+        return;
+      }
+      if (stamps[id]?.done) {
+        if (!confirm(currentLang==='ko'?'완료를 취소할까요?':'Unmark this task?')) return;
+        delete stamps[id];
+      } else {
+        stamps[id] = { done: true, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) };
+      }
+      saveStamps();
+      renderStamps();
+      // 다음 할 일로 스크롤
+      setTimeout(() => {
+        const next = getNextTask();
+        if (next) {
+          const el = document.getElementById('stamp-' + next.id);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
+    }
+
+    function checkEndOfDayReminder() {
+      const banner = document.getElementById('eod-banner');
+      if (!banner) return;
+      const now = new Date();
+      const hour = now.getHours();
+      const endDone = stamps['end_day']?.done;
+      const t = {
+        ko: { title: '⏰ 퇴근 시간이 가까워요', desc: '오늘 요약을 확인하고 End Day를 완료해주세요.', btn: '오늘 요약 보기' },
+        en: { title: '⏰ End of day is near', desc: 'Please check today\'s summary and complete End Day.', btn: 'View summary' },
+        ja: { title: '⏰ 退勤時間が近づいています', desc: '今日のまとめを確認し、End Dayを完了してください。', btn: '今日のまとめを見る' },
+        es: { title: '⏰ Se acerca el fin del día', desc: 'Revise el resumen de hoy y complete End Day.', btn: 'Ver resumen' }
+      }[currentLang] || { title: '⏰ End of day is near', desc: 'Complete End Day.', btn: 'View summary' };
+      const titleEl = document.getElementById('eod-title');
+      const descEl = document.getElementById('eod-desc');
+      const btnEl = document.getElementById('eod-btn');
+      if (titleEl) titleEl.textContent = t.title;
+      if (descEl) descEl.textContent = t.desc;
+      if (btnEl) btnEl.textContent = t.btn;
+      if (hour >= 17 && !endDone) {
+        banner.classList.add('show');
+      } else {
+        banner.classList.remove('show');
+      }
+    }
+
+    function openSpecial(type) {
+      const isStart = type === 'startday';
+      const title = isStart ? 'Start Day' : 'End Day';
+      const modal = document.getElementById('modal-content');
+      modal.innerHTML = `
+        <button class="close-modal" onclick="closeModal()">×</button>
+        <h3>${title}</h3>
+        <img src="cash.jpg" class="img-guide" style="max-height:160px;object-fit:cover">
+        <div class="form-group">
+          <label>${currentLang==='ko'?'총액 ($)':'Total Amount ($)'}</label>
+          <input type="number" id="cash-amount" step="0.01" placeholder="200.00" value="${stamps[isStart?'start_day':'end_day']?.amount || ''}">
+        </div>
+        <div class="form-group">
+          <label>${currentLang==='ko'?'현금 사진 업로드 / 촬영':'Upload / Take cash photo'}</label>
+          <input type="file" id="cash-photo" accept="image/*" capture="environment">
+          <img id="photo-preview" class="photo-preview hidden">
+        </div>
+        <div id="cash-alert" class="alert alert-warn hidden"></div>
+        <button class="btn" style="width:100%" onclick="saveSpecial('${type}')">${currentLang==='ko'?'저장 & 스탬프':'Save & Stamp'}</button>
+      `;
+      document.getElementById('modal-overlay').classList.remove('hidden');
+      document.getElementById('cash-photo').onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          const img = document.getElementById('photo-preview');
+          img.src = ev.target.result;
+          img.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      };
+      document.getElementById('cash-amount').oninput = function() {
+        const val = parseFloat(this.value);
+        const alertEl = document.getElementById('cash-alert');
+        if (!isNaN(val) && Math.abs(val - 200) > 0.01) {
+          alertEl.classList.remove('hidden');
+          alertEl.textContent = currentLang==='ko'
+            ? '⚠️ $200.00이 아닙니다. 사진을 찍어서 (213) 610-1004로 보내고 조정 없이 진행하세요.'
+            : '⚠️ Not $200.00. Take photo, send to (213) 610-1004, continue without adjustment.';
+        } else {
+          alertEl.classList.add('hidden');
+        }
+      };
+    }
+
+    function saveSpecial(type) {
+      const amount = parseFloat(document.getElementById('cash-amount').value);
+      const preview = document.getElementById('photo-preview');
+      const photo = preview && !preview.classList.contains('hidden') ? preview.src : null;
+      if (isNaN(amount)) {
+        alert(currentLang==='ko'?'금액을 입력해주세요.':'Please enter the amount.');
+        return;
+      }
+      const id = type === 'startday' ? 'start_day' : 'end_day';
+      stamps[id] = {
+        done: true,
+        time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+        amount: amount,
+        photo: photo
+      };
+      saveStamps();
+      closeModal();
+      renderStamps();
+      // 다음 할 일로 스크롤
+      setTimeout(() => {
+        const next = getNextTask();
+        if (next) {
+          const el = document.getElementById('stamp-' + next.id);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.add('hidden');
+    }
+
+    function markMessagesChecked() {
+      if (!stamps['messages_check']?.done) {
+        stamps['messages_check'] = { done: true, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) };
+        saveStamps();
+        renderStamps();
+      }
+    }
+
+    // ========== PAGES ==========
+    function showPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + page).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => {
+        n.classList.toggle('active', n.dataset.page === page);
+      });
+    }
+
+    // ========== SEARCH & VOICE ==========
+    function doSearch() {
+      const q = document.getElementById('search-input').value.trim().toLowerCase();
+      if (!q) return;
+      const results = knowledge.filter(k => k.keys.some(key => key.includes(q) || q.includes(key)));
+      const box = document.getElementById('search-results');
+      if (results.length === 0) {
+        box.innerHTML = `<div class="alert alert-info">${currentLang==='ko'?'결과가 없습니다. 다른 키워드로 시도해보세요.':'No results. Try another keyword.'}</div>`;
+        return;
+      }
+      box.innerHTML = results.map(r => `
+        <div class="result-item">
+          <strong>${r.title[currentLang] || r.title.en}</strong>
+          <p style="font-size:0.9rem;margin-top:4px;color:var(--muted)">${r.body[currentLang] || r.body.en}</p>
+        </div>
+      `).join('');
+      // Log for upgrade
+      logQuestion(q);
+    }
+    function quickSearch(key) {
+      document.getElementById('search-input').value = key;
+      doSearch();
+      showPage('search');
+    }
+    function logQuestion(q) {
+      let logs = JSON.parse(localStorage.getItem('cf_questions') || '[]');
+      logs.push({ q, user: currentUser, time: new Date().toISOString(), lang: currentLang });
+      if (logs.length > 100) logs = logs.slice(-100);
+      localStorage.setItem('cf_questions', JSON.stringify(logs));
+    }
+
+    function toggleVoice() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert(currentLang==='ko'?'이 브라우저는 음성 인식을 지원하지 않습니다. Chrome을 권장합니다.':'Speech recognition not supported. Please use Chrome.');
+        return;
+      }
+      if (isListening) {
+        recognition.stop();
+        isListening = false;
+        document.getElementById('voice-btn').classList.remove('listening');
+        return;
+      }
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SR();
+      recognition.lang = { ko:'ko-KR', en:'en-US', ja:'ja-JP', es:'es-ES' }[currentLang] || 'en-US';
+      recognition.interimResults = false;
+      recognition.onresult = function(e) {
+        const text = e.results[0][0].transcript;
+        document.getElementById('search-input').value = text;
+        doSearch();
+      };
+      recognition.onend = function() {
+        isListening = false;
+        document.getElementById('voice-btn').classList.remove('listening');
+      };
+      recognition.start();
+      isListening = true;
+      document.getElementById('voice-btn').classList.add('listening');
+    }
+
+    // ========== CONTENT MODALS ==========
+    // Task detail content (manual + checklist)
+    const taskDetails = {
+      open_shop: {
+        content: {
+          ko: '가게를 열 때 가장 먼저 하는 일입니다. 외부 게이트/펜스가 있다면 열고, 필요시 조명을 켭니다. 그 후 바로 POS로 이동합니다.',
+          en: 'First actions when opening the shop. Open outside gate/fence if needed and turn on lights. Then go directly to the POS.'
+        },
+        checklist: ['게이트/펜스 열기', '조명 켜기', 'POS 시스템으로 이동']
+      },
+      start_day: {
+        content: {
+          ko: 'Home → Start Day / End Day. Open Cash Drawer (비밀번호 123456). 권종별 **수량**을 입력하세요 (금액이 아님). Start Day Amount는 항상 $200.00이어야 합니다. 맞지 않으면 사진을 찍어서 (213) 610-1004로 보내고 조정 없이 진행합니다.',
+          en: 'Home → Start Day / End Day. Open Cash Drawer (password 123456). Enter quantity of each denomination (not dollar amount). Must equal $200.00. If not, take photo and send to (213) 610-1004, continue without adjustment.'
+        },
+        checklist: ['캐시 드로어 열기', '권종별 수량 입력', '$200.00 확인', '필요시 사진 촬영 후 전송', '금액 + 사진 앱에 저장']
+      },
+      cooler_vase: {
+        content: {
+          ko: '쿨러 안 화병 어레인지먼트를 모두 점검합니다. 물이 흐리거나 부족하면 즉시 교체하고, 손상된 꽃은 제거합니다. 물 갈 때는 줄기를 약 0.5인치 재절단합니다.',
+          en: 'Inspect all vase arrangements in the cooler. Replace cloudy/low water immediately, remove damaged flowers. When changing water, re-cut stems ~0.5 inch.'
+        },
+        checklist: ['물 상태 확인', '손상된 꽃 제거', '필요시 물 교체 + 줄기 재절단', '화병 외부 깨끗이']
+      },
+      cooler_loose: {
+        content: {
+          ko: '루스 플라워 버킷을 점검합니다. 물을 보충하고, 손상된 꽃/잎을 제거한 뒤 색상과 종류별로 정리합니다. 디스플레이가 항상 깨끗하고 가득 차 보이게 유지합니다.',
+          en: 'Check loose flower buckets. Refill water, remove damaged flowers/leaves, organize by color and type. Keep display clean and full.'
+        },
+        checklist: ['물 보충', '손상 꽃/잎 제거', '색상·종류별 정리', '전체적으로 깔끔한지 확인']
+      },
+      messages_check: {
+        content: {
+          ko: 'Wire-In 주문이 들어오면 Messages와 In Wire 카운터가 올라갑니다. Messages를 열어 내용을 확인한 뒤 Mark Read를 누르고, In Wire에서 Accept 합니다. Reject는 매니저 승인 없이 절대 누르지 마세요. Accept 후 SuperTicket이 자동 출력됩니다 (Register 1).',
+          en: 'When Wire-In arrives, Messages and In Wire counters increase. Review Messages → Mark Read → Accept in In Wire. Never Reject without manager approval. SuperTicket auto-prints on Register 1 after Accept.'
+        },
+        checklist: ['Messages 열기', '주문 내용 확인', 'Mark Read', 'In Wire에서 Accept', 'SuperTicket 출력 확인']
+      },
+      monitor_orders: {
+        content: {
+          ko: '하루 종일 들어오는 주문을 Due Time 기준으로 우선순위를 정해 처리합니다. 골든 룰 1번: Always prioritize orders based on Due Time.',
+          en: 'Monitor incoming orders throughout the day and prioritize by Due Time. Golden Rule #1.'
+        },
+        checklist: ['Due Time 확인', '급한 주문 우선 처리', '디자인팀에 티켓 전달']
+      },
+      attachments: {
+        content: {
+          ko: 'White Sheet의 Product Detail을 보고 첨부물(풍선, 초콜릿, 인형, CardIsle 카드 등)이 있는지 확인합니다. 첨부물이 있으면 White Sheet를 떼지 말고 모두 확인·부착한 뒤에만 Set As Awaiting Delivery를 합니다. CardIsle은 PickupCodeID로 cardisle.com에서 인쇄합니다.',
+          en: 'Check Product Detail on White Sheet for attachments. Do not remove White Sheet until all are verified and attached. CardIsle: print with PickupCodeID on cardisle.com.'
+        },
+        checklist: ['White Sheet Product Detail 확인', '풍선/초콜릿/인형/카드 준비', '모두 부착 확인', 'White Sheet 제거', 'Set As Awaiting Delivery']
+      },
+      end_day: {
+        content: {
+          ko: '정확히 $200.00을 캐시 드로어에 남깁니다. Summary Receipt를 출력하고, 초과 현금을 봉투에 넣어 날짜·직원이름·Cash Sales·Drop을 적은 뒤 봉인하고 금고에 보관합니다. 그 후 End Register Session을 누르고 BMS를 종료합니다.',
+          en: 'Leave exactly $200.00 in the drawer. Print Summary Receipt, put excess cash in deposit envelope with Date, Name, Cash Sales, Drop → seal → safe. Then End Register Session and exit BMS.'
+        },
+        checklist: ['$200 남기기', 'Summary Receipt 출력', '초과 현금 봉투에 넣기', '봉투 정보 작성 후 금고', 'End Register Session']
+      }
+    };
+
+    function showTaskDetail(taskId) {
+      const task = routineTasks.find(t => t.id === taskId);
+      const detail = taskDetails[taskId];
+      if (!task || !detail) return;
+      const title = task.title[currentLang] || task.title.en;
+      const content = detail.content[currentLang] || detail.content.en;
+      const modal = document.getElementById('modal-content');
+      let html = `<button class="close-modal" onclick="closeModal()">×</button>
+        <h3>${title}</h3>
+        <div class="script-box" style="margin-bottom:14px">${content}</div>
+        <p style="font-weight:600;margin-bottom:8px">${{ko:'체크리스트',en:'Checklist',ja:'チェックリスト',es:'Lista de verificación'}[currentLang]||'Checklist'}</p>
+        <div class="checklist">`;
+      detail.checklist.forEach(item => {
+        html += `<label><input type="checkbox"> ${item}</label>`;
+      });
+      html += `</div>`;
+      if (taskId === 'attachments') {
+        html += `<img src="attachments.jpg" class="img-guide" style="margin-top:12px">`;
+      }
+      if (taskId === 'start_day' || taskId === 'end_day') {
+        html += `<img src="cash.jpg" class="img-guide" style="margin-top:12px">`;
+      }
+      if (taskId === 'messages_check') {
+        html += `<img src="superticket.jpg" class="img-guide" style="margin-top:12px">`;
+      }
+      if (!stamps[taskId]?.done) {
+        html += `<button class="btn" style="width:100%;margin-top:16px" onclick="closeModal(); toggleStamp('${taskId}')">${{ko:'이 항목 완료 처리',en:'Mark as Done',ja:'この項目を完了',es:'Marcar como hecho'}[currentLang]||'Mark as Done'}</button>`;
+      }
+      modal.innerHTML = html;
+      document.getElementById('modal-overlay').classList.remove('hidden');
+    }
+
+    function showContent(type) {
+      const modal = document.getElementById('modal-content');
+      let html = `<button class="close-modal" onclick="closeModal()">×</button>`;
+      if (type === 'attachments') {
+        html += `<h3>${currentLang==='ko'?'첨부물 체크리스트':'Attachment Checklist'}</h3>
+          <img src="attachments.jpg" class="img-guide">
+          <div class="checklist">
+            <label><input type="checkbox"> Balloons / 풍선</label>
+            <label><input type="checkbox"> Chocolates / 초콜릿</label>
+            <label><input type="checkbox"> Plush / Teddy / 인형</label>
+            <label><input type="checkbox"> CardIsle Greeting Card</label>
+            <label><input type="checkbox"> Other gift items</label>
+          </div>
+          <div class="alert alert-warn" style="margin-top:12px">${currentLang==='ko'?'White Sheet는 모든 첨부물 확인·부착이 끝나기 전까지 떼지 마세요!':'Do not remove the White Sheet until ALL attachments are verified and attached!'}</div>`;
+      } else if (type === 'bmsflow') {
+        html += `<h3>BMS Workflow</h3>
+          <ol style="padding-left:20px;line-height:1.8">
+            <li>New Order Received (Messages / In Wire)</li>
+            <li>Review Order Details → Mark Read</li>
+            <li>Accept Order (In Wire)</li>
+            <li>Print Design Ticket (SuperTicket)</li>
+            <li>Design Arrangement</li>
+            <li>Quality Check + Attachments</li>
+            <li>Set As Awaiting Delivery / Pick-up</li>
+            <li>Create Delivery Trip</li>
+          </ol>
+          <img src="superticket.jpg" class="img-guide">`;
+      } else if (type === 'delivery') {
+        html += `<h3>${currentLang==='ko'?'배달 가이드':'Delivery Guide'}</h3>
+          <div class="script-box"><strong>Standard</strong><br>Provider: Walmart GoLocal<br>3Hr Delivery Window → earliest available → Set Trip as Out for Delivery</div>
+          <div class="script-box"><strong>Funeral</strong><br>Provider: Uber<br>ASAP → instruct driver + confirmation photo</div>
+          <p style="margin-top:10px;font-size:0.9rem"><strong>Status meanings:</strong><br>
+          To Be Designed → Accepted, not made yet<br>
+          Awaiting Delivery → Arrangement completed<br>
+          Out for Delivery → Assigned to driver<br>
+          Delivered → Completed</p>`;
+      } else if (type === 'golden') {
+        html += `<h3>Golden Rules</h3>
+          <ol style="padding-left:20px;line-height:1.7">
+            <li>Always prioritize orders based on Due Time.</li>
+            <li>Never begin designing without a printed design ticket.</li>
+            <li>Do not complete an order until all required work is finished.</li>
+            <li>Always send a Delivery Attempted message before changing the delivery date.</li>
+            <li>If you are unsure how to proceed, contact a manager before taking action.</li>
+          </ol>`;
+      } else if (type === 'decision') {
+        html += `<h3>${currentLang==='ko'?'모르겠을 때':'If Unsure'}</h3>
+          <div class="alert alert-info">${currentLang==='ko'?'Golden Rule #5: 확신이 없으면 먼저 매니저에게 문의하세요.':'Golden Rule #5: If unsure, contact a manager first.'}</div>
+          <p style="margin:10px 0"><strong>자주 나오는 상황</strong></p>
+          <div class="script-box">주문 Reject가 필요할 때 → 매니저 승인 필수</div>
+          <div class="script-box">주소/정보가 이상할 때 → 매니저 확인 후 진행</div>
+          <div class="script-box">첨부물이 애매할 때 → White Sheet를 떼지 말고 매니저에게</div>
+          <div class="script-box">캐시가 $200이 아닐 때 → 사진 찍고 (213) 610-1004로 전송 후 조정 없이 진행</div>`;
+      }
+      modal.innerHTML = html;
+      document.getElementById('modal-overlay').classList.remove('hidden');
+    }
+
+    function showSummary() {
+      const modal = document.getElementById('modal-content');
+      let html = `<button class="close-modal" onclick="closeModal()">×</button>
+        <h3>${currentLang==='ko'?'오늘 요약':'Today\'s Summary'} – ${currentUser}</h3>`;
+      let done = 0;
+      routineTasks.forEach(t => {
+        const s = stamps[t.id];
+        const title = t.title[currentLang] || t.title.en;
+        if (s?.done) {
+          done++;
+          html += `<div class="summary-item"><span>✓ ${title}</span><span>${s.time}${s.amount!=null?' · $'+s.amount:''}</span></div>`;
+        } else {
+          html += `<div class="summary-item" style="color:var(--muted)"><span>○ ${title}</span><span>—</span></div>`;
+        }
+      });
+      html += `<div class="alert alert-success" style="margin-top:14px">${done} / ${routineTasks.length} completed</div>`;
+      modal.innerHTML = html;
+      document.getElementById('modal-overlay').classList.remove('hidden');
+    }
+
+    function saveFeedback() {
+      const text = document.getElementById('feedback-text').value.trim();
+      if (!text) return;
+      let fbs = JSON.parse(localStorage.getItem('cf_feedback') || '[]');
+      fbs.push({ text, user: currentUser, time: new Date().toISOString() });
+      localStorage.setItem('cf_feedback', JSON.stringify(fbs));
+      document.getElementById('feedback-text').value = '';
+      alert(currentLang==='ko'?'저장되었습니다. 감사합니다!':'Saved. Thank you!');
+    }
+
+    // ========== API KEY & GROK ==========
+    function saveApiKey() {
+      const key = document.getElementById('api-key-input').value.trim();
+      if (!key) {
+        localStorage.removeItem('cf_xai_key');
+        document.getElementById('api-key-status').textContent = 'API Key가 삭제되었습니다.';
+        return;
+      }
+      localStorage.setItem('cf_xai_key', key);
+      document.getElementById('api-key-status').textContent = '✅ API Key가 이 기기에 저장되었습니다.';
+      document.getElementById('api-key-input').value = '';
+    }
+
+    function getApiKey() {
+      return localStorage.getItem('cf_xai_key') || '';
+    }
+
+    async function askGrok(question) {
+      const systemPrompt = `You are the official training assistant for Conroy's Flowers (Shop Code S0940000) Floral Sales Representatives. 
+Answer ONLY using the information from the official Conroy's manuals below. Do not use general floral knowledge. 
+If the information is not in the manuals, clearly say "매뉴얼에 없는 내용입니다. 매니저에게 확인하세요." 
+Be concise, step-by-step, practical.
+CRITICAL LANGUAGE RULE: Detect the language of the user's question by looking at the script.
+If the question contains Korean Hangul (한글), you MUST answer 100% in Korean. Never answer in English when the question is Korean.
+If Japanese kana/kanji → answer in Japanese. If Spanish → Spanish. If English → English.
+If the user says "일본어로 말해줘" / "in Japanese" / "en español", switch to that language.
+Do not mix languages. Do not translate Korean questions into English answers.
+CONTEXT AWARE: You may receive current time and the employee's next incomplete task. Use this to give practical "what should I do now" advice (e.g. after arriving at work → Start Day cash count, cooler check, then monitor Messages).
+IMPORTANT: Use plain text only. Never use markdown formatting such as **bold**, *italic*, # headings, or bullet symbols like - or *. Write in simple sentences or numbered steps (1. 2. 3.).
+SCRIPTS RULE: When quoting sales or phone scripts from the manuals, always show the exact English wording from the manual. Do not shorten, paraphrase, or translate the official scripts.
+
+=== GOLDEN RULES ===
+1. Always prioritize orders based on Due Time.
+2. Never begin designing an arrangement without a printed design ticket (SuperTicket).
+3. Do not complete an order until all required work has been finished.
+4. Always send a Delivery Attempted message before changing the delivery date of an order.
+5. If you are unsure how to proceed, contact a manager before taking action.
+
+=== BMS LOGIN ===
+Shop Code: S0940000
+Username & Password: Assigned by Management
+Register 1 must be used for Auto-Print of SuperTicket. Only one workstation should use Register 1.
+
+=== START DAY ===
+Home → Start Day / End Day → Open Cash Drawer (password 123456).
+Enter the QUANTITY of each denomination (not the dollar amount).
+Start Day Amount must always equal $200.00.
+If cash does not equal $200.00: take a photo, send to (213) 610-1004, and continue WITHOUT adjustment.
+Never adjust the cash count to match the expected amount.
+
+=== END DAY ===
+Leave exactly $200.00 in the cash drawer.
+Print the Summary Receipt.
+Place all cash over $200.00 in the deposit envelope.
+Write Date, Employee Name, Cash Sales, and Drop on the envelope, seal it, put in the safe.
+Then click End Register Session and exit BMS.
+
+=== ORDER FLOW (Wire-In) ===
+Messages counter increases when Wire-In arrives.
+1. Open Messages → review details → click Mark Read
+2. Go to In Wire → review → click Accept (Never click Reject without manager approval)
+3. Order moves to To Be Designed + SuperTicket auto-prints (if Register 1)
+4. After design + attachments verified → Set As Awaiting Delivery/Pick-up
+5. Create Delivery Trip
+
+=== SUPERTICKET ===
+Primary production document. Contains Recipient Information, White Sheet (full production info + Special Instructions), and Small Ticket.
+Never design without the printed SuperTicket.
+White Sheet stays attached until ALL attachments are verified and attached.
+
+=== ATTACHMENTS ===
+Check Product Detail on White Sheet for: Balloons, Chocolates, Plush, CardIsle Greeting Cards, other gifts.
+If attachments required: do NOT remove White Sheet until everything is verified and attached.
+CardIsle: Find PickupCodeID in Special Instructions or BMS → go to cardisle.com → enter code → Preview → Print.
+After printing, match the code on the back of the card with PickupCodeID before attaching.
+1800Flowers CardIsle: $5.99 / In-Store: $6.99
+
+=== DELIVERY ===
+Standard (non-funeral): Provider = Walmart GoLocal, 3Hr Delivery Window, choose earliest available, Set Trip as Out for Delivery.
+Funeral: Provider = Uber, ASAP. When driver arrives, explain transport and instruct to take confirmation photo after setup.
+
+=== SALES & CUSTOMER SERVICE ===
+Greeting: "Welcome! How can I help you today?"
+Ask only: "Who's going to receive the flowers?" to understand relationship and recommend color scheme.
+Color schemes:
+- Romance → Red / Hot Pink
+- Family → Light Pink
+- Friends / Get Well → Bright Colors
+- Sympathy → White / Soft Pastels
+Size recommendation (present price last):
+- Small ($40–60): desk or side table
+- Medium ($60–80): standard recommendation
+- Large (from $100): milestone events, centerpiece
+Never ask "What is the occasion?" – the card message usually tells the occasion.
+Enter card message exactly as provided. Do not change spelling or grammar.
+Order types: Delivery, Carry-Out, QuickSale, Wire-Out.
+Wire-Out: Customer selects from 1800Flowers product guide. No discounts. Always call the receiving florist first to confirm product, date, and fee before sending via BloomLink.
+
+=== DAILY ROUTINE PRIORITY ===
+1. Walk-in customer
+2. Phone call
+3. Shop operations / prep work
+Always pause other tasks immediately when a customer walks in or the phone rings.
+
+=== COOLER ===
+Check water level, replace cloudy water, remove damaged flowers, re-cut stems ~0.5 inch when changing water.
+Keep cooler clean, organized, and visually attractive.`;
+
+      try {
+        const res = await fetch('/.netlify/functions/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: buildUserMessage(question) }
+            ],
+            temperature: 0.3,
+            max_tokens: 800
+          })
+        });
+        if (!res.ok) {
+          const err = await res.text();
+          console.error('ask function error', err);
+          // Surface useful server error (e.g. missing env key, 401)
+          let detail = err;
+          try { detail = JSON.parse(err).error || err; } catch (_) {}
+          return '서버 오류 (' + res.status + '): ' + (detail || 'Functions 응답 실패. Netlify에 XAI_API_KEY 환경변수가 있는지, 재배포했는지 확인하세요.');
+        }
+        const data = await res.json();
+        if (data.error) {
+          return 'API 오류: ' + (typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+        }
+        return data.choices?.[0]?.message?.content || '답변을 받지 못했습니다.';
+      } catch (e) {
+        console.error(e);
+        return '네트워크/Functions 오류: ' + (e.message || e) + ' — /.netlify/functions/ask 가 배포됐는지 확인하세요.';
+      }
+    }
+
+    // Override / enhance doSearch to try Grok first
+    const originalDoSearch = typeof doSearch === 'function' ? doSearch : null;
+    async function doSearch() {
+      const q = document.getElementById('search-input').value.trim();
+      if (!q) return;
+      const box = document.getElementById('search-results');
+      box.innerHTML = `<div class="alert alert-info">검색 중...</div>`;
+
+      // Try Grok if key exists
+      const grokAnswer = await askGrok(q);
+      if (grokAnswer) {
+        // Remove markdown bold/italic etc.
+        const cleanAnswer = grokAnswer
+          .replace(/\*\*(.*?)\*\*/g, '$1')
+          .replace(/\*(.*?)\*/g, '$1')
+          .replace(/^#+\s*/gm, '')
+          .replace(/^\s*[-•]\s*/gm, '');
+        window._lastGrokAnswer = cleanAnswer;
+        box.innerHTML = `
+          <div class="result-item" style="background:#f0f7f2;border-radius:12px;padding:14px;margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <strong>🤖 Grok 답변</strong>
+              <button class="btn btn-sm" id="speak-btn" onclick="speakText(window._lastGrokAnswer, this)">🔊 읽어주기</button>
+            </div>
+            <p style="font-size:0.95rem;margin-top:4px;white-space:pre-wrap">${cleanAnswer}</p>
+          </div>`;
+        logQuestion(q);
+        // Do not auto-speak (mobile browsers often block it). User presses the button.
+        return;
+      }
+
+      // Fallback to local knowledge
+      const ql = q.toLowerCase();
+      const results = knowledge.filter(k => k.keys.some(key => key.includes(ql) || ql.includes(key)));
+      if (results.length === 0) {
+        box.innerHTML = `<div class="alert alert-info">${currentLang==='ko'?'결과가 없습니다. API Key를 등록하면 Grok이 답변합니다.':'No local results. Add API Key for Grok answers.'}</div>`;
+        return;
+      }
+      box.innerHTML = results.map(r => `
+        <div class="result-item">
+          <strong>${r.title[currentLang] || r.title.en}</strong>
+          <p style="font-size:0.9rem;margin-top:4px;color:var(--muted)">${r.body[currentLang] || r.body.en}</p>
+        </div>
+      `).join('');
+      logQuestion(q);
+    }
+
+    // ========== CONTEXT + LANGUAGE ==========
+    function buildUserMessage(question) {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      const next = getNextTask();
+      const nextTitle = next ? (next.title.ko + ' / ' + next.title.en) : '모든 루틴 완료';
+      let doneList = routineTasks.filter(t => stamps[t.id]?.done).map(t => t.title.ko).join(', ') || '없음';
+      const qLang = detectLang(question);
+      return `Current time: ${timeStr}. Next incomplete task: ${nextTitle}. Already completed today: ${doneList}.
+Detected question language: ${qLang}. You MUST answer entirely in this language (${qLang === 'ko' ? 'Korean' : qLang === 'ja' ? 'Japanese' : qLang === 'es-ES' ? 'Spanish' : 'English'}).
+If detected language is ko, write every sentence in Korean Hangul. Do not answer in English.
+Question: ${question}`;
+    }
+
+    // ========== TEXT TO SPEECH (xAI natural voice first) ==========
+    let currentAudio = null;
+
+    function detectLang(text) {
+      if (!text) return 'en';
+      const s = String(text);
+      const hangul = (s.match(/[가-힣]/g) || []).length;
+      const kana = (s.match(/[ぁ-んァ-ン]/g) || []).length;
+      if (hangul >= 1) return 'ko';
+      if (kana >= 1) return 'ja';
+      if (/[áéíóúñü¿¡]/i.test(s) || /\b(el|la|de|que|y|en|un|una|es|por|para|gracias)\b/i.test(s)) return 'es-ES';
+      return 'en';
+    }
+
+    function stopSpeaking() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      const stopBtn = document.getElementById('float-stop-btn');
+      if (stopBtn) stopBtn.style.display = 'none';
+      const speakBtn = document.getElementById('float-speak-btn');
+      if (speakBtn) speakBtn.style.display = 'inline-block';
+      const searchSpeak = document.getElementById('speak-btn');
+      if (searchSpeak) {
+        searchSpeak.disabled = false;
+        searchSpeak.textContent = '🔊 읽어주기';
+      }
+    }
+
+    function waitForVoices() {
+      return new Promise((resolve) => {
+        const existing = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+        if (existing && existing.length) return resolve(existing);
+        if (!window.speechSynthesis) return resolve([]);
+        const done = () => resolve(window.speechSynthesis.getVoices() || []);
+        window.speechSynthesis.onvoiceschanged = done;
+        setTimeout(done, 800);
+      });
+    }
+
+    async function speakText(text, btn) {
+      if (!text) return;
+      stopSpeaking();
+      let detected = detectLang(text);
+      // normalize for APIs
+      if (detected === 'es') detected = 'es-ES';
+      const ttsLang = (detected === 'es-ES') ? 'es-ES' : (detected === 'ko' ? 'ko' : (detected === 'ja' ? 'ja' : 'en'));
+      const originalBtnText = btn ? btn.textContent : '🔊 읽어주기';
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '로딩 중...';
+      }
+      const stopBtn = document.getElementById('float-stop-btn');
+      if (stopBtn) stopBtn.style.display = 'inline-block';
+      const statusEl = document.getElementById('float-status');
+      if (statusEl) statusEl.textContent = '로딩 중... 음성 파일 준비';
+
+      let played = false;
+      let lastErr = '';
+
+      // Unlock audio on iOS: create element during user gesture chain
+      const audioEl = new Audio();
+      audioEl.setAttribute('playsinline', 'true');
+      audioEl.preload = 'auto';
+      currentAudio = audioEl;
+
+      // 1) Server TTS (xAI)
+      try {
+        const res = await fetch('/.netlify/functions/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: text.slice(0, 14000),
+            voice_id: 'eve',
+            language: ttsLang
+          })
+        });
+        if (res.ok) {
+          const buf = await res.arrayBuffer();
+          if (buf && buf.byteLength > 100) {
+            const blob = new Blob([buf], { type: res.headers.get('content-type') || 'audio/mpeg' });
+            const url = URL.createObjectURL(blob);
+            audioEl.src = url;
+            audioEl.onended = () => {
+              URL.revokeObjectURL(url);
+              currentAudio = null;
+              if (stopBtn) stopBtn.style.display = 'none';
+              if (statusEl) statusEl.textContent = '재생 완료';
+            };
+            audioEl.onerror = () => {
+              lastErr = 'audio element error';
+            };
+            try {
+              await audioEl.play();
+              played = true;
+              if (statusEl) statusEl.textContent = '재생 중...';
+            } catch (playErr) {
+              lastErr = 'play blocked: ' + (playErr.message || playErr);
+              console.warn(lastErr);
+            }
+          } else {
+            lastErr = 'empty audio body';
+          }
+        } else {
+          const errText = await res.text().catch(() => '');
+          lastErr = 'TTS ' + res.status + ' ' + errText.slice(0, 120);
+          console.warn(lastErr);
+        }
+      } catch (e) {
+        lastErr = 'TTS fetch: ' + (e.message || e);
+        console.warn(lastErr);
+      }
+
+      // 2) Browser TTS fallback (always try if server failed)
+      if (!played && window.speechSynthesis) {
+        try {
+          window.speechSynthesis.cancel();
+          const voices = await waitForVoices();
+          const utter = new SpeechSynthesisUtterance(text);
+          const browserLang = ttsLang === 'ko' ? 'ko-KR' : ttsLang === 'ja' ? 'ja-JP' : ttsLang === 'es-ES' ? 'es-ES' : 'en-US';
+          utter.lang = browserLang;
+          utter.rate = 0.95;
+          const prefix = browserLang.slice(0, 2);
+          const preferred = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(prefix));
+          if (preferred) utter.voice = preferred;
+          utter.onend = () => { if (stopBtn) stopBtn.style.display = 'none'; };
+          utter.onerror = (ev) => { console.warn('utter error', ev); };
+          window.speechSynthesis.speak(utter);
+          played = true;
+          if (statusEl) statusEl.textContent = '브라우저 음성으로 재생 중...';
+        } catch (e2) {
+          lastErr = (lastErr ? lastErr + ' | ' : '') + 'browser TTS: ' + (e2.message || e2);
+        }
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = originalBtnText;
+      }
+      if (!played) {
+        if (statusEl) statusEl.textContent = '음성 재생 실패. 볼륨/무음 모드 확인. ' + lastErr;
+        if (stopBtn) stopBtn.style.display = 'none';
+      }
+    }
+
+    // ========== FLOATING MIC ==========
+    // ========== FLOAT MIC with xAI STT (auto language + silence stop) ==========
+    let mediaRecorder = null;
+    let mediaStream = null;
+    let audioChunks = [];
+    let silenceTimer = null;
+    let maxRecordTimer = null;
+    let audioContext = null;
+    let analyserNode = null;
+    let silenceRaf = null;
+    let hasHeardSpeech = false;
+
+    function setFloatStatus(msg) {
+      const el = document.getElementById('float-status');
+      if (el) el.textContent = msg;
+    }
+
+    function closeFloatPanel() {
+      document.getElementById('float-mic-panel').classList.remove('show');
+      stopFloatMic(true);
+      stopSpeaking();
+    }
+
+    function stopFloatMic(cancelOnly) {
+      isListening = false;
+      const micBtn = document.getElementById('float-mic');
+      if (micBtn) micBtn.classList.remove('listening');
+      if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+      if (maxRecordTimer) { clearTimeout(maxRecordTimer); maxRecordTimer = null; }
+      if (silenceRaf) { cancelAnimationFrame(silenceRaf); silenceRaf = null; }
+      try {
+        if (!cancelOnly && mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        } else if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.onstop = null;
+          mediaRecorder.stop();
+        }
+      } catch (e) {}
+      mediaRecorder = null;
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(t => t.stop());
+        mediaStream = null;
+      }
+      try { if (audioContext) audioContext.close(); } catch (e) {}
+      audioContext = null;
+      analyserNode = null;
+      try {
+        if (recognition) {
+          recognition.onresult = null;
+          recognition.onend = null;
+          recognition.onerror = null;
+          recognition.abort();
+        }
+      } catch (e) {}
+      recognition = null;
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const dataUrl = reader.result || '';
+          resolve(String(dataUrl).split(',')[1] || '');
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function transcribeWithXAI(blob) {
+      const base64 = await blobToBase64(blob);
+      const res = await fetch('/.netlify/functions/stt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ audio: base64, contentType: blob.type || 'audio/webm' })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (res.status === 404) {
+          throw new Error('Voice STT function not found (404). Redeploy the site so /.netlify/functions/stt is live.');
+        }
+        throw new Error(data.error || ('STT ' + res.status));
+      }
+      return (data.text || '').trim();
+    }
+
+    async function handleTranscript(text) {
+      if (!text) {
+        setFloatStatus('음성을 인식하지 못했습니다. 다시 눌러 말하세요.');
+        return;
+      }
+      const spokenLang = detectLang(text);
+      if (spokenLang === 'ko' || spokenLang === 'ja' || spokenLang === 'es-ES') {
+        currentLang = spokenLang === 'es-ES' ? 'es' : spokenLang;
+        applyI18n();
+        renderStamps();
+      }
+      setFloatStatus('Q: ' + text);
+      document.getElementById('float-answer').textContent = '로딩 중... 답변 생성 중';
+      document.getElementById('float-speak-btn').style.display = 'none';
+
+      const answer = await askGrok(text);
+      if (answer) {
+        const clean = answer.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '');
+        window._lastGrokAnswer = clean;
+        if (detectLang(clean) === 'ko') currentLang = 'ko';
+        document.getElementById('float-answer').textContent = clean;
+        document.getElementById('float-speak-btn').style.display = 'inline-block';
+        setFloatStatus('답변 완료 · 음성 준비 중...');
+        // Auto TTS
+        const btn = document.getElementById('float-speak-btn');
+        await speakText(clean, btn);
+        setFloatStatus('Q: ' + text);
+      } else {
+        document.getElementById('float-answer').textContent = '답변을 받지 못했습니다.';
+        setFloatStatus('다시 질문해 주세요.');
+      }
+    }
+
+    function watchSilence(stream) {
+      hasHeardSpeech = false;
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(stream);
+        analyserNode = audioContext.createAnalyser();
+        analyserNode.fftSize = 512;
+        source.connect(analyserNode);
+        const data = new Uint8Array(analyserNode.frequencyBinCount);
+        const SPEECH_THRESHOLD = 18;
+        const SILENCE_MS = 1600;
+        let silenceStarted = 0;
+
+        const tick = () => {
+          if (!isListening || !analyserNode) return;
+          analyserNode.getByteFrequencyData(data);
+          let sum = 0;
+          for (let i = 0; i < data.length; i++) sum += data[i];
+          const avg = sum / data.length;
+
+          if (avg > SPEECH_THRESHOLD) {
+            hasHeardSpeech = true;
+            silenceStarted = 0;
+            setFloatStatus('듣는 중... 말씀하세요');
+          } else if (hasHeardSpeech) {
+            if (!silenceStarted) silenceStarted = Date.now();
+            else if (Date.now() - silenceStarted > SILENCE_MS) {
+              // Auto stop after silence
+              setFloatStatus('로딩 중... 음성 인식');
+              try {
+                if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+              } catch (e) {}
+              return;
+            }
+          }
+          silenceRaf = requestAnimationFrame(tick);
+        };
+        silenceRaf = requestAnimationFrame(tick);
+      } catch (e) {
+        console.warn('Silence detect unavailable', e);
+      }
+    }
+
+    async function startRecording() {
+      const micBtn = document.getElementById('float-mic');
+      document.getElementById('float-answer').textContent = '';
+      document.getElementById('float-speak-btn').style.display = 'none';
+      setFloatStatus('마이크 준비 중...');
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+        const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : (MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '');
+        mediaRecorder = mime ? new MediaRecorder(mediaStream, { mimeType: mime }) : new MediaRecorder(mediaStream);
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) audioChunks.push(e.data);
+        };
+        mediaRecorder.onstop = async () => {
+          isListening = false;
+          const mic = document.getElementById('float-mic');
+          if (mic) mic.classList.remove('listening');
+          if (silenceRaf) { cancelAnimationFrame(silenceRaf); silenceRaf = null; }
+          if (maxRecordTimer) { clearTimeout(maxRecordTimer); maxRecordTimer = null; }
+          if (mediaStream) {
+            mediaStream.getTracks().forEach(t => t.stop());
+            mediaStream = null;
+          }
+          try { if (audioContext) audioContext.close(); } catch (e) {}
+          audioContext = null;
+
+          if (!audioChunks.length) {
+            setFloatStatus('녹음이 비었습니다. 다시 눌러 말하세요.');
+            return;
+          }
+          const blob = new Blob(audioChunks, { type: (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm' });
+          mediaRecorder = null;
+          setFloatStatus('로딩 중... 언어 자동 인식');
+          try {
+            const text = await transcribeWithXAI(blob);
+            await handleTranscript(text);
+          } catch (err) {
+            console.error(err);
+            setFloatStatus('음성 인식 실패: ' + (err.message || err));
+          }
+        };
+        mediaRecorder.start(200);
+        isListening = true;
+        if (micBtn) micBtn.classList.add('listening');
+        setFloatStatus('듣는 중... 말씀하세요 (끝나면 자동 인식)');
+        watchSilence(mediaStream);
+        // Max 20 seconds
+        maxRecordTimer = setTimeout(() => {
+          if (mediaRecorder && mediaRecorder.state === 'recording') {
+            setFloatStatus('로딩 중... 음성 인식');
+            mediaRecorder.stop();
+          }
+        }, 20000);
+      } catch (e) {
+        isListening = false;
+        setFloatStatus(e.name === 'NotAllowedError' ? '마이크 권한이 필요합니다.' : ('마이크 오류: ' + (e.message || e)));
+      }
+    }
+
+    function toggleFloatMic() {
+      const panel = document.getElementById('float-mic-panel');
+      panel.classList.add('show');
+
+      if (isListening) {
+        // Manual early stop still allowed
+        setFloatStatus('로딩 중... 음성 인식');
+        try {
+          if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+        } catch (e) {
+          stopFloatMic(true);
+        }
+        return;
+      }
+
+      stopFloatMic(true);
+      startRecording();
+    }
+
+    // ========== ADMIN (Admin login only) ==========
+    // Admin card in More tab is visible only when logged in as Admin.
+    // Triple-tap version number is also restricted to Admin user.
+    // Admin PIN = 7890 (backup)
+    // When deployed on Netlify → accounts are shared via Blobs (all devices see the same list)
+    // When opened as local files → falls back to this device only
+    let versionTapCount = 0;
+    let versionTapTimer = null;
+    function onVersionTap() {
+      versionTapCount++;
+      clearTimeout(versionTapTimer);
+      versionTapTimer = setTimeout(() => { versionTapCount = 0; }, 1200);
+      if (versionTapCount >= 3) {
+        versionTapCount = 0;
+        if (currentUser !== 'Admin') {
+          alert(currentLang === 'ko' ? 'Admin 계정으로 로그인한 경우에만 사용할 수 있습니다.' : 'Admin access only. Please log in as Admin.');
+          return;
+        }
+        openAdminPanel();
+      }
+    }
+
+    async function openAdminPanel() {
+      // Strict: only Admin user
+      if (currentUser !== 'Admin') {
+        alert(currentLang === 'ko' ? 'Admin 계정으로 로그인한 경우에만 사용할 수 있습니다.' : 'Admin access only. Please log in as Admin.');
+        return;
+      }
+      await loadUsers(); // refresh from server or local
+      const modal = document.getElementById('modal-content');
+      const modeText = serverAvailable
+        ? '✅ Server connected · Same accounts on every device'
+        : '⚠️ Local mode · Saved on this device only (syncs after Netlify deploy)';
+
+      let html = `<button class="close-modal" onclick="closeModal()">×</button>
+        <h3>👔 Admin – v1.14.0</h3>
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px">${modeText}</p>
+
+        <div class="card" style="margin-bottom:14px">
+          <strong>${currentUser || '-'} (current login)</strong><br>`;
+      let done = 0;
+      routineTasks.forEach(t => {
+        const s = stamps[t.id];
+        const title = (t.title && (t.title[currentLang] || t.title.en || t.title.ko)) || t.id;
+        if (s?.done) {
+          done++;
+          html += `<div style="font-size:0.9rem">✓ ${title} <span style="color:var(--muted)">${s.time || ''}</span></div>`;
+        } else {
+          html += `<div style="font-size:0.9rem;color:var(--muted)">○ ${title}</div>`;
+        }
+      });
+      html += `<div style="margin-top:6px;font-weight:600">${done}/${routineTasks.length} done</div></div>`;
+
+      // ===== User management =====
+      html += `<h4 style="margin:16px 0 8px;font-size:1rem">👤 Account management</h4>`;
+      html += `<div id="admin-user-list" style="margin-bottom:14px">`;
+      users.forEach((u, idx) => {
+        const canDelete = u.username !== 'admin';
+        html += `
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;" data-username="${u.username}">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <div>
+                <div style="font-weight:600">${u.name}</div>
+                <div style="font-size:0.85rem;color:var(--muted)">ID: <code>${u.username}</code></div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-sm btn-outline" onclick="adminChangePassword(${idx})">Change PW</button>
+                ${canDelete ? `<button class="btn btn-sm" style="background:var(--danger)" onclick="adminDeleteUser(${idx})">Delete</button>` : '<span style="font-size:0.8rem;color:var(--muted)">protected</span>'}
+              </div>
+            </div>
+          </div>`;
+      });
+      html += `</div>`;
+
+      // Add new user form
+      html += `
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-weight:600;margin-bottom:8px">➕ Add new account</div>
+          <input type="text" id="admin-new-username" placeholder="Username (letters/numbers)" style="width:100%;padding:10px;margin-bottom:6px;border:2px solid var(--border);border-radius:8px;font-size:0.95rem">
+          <input type="text" id="admin-new-name" placeholder="Display name (e.g. Kim)" style="width:100%;padding:10px;margin-bottom:6px;border:2px solid var(--border);border-radius:8px;font-size:0.95rem">
+          <input type="text" id="admin-new-password" placeholder="Password" style="width:100%;padding:10px;margin-bottom:8px;border:2px solid var(--border);border-radius:8px;font-size:0.95rem">
+          <button class="btn" style="width:100%" onclick="adminAddUser()">Add account</button>
+        </div>`;
+
+      html += `<div class="alert alert-info" style="font-size:0.85rem">When deployed on Netlify, account changes appear on every device immediately. Local file mode saves only on this device.</div>`;
+      html += `<button class="btn btn-outline" style="width:100%;margin-top:8px" onclick="adminResetUsers()">Reset to default accounts</button>`;
+      html += `<button class="btn btn-outline" style="width:100%;margin-top:8px" onclick="exportProgress()">Export progress JSON</button>`;
+
+      modal.innerHTML = html;
+      document.getElementById('modal-overlay').classList.remove('hidden');
+    }
+
+    async function adminAddUser() {
+      const username = (document.getElementById('admin-new-username').value || '').trim().toLowerCase();
+      const name = (document.getElementById('admin-new-name').value || '').trim();
+      const password = (document.getElementById('admin-new-password').value || '').trim();
+      if (!username || !name || !password) {
+        alert('아이디, 이름, 비밀번호를 모두 입력하세요.');
+        return;
+      }
+
+      if (usersApiUrl()) {
+        try {
+          const data = await callUsersApi({ action: 'add', adminPin: '7890', username, password, name });
+          if (data.ok && data.users) {
+            users = data.users;
+            saveUsersLocal();
+            await openAdminPanel();
+            alert('계정이 추가되었습니다. (서버에 저장됨)');
+            return;
+          }
+        } catch (e) {
+          alert('서버 저장 실패: ' + e.message + '\n로컬에만 저장합니다.');
+        }
+      }
+
+      // Local fallback
+      if (users.some(u => u.username.toLowerCase() === username)) {
+        alert('이미 존재하는 아이디입니다.');
+        return;
+      }
+      users.push({ username, password, name });
+      saveUsersLocal();
+      await openAdminPanel();
+      alert('계정이 추가되었습니다. (이 기기에만 저장)');
+    }
+
+    async function adminChangePassword(idx) {
+      const u = users[idx];
+      if (!u) return;
+      const newPw = prompt(`"${u.name}" (${u.username}) 의 새 비밀번호를 입력하세요:`);
+      if (newPw === null) return;
+      if (!newPw.trim()) {
+        alert('비밀번호를 입력하세요.');
+        return;
+      }
+
+      if (usersApiUrl()) {
+        try {
+          const data = await callUsersApi({
+            action: 'updatePassword',
+            adminPin: '7890',
+            username: u.username,
+            password: newPw.trim()
+          });
+          if (data.ok && data.users) {
+            users = data.users;
+            saveUsersLocal();
+            await openAdminPanel();
+            alert('비밀번호가 변경되었습니다. (서버에 저장됨)');
+            return;
+          }
+        } catch (e) {
+          alert('서버 저장 실패: ' + e.message);
+        }
+      }
+
+      users[idx].password = newPw.trim();
+      saveUsersLocal();
+      await openAdminPanel();
+      alert('비밀번호가 변경되었습니다. (이 기기에만 저장)');
+    }
+
+    async function adminDeleteUser(idx) {
+      const u = users[idx];
+      if (!u) return;
+      if (u.username === 'admin') {
+        alert('admin 계정은 삭제할 수 없습니다.');
+        return;
+      }
+      if (!confirm(`"${u.name}" (${u.username}) 계정을 삭제할까요?`)) return;
+
+      if (usersApiUrl()) {
+        try {
+          const data = await callUsersApi({ action: 'delete', adminPin: '7890', username: u.username });
+          if (data.ok && data.users) {
+            users = data.users;
+            saveUsersLocal();
+            await openAdminPanel();
+            return;
+          }
+        } catch (e) {
+          alert('서버 삭제 실패: ' + e.message);
+        }
+      }
+
+      users.splice(idx, 1);
+      saveUsersLocal();
+      await openAdminPanel();
+    }
+
+    async function adminResetUsers() {
+      if (!confirm('모든 계정을 기본값으로 초기화할까요?')) return;
+
+      if (usersApiUrl()) {
+        try {
+          const data = await callUsersApi({ action: 'reset', adminPin: '7890' });
+          if (data.ok && data.users) {
+            users = data.users;
+            saveUsersLocal();
+            await openAdminPanel();
+            alert('기본 계정으로 초기화되었습니다. (서버)');
+            return;
+          }
+        } catch (e) {
+          alert('서버 초기화 실패: ' + e.message);
+        }
+      }
+
+      users = JSON.parse(JSON.stringify(DEFAULT_USERS));
+      saveUsersLocal();
+      await openAdminPanel();
+      alert('기본 계정으로 초기화되었습니다. (이 기기)');
+    }
+
+    function exportProgress() {
+      const data = {
+        user: currentUser,
+        date: todayKey(),
+        stamps: stamps,
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `progress_${currentUser}_${todayKey()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert(currentLang==='ko'?'진행 상황이 파일로 저장되었습니다.':'Progress exported as JSON file.');
+    }
+
+    // ========== I18N ==========
+    function changeLang(lang) {
+      currentLang = lang || 'en';
+      localStorage.setItem('cf_lang', currentLang);
+      const langSel = document.getElementById('lang-select');
+      if (langSel) langSel.value = currentLang;
+      applyI18n();
+      renderStamps();
+      checkEndOfDayReminder();
+    }
+    function applyI18n() {
+      const dict = i18n[currentLang] || i18n.en;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.textContent = dict[key];
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (dict[key]) el.placeholder = dict[key];
+      });
+      // Keep language selector in sync
+      const langSel = document.getElementById('lang-select');
+      if (langSel && langSel.value !== currentLang) langSel.value = currentLang;
+      // Dynamic labels
+      const nextLabel = document.getElementById('next-label');
+      if (nextLabel) nextLabel.textContent = {ko:'다음',en:'Next',ja:'次',es:'Siguiente'}[currentLang]||'Next';
+      const titles = {ko:'음성으로 질문하기',en:'Ask by voice',ja:'音声で質問',es:'Preguntar por voz'};
+      const titleDiv = document.querySelector('#float-mic-panel > div:first-child');
+      if (titleDiv) titleDiv.textContent = titles[currentLang] || titles.en;
+    }
+
+    // Start
+    init();
   </script>
 </body>
 </html>
