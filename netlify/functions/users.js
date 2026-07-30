@@ -1,7 +1,7 @@
 /**
  * Netlify Function: users (Functions v2)
  * Shared employee accounts via Netlify Blobs
- * v1.13.0 – fixed MissingBlobsEnvironmentError by using Functions v2 syntax
+ * v1.14.0 – Functions v2 + shared employee accounts via Netlify Blobs
  */
 
 import { getStore } from "@netlify/blobs";
