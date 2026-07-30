@@ -4,154 +4,84 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#2d5a3d">
   <title>Conroy's Flowers Training</title>
   <link rel="manifest" href="manifest.json">
   <style>
-    :root {
-      --primary: #2d5a3d;
-      --primary-light: #3d7a52;
-      --accent: #e8a0bf;
-      --bg: #f7f9f7;
-      --card: #ffffff;
-      --text: #1a2e22;
-      --muted: #6b7c6e;
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --border: #e2e8e4;
-      --shadow: 0 2px 12px rgba(45,90,61,0.08);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100dvh;
-      padding-bottom: 72px;
-      line-height: 1.45;
-    }
-    .hidden { display: none !important; }
-    #login-screen {
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background: linear-gradient(180deg, #f0f7f2 0%, #fff 100%);
-    }
-    #login-screen img.header-img {
-      width: min(320px, 90vw);
-      border-radius: 16px;
-      margin-bottom: 28px;
-      box-shadow: var(--shadow);
-    }
-    #login-screen h1 { font-size: 1.4rem; color: var(--primary); margin-bottom: 8px; text-align: center; }
-    #login-screen p { color: var(--muted); margin-bottom: 24px; text-align: center; font-size: 0.95rem; }
-    .login-form { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 12px; }
-    .login-form input {
-      padding: 14px 16px; border: 2px solid var(--border); border-radius: 12px; font-size: 1.05rem; width: 100%; background: var(--card);
-    }
-    .login-form input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(45,90,61,0.12); }
-    #login-error { color: var(--danger); font-size: 0.9rem; text-align: center; min-height: 1.2em; }
-    .btn {
-      background: var(--primary); color: white; border: none; border-radius: 12px; padding: 12px 20px; font-size: 1rem; font-weight: 600; cursor: pointer;
-    }
-    .btn:active { background: var(--primary-light); }
-    .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
-    .btn-sm { padding: 8px 14px; font-size: 0.9rem; }
-    .app-header {
-      position: sticky; top: 0; z-index: 50; background: var(--primary); color: white; padding: 12px 16px;
-      display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    }
-    .app-header .user-info { font-size: 0.9rem; opacity: 0.95; }
-    .app-header .lang-select {
-      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; padding: 6px 10px; font-size: 0.85rem;
-    }
-    .main { padding: 16px; max-width: 640px; margin: 0 auto; }
-    .card { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--border); }
-    .card h2 { font-size: 1.1rem; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-    .progress-bar { height: 10px; background: #e2e8e4; border-radius: 99px; overflow: hidden; margin: 8px 0 4px; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--success)); border-radius: 99px; transition: width 0.3s ease; }
-    .stamp-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-    .stamp-item:last-child { border-bottom: none; }
-    .stamp-btn {
-      width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--border); background: white;
-      display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; cursor: pointer;
-    }
-    .stamp-btn.done { background: var(--success); border-color: var(--success); color: white; }
-    .stamp-content { flex: 1; }
-    .stamp-title { font-weight: 600; font-size: 0.98rem; }
-    .stamp-desc { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
-    .stamp-time { font-size: 0.75rem; color: var(--success); margin-top: 4px; }
-    .stamp-item.next-task { background: #eef6f0; border: 2px solid var(--primary); border-radius: 12px; padding: 12px 10px; margin: 4px -4px; }
-    .stamp-item.next-task .stamp-title::before { content: "👉 "; }
-    .next-banner {
-      background: linear-gradient(135deg, #2d5a3d, #3d7a52); color: white; border-radius: 14px; padding: 14px 16px; margin-bottom: 14px;
-      font-weight: 600; font-size: 0.98rem; display: flex; align-items: center; gap: 10px;
-    }
-    .next-banner .next-label { background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 500; }
-    .eod-banner { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; font-size: 0.95rem; color: #92400e; display: none; }
-    .eod-banner.show { display: block; }
-    .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    .quick-btn {
-      background: var(--card); border: 2px solid var(--border); border-radius: 14px; padding: 16px 12px; text-align: center; font-weight: 600; font-size: 0.95rem; cursor: pointer;
-    }
-    .quick-btn.customer { border-color: #f9a8d4; background: #fdf2f8; color: #9d174d; }
-    .quick-btn.phone { border-color: #93c5fd; background: #eff6ff; color: #1e40af; }
-    .quick-btn.messages { border-color: #fcd34d; background: #fffbeb; color: #92400e; }
-    .quick-btn.back { border-color: var(--primary); background: #eef6f0; color: var(--primary); }
-    .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border);
-      display: flex; justify-content: space-around; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); z-index: 100;
-    }
-    .nav-item {
-      display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 0.7rem; color: var(--muted);
-      background: none; border: none; padding: 4px 8px; cursor: pointer; min-width: 56px;
-    }
-    .nav-item.active { color: var(--primary); font-weight: 600; }
-    .nav-item span.icon { font-size: 1.35rem; }
-    .page { display: none; }
-    .page.active { display: block; }
-    .script-box { background: #f0f7f2; border-left: 4px solid var(--primary); padding: 12px 14px; border-radius: 0 10px 10px 0; margin: 10px 0; font-size: 0.95rem; }
-    .img-guide { width: 100%; border-radius: 12px; margin: 10px 0; box-shadow: var(--shadow); }
-    .checklist label { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 0.95rem; }
-    .checklist input { width: 20px; height: 20px; }
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; }
-    .form-group input[type="number"], .form-group input[type="text"] {
-      width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 1.1rem;
-    }
-    .photo-preview { width: 100%; max-height: 200px; object-fit: contain; border-radius: 10px; margin-top: 8px; border: 1px solid var(--border); }
-    .alert { padding: 12px; border-radius: 10px; margin: 10px 0; font-size: 0.9rem; }
-    .alert-warn { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
-    .alert-info { background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; }
-    .alert-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
-    .search-box { display: flex; gap: 8px; margin-bottom: 14px; }
-    .search-box input { flex: 1; padding: 12px 14px; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; }
-    .voice-btn { width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 1.3rem; cursor: pointer; }
-    .voice-btn.listening { background: var(--danger); animation: pulse 1s infinite; }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-    .result-item { padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
-    .modal { background: white; width: 100%; max-width: 500px; max-height: 90dvh; border-radius: 20px 20px 0 0; padding: 20px; overflow-y: auto; }
-    .modal h3 { margin-bottom: 14px; color: var(--primary); }
-    .close-modal { float: right; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); }
-    .summary-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-    .float-mic {
-      position: fixed; bottom: 80px; right: 16px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white;
-      border: none; font-size: 1.5rem; box-shadow: 0 4px 16px rgba(45,90,61,0.35); z-index: 90; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .float-mic.listening { background: var(--danger); animation: pulse 1s infinite; }
-    .float-mic-panel {
-      position: fixed; bottom: 145px; right: 16px; left: 16px; max-width: 360px; margin-left: auto; background: white;
-      border-radius: 16px; padding: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 91; display: none;
-    }
-    .float-mic-panel.show { display: block; }
-    .speak-controls { display: flex; gap: 8px; margin-top: 8px; }
+    :root { --primary:#2d5a3d; --primary-light:#3d7a52; --bg:#f7f9f7; --card:#fff; --text:#1a2e22; --muted:#6b7c6e; --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; --border:#e2e8e4; --shadow:0 2px 12px rgba(45,90,61,0.08); }
+    * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+    body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); min-height:100dvh; padding-bottom:72px; line-height:1.45; }
+    .hidden { display:none !important; }
+    #login-screen { min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; background:linear-gradient(180deg,#f0f7f2 0%,#fff 100%); }
+    #login-screen img.header-img { width:min(320px,90vw); border-radius:16px; margin-bottom:28px; box-shadow:var(--shadow); }
+    #login-screen h1 { font-size:1.4rem; color:var(--primary); margin-bottom:8px; text-align:center; }
+    #login-screen p { color:var(--muted); margin-bottom:24px; text-align:center; font-size:0.95rem; }
+    .login-form { width:100%; max-width:340px; display:flex; flex-direction:column; gap:12px; }
+    .login-form input { padding:14px 16px; border:2px solid var(--border); border-radius:12px; font-size:1.05rem; width:100%; background:var(--card); }
+    .login-form input:focus { outline:none; border-color:var(--primary); }
+    #login-error { color:var(--danger); font-size:0.9rem; text-align:center; min-height:1.2em; }
+    .btn { background:var(--primary); color:white; border:none; border-radius:12px; padding:12px 20px; font-size:1rem; font-weight:600; cursor:pointer; }
+    .btn-outline { background:transparent; color:var(--primary); border:2px solid var(--primary); }
+    .btn-sm { padding:8px 14px; font-size:0.9rem; }
+    .app-header { position:sticky; top:0; z-index:50; background:var(--primary); color:white; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; }
+    .app-header .user-info { font-size:0.9rem; opacity:0.95; }
+    .app-header .lang-select { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; border-radius:8px; padding:6px 10px; font-size:0.85rem; }
+    .main { padding:16px; max-width:640px; margin:0 auto; }
+    .card { background:var(--card); border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:var(--shadow); border:1px solid var(--border); }
+    .card h2 { font-size:1.1rem; color:var(--primary); margin-bottom:10px; }
+    .progress-bar { height:10px; background:#e2e8e4; border-radius:99px; overflow:hidden; margin:8px 0 4px; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,var(--primary),var(--success)); border-radius:99px; }
+    .stamp-item { display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+    .stamp-btn { width:44px; height:44px; border-radius:50%; border:2px solid var(--border); background:white; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; cursor:pointer; }
+    .stamp-btn.done { background:var(--success); border-color:var(--success); color:white; }
+    .stamp-content { flex:1; }
+    .stamp-title { font-weight:600; }
+    .stamp-desc { font-size:0.82rem; color:var(--muted); }
+    .stamp-time { font-size:0.75rem; color:var(--success); margin-top:4px; }
+    .stamp-item.next-task { background:#eef6f0; border:2px solid var(--primary); border-radius:12px; padding:12px 10px; }
+    .next-banner { background:linear-gradient(135deg,#2d5a3d,#3d7a52); color:white; border-radius:14px; padding:14px 16px; margin-bottom:14px; font-weight:600; display:flex; gap:10px; align-items:center; }
+    .next-banner .next-label { background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:6px; font-size:0.78rem; }
+    .eod-banner { background:#fef3c7; border:2px solid #f59e0b; border-radius:14px; padding:14px 16px; margin-bottom:14px; color:#92400e; display:none; }
+    .eod-banner.show { display:block; }
+    .quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+    .quick-btn { background:var(--card); border:2px solid var(--border); border-radius:14px; padding:16px 12px; text-align:center; font-weight:600; cursor:pointer; }
+    .quick-btn.customer { border-color:#f9a8d4; background:#fdf2f8; color:#9d174d; }
+    .quick-btn.phone { border-color:#93c5fd; background:#eff6ff; color:#1e40af; }
+    .quick-btn.messages { border-color:#fcd34d; background:#fffbeb; color:#92400e; }
+    .quick-btn.back { border-color:var(--primary); background:#eef6f0; color:var(--primary); }
+    .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:8px 0 calc(8px + env(safe-area-inset-bottom)); z-index:100; }
+    .nav-item { display:flex; flex-direction:column; align-items:center; gap:2px; font-size:0.7rem; color:var(--muted); background:none; border:none; padding:4px 8px; cursor:pointer; min-width:56px; }
+    .nav-item.active { color:var(--primary); font-weight:600; }
+    .nav-item span.icon { font-size:1.35rem; }
+    .page { display:none; }
+    .page.active { display:block; }
+    .script-box { background:#f0f7f2; border-left:4px solid var(--primary); padding:12px 14px; border-radius:0 10px 10px 0; margin:10px 0; font-size:0.95rem; }
+    .img-guide { width:100%; border-radius:12px; margin:10px 0; }
+    .checklist label { display:flex; align-items:center; gap:10px; padding:8px 0; font-size:0.95rem; }
+    .form-group { margin-bottom:14px; }
+    .form-group label { display:block; font-weight:600; margin-bottom:6px; font-size:0.9rem; }
+    .form-group input { width:100%; padding:12px; border:2px solid var(--border); border-radius:10px; font-size:1.1rem; }
+    .photo-preview { width:100%; max-height:200px; object-fit:contain; border-radius:10px; margin-top:8px; border:1px solid var(--border); }
+    .alert { padding:12px; border-radius:10px; margin:10px 0; font-size:0.9rem; }
+    .alert-warn { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
+    .alert-info { background:#e0f2fe; color:#075985; border:1px solid #7dd3fc; }
+    .alert-success { background:#dcfce7; color:#166534; border:1px solid #86efac; }
+    .search-box { display:flex; gap:8px; margin-bottom:14px; }
+    .search-box input { flex:1; padding:12px 14px; border:2px solid var(--border); border-radius:12px; font-size:1rem; }
+    .voice-btn { width:48px; height:48px; border-radius:50%; background:var(--primary); color:white; border:none; font-size:1.3rem; cursor:pointer; }
+    .voice-btn.listening { background:var(--danger); animation:pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+    .result-item { padding:12px; border-bottom:1px solid var(--border); }
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:200; display:flex; align-items:flex-end; justify-content:center; }
+    .modal { background:white; width:100%; max-width:500px; max-height:90dvh; border-radius:20px 20px 0 0; padding:20px; overflow-y:auto; }
+    .modal h3 { margin-bottom:14px; color:var(--primary); }
+    .close-modal { float:right; background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--muted); }
+    .summary-item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.9rem; }
+    .float-mic { position:fixed; bottom:80px; right:16px; width:56px; height:56px; border-radius:50%; background:var(--primary); color:white; border:none; font-size:1.5rem; box-shadow:0 4px 16px rgba(45,90,61,0.35); z-index:90; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+    .float-mic.listening { background:var(--danger); animation:pulse 1s infinite; }
+    .float-mic-panel { position:fixed; bottom:145px; right:16px; left:16px; max-width:360px; margin-left:auto; background:white; border-radius:16px; padding:14px; box-shadow:0 8px 32px rgba(0,0,0,0.15); z-index:91; display:none; }
+    .float-mic-panel.show { display:block; }
+    .speak-controls { display:flex; gap:8px; margin-top:8px; }
   </style>
 </head>
 <body>
@@ -167,21 +97,16 @@
       <button class="btn" style="width:100%;margin-top:4px" onclick="doLogin()" data-i18n="login_btn">Log in</button>
     </div>
   </div>
-
   <div id="app" class="hidden">
     <header class="app-header">
       <div>
         <div style="font-weight:700;font-size:1.05rem;">Conroy's Training <span style="font-size:0.75rem;opacity:0.8;font-weight:500" onclick="onVersionTap()">v1.14.1</span></div>
         <div class="user-info" id="header-user"></div>
       </div>
-      <select class="lang-select" id="lang-select" onchange="changeLang(this.value)" aria-label="Language">
-        <option value="en">EN</option>
-        <option value="ko">한국어</option>
-        <option value="ja">日本語</option>
-        <option value="es">ES</option>
+      <select class="lang-select" id="lang-select" onchange="changeLang(this.value)">
+        <option value="en">EN</option><option value="ko">한국어</option><option value="ja">日本語</option><option value="es">ES</option>
       </select>
     </header>
-
     <div class="main">
       <div id="page-home" class="page active">
         <div class="card">
@@ -191,7 +116,7 @@
         </div>
         <div id="eod-banner" class="eod-banner">
           <strong id="eod-title">⏰ End of day is near</strong>
-          <span id="eod-desc">Please check today's summary and complete End Day.</span>
+          <span id="eod-desc">Please complete End Day.</span>
           <button class="btn btn-sm" id="eod-btn" style="margin-top:10px;background:#f59e0b;color:#111" onclick="showSummary()">View summary</button>
         </div>
         <div id="next-banner" class="next-banner hidden">
@@ -201,69 +126,59 @@
         <div class="quick-grid">
           <button class="quick-btn customer" onclick="showPage('customer')">👤 <span data-i18n="customer">Customer</span></button>
           <button class="quick-btn phone" onclick="showPage('phone')">📞 <span data-i18n="phone">Phone</span></button>
-          <button class="quick-btn messages" onclick="showPage('messages')">💬 <span data-i18n="messages">Check Messages</span></button>
-          <button class="quick-btn back" onclick="showPage('home')">↩️ <span data-i18n="back_routine">Back to Routine</span></button>
+          <button class="quick-btn messages" onclick="showPage('messages')">💬 <span data-i18n="messages">Messages</span></button>
+          <button class="quick-btn back" onclick="showPage('home')">↩️ <span data-i18n="back_routine">Routine</span></button>
         </div>
         <div class="card" id="stamp-list"></div>
         <div class="card">
           <h2>🏁 <span data-i18n="day_end_summary">End of Day</span></h2>
-          <button class="btn btn-outline" style="width:100%" onclick="showSummary()" data-i18n="view_summary">View Today's Summary</button>
+          <button class="btn btn-outline" style="width:100%" onclick="showSummary()" data-i18n="view_summary">View Summary</button>
         </div>
       </div>
-
       <div id="page-customer" class="page">
         <div class="card">
-          <h2>👤 <span data-i18n="customer_title">Customer Service Guide</span></h2>
-          <div class="alert alert-info" data-i18n="customer_priority">Customer first! Stop what you're doing and greet immediately.</div>
-          <p style="font-weight:600;margin:10px 0 4px" data-i18n="greeting">Greeting</p>
+          <h2>👤 <span data-i18n="customer_title">Customer Guide</span></h2>
+          <div class="alert alert-info" data-i18n="customer_priority">Customer first!</div>
           <div class="script-box">"Welcome! How can I help you today?"</div>
-          <p style="font-weight:600;margin:12px 0 4px" data-i18n="needs">Understanding Needs</p>
           <div class="script-box">"Who's going to receive the flowers?"</div>
-          <p style="font-weight:600;margin:12px 0 4px" data-i18n="color_guide">Color Recommendations</p>
-          <img src="colors.jpg" class="img-guide" alt="Color schemes">
-          <button class="btn" style="width:100%;margin-top:12px" onclick="showPage('home')" data-i18n="back_routine">Back to Routine</button>
+          <img src="colors.jpg" class="img-guide" alt="Colors">
+          <button class="btn" style="width:100%;margin-top:12px" onclick="showPage('home')" data-i18n="back_routine">Back</button>
         </div>
       </div>
-
       <div id="page-phone" class="page">
         <div class="card">
-          <h2>📞 <span data-i18n="phone_title">Phone Handling</span></h2>
-          <div class="alert alert-info" data-i18n="phone_priority">If a customer is in the store, help them first.</div>
-          <p style="font-weight:600;margin:10px 0 4px" data-i18n="phone_greeting">Greeting</p>
+          <h2>📞 <span data-i18n="phone_title">Phone</span></h2>
           <div class="script-box">"Thank you for calling Conroy's Flowers. How may I help you?"</div>
-          <button class="btn" style="width:100%;margin-top:12px" onclick="showPage('home')" data-i18n="back_routine">Back to Routine</button>
+          <button class="btn" style="width:100%;margin-top:12px" onclick="showPage('home')" data-i18n="back_routine">Back</button>
         </div>
       </div>
-
       <div id="page-messages" class="page">
         <div class="card">
-          <h2>💬 <span data-i18n="messages_title">Messages / In Wire Check</span></h2>
-          <div class="alert alert-warn" data-i18n="messages_warn">When a Wire-In order arrives, Messages and In Wire counters increase. Check frequently!</div>
-          <button class="btn" style="width:100%;margin-top:12px" onclick="markMessagesChecked(); showPage('home')" data-i18n="checked_back">Checked & Back to Routine</button>
+          <h2>💬 <span data-i18n="messages_title">Messages</span></h2>
+          <div class="alert alert-warn" data-i18n="messages_warn">Check Messages and In Wire frequently!</div>
+          <button class="btn" style="width:100%;margin-top:12px" onclick="markMessagesChecked(); showPage('home')" data-i18n="checked_back">Checked</button>
         </div>
       </div>
-
       <div id="page-search" class="page">
         <div class="card">
-          <h2>🔍 <span data-i18n="search_title">Ask / Search</span></h2>
+          <h2>🔍 <span data-i18n="search_title">Search</span></h2>
           <div class="search-box">
-            <input type="text" id="search-input" placeholder="e.g. SuperTicket..." data-i18n-placeholder="search_ph">
+            <input type="text" id="search-input" placeholder="SuperTicket, delivery..." data-i18n-placeholder="search_ph">
             <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">🎤</button>
           </div>
           <button class="btn" style="width:100%;margin-bottom:12px" onclick="doSearch()" data-i18n="search_btn">Search</button>
           <div id="search-results"></div>
         </div>
       </div>
-
       <div id="page-more" class="page">
         <div class="card hidden" id="admin-card" style="border:2px solid var(--primary);background:#f0f7f2">
           <h2 style="color:var(--primary)">👔 Admin</h2>
-          <button class="btn" style="width:100%;margin-bottom:8px" onclick="openAdminPanel()">Open account management</button>
+          <button class="btn" style="width:100%" onclick="openAdminPanel()">Account management</button>
         </div>
         <div class="card">
-          <h2>📖 <span data-i18n="training_title">Training & Guides</span></h2>
-          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('attachments')" data-i18n="att_check">Attachment Checklist</button>
-          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('bmsflow')" data-i18n="bms_flow">BMS Order Flow</button>
+          <h2>📖 <span data-i18n="training_title">Training</span></h2>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('attachments')" data-i18n="att_check">Attachments</button>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('bmsflow')" data-i18n="bms_flow">BMS Flow</button>
           <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('golden')" data-i18n="golden_rules">Golden Rules</button>
         </div>
         <div class="card">
@@ -271,7 +186,6 @@
         </div>
       </div>
     </div>
-
     <nav class="bottom-nav">
       <button class="nav-item active" data-page="home" onclick="showPage('home')"><span class="icon">🏠</span><span data-i18n="nav_home">Routine</span></button>
       <button class="nav-item" data-page="customer" onclick="showPage('customer')"><span class="icon">👤</span><span data-i18n="nav_customer">Customer</span></button>
@@ -279,7 +193,6 @@
       <button class="nav-item" data-page="search" onclick="showPage('search')"><span class="icon">🔍</span><span data-i18n="nav_search">Search</span></button>
       <button class="nav-item" data-page="more" onclick="showPage('more')"><span class="icon">☰</span><span data-i18n="nav_more">More</span></button>
     </nav>
-
     <button class="float-mic" id="float-mic" onclick="toggleFloatMic()">🎤</button>
     <div class="float-mic-panel" id="float-mic-panel">
       <div style="font-weight:600;margin-bottom:8px">Ask by voice</div>
@@ -292,14 +205,13 @@
       </div>
     </div>
   </div>
-
   <div id="modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this) closeModal()">
     <div class="modal" id="modal-content"></div>
   </div>
-
   <script src="js/data.js"></script>
   <script src="js/core-a.js"></script>
   <script src="js/core-b.js"></script>
+  <script src="js/core-c.js"></script>
   <script src="js/voice.js"></script>
   <script src="js/admin.js"></script>
 </body>
