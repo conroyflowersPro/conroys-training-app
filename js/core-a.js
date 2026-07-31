@@ -139,13 +139,11 @@
       loadStamps();
       renderStamps();
       applyI18n();
-      // Show welcome greeting (once per day per user)
+      // Always show welcome on each login (training flow for new staff)
       showWelcomeModal();
     }
 
     function showWelcomeModal() {
-      const key = 'cf_welcome_' + currentUser + '_' + todayKey();
-      if (localStorage.getItem(key)) return;
       const greetings = {
         ko: { title: '환영합니다!', msg: currentUser + '님, 오늘도 좋은 하루 되세요.\n먼저 Funeral / 긴급 주문을 확인해 주세요.' },
         en: { title: 'Welcome!', msg: 'Hi ' + currentUser + ', have a great day.\nPlease check Funeral / urgent orders first.' },
@@ -153,29 +151,85 @@
         es: { title: '¡Bienvenido!', msg: 'Hola ' + currentUser + ', que tengas un buen día.\nPor favor revisa primero los pedidos Funeral / urgentes.' }
       };
       const g = greetings[currentLang] || greetings.en;
+      const okLabel = { ko: '확인', en: 'OK', ja: '確認', es: 'OK' }[currentLang] || 'OK';
       const modal = document.getElementById('modal-content');
       modal.innerHTML = `
         <button class="close-modal" onclick="closeWelcomeModal()">×</button>
         <h3 style="text-align:center;margin-bottom:12px">${g.title}</h3>
-        <img src="welcome.jpg" class="img-guide" style="max-height:200px;object-fit:cover;border-radius:12px;margin-bottom:12px" alt="Welcome">
+        <img src="welcome.jpg" class="img-guide" style="max-height:200px;object-fit:cover;border-radius:12px;margin-bottom:12px" alt="Welcome" onerror="this.style.display='none'">
         <p style="text-align:center;white-space:pre-wrap;margin-bottom:16px;line-height:1.5">${g.msg}</p>
-        <button class="btn" style="width:100%" onclick="closeWelcomeModal()">${{ko:'확인',en:'OK',ja:'確認',es:'OK'}[currentLang]||'OK'}</button>
+        <button class="btn" style="width:100%" onclick="closeWelcomeModal()">${okLabel}</button>
       `;
       document.getElementById('modal-overlay').classList.remove('hidden');
-      localStorage.setItem(key, '1');
-      playBell(); // 1. welcome modal
+      playBell();
     }
 
     function closeWelcomeModal() {
       document.getElementById('modal-overlay').classList.add('hidden');
-      // After welcome, if funeral not done, gently scroll to it + play bell
+      // After welcome → Funeral priority guidance
+      setTimeout(() => {
+        showFuneralPriority();
+      }, 250);
+    }
+
+    // Clear funeral guidance shown once per login session
+    let funeralGuideShownThisSession = false;
+
+    function showFuneralPriority() {
+      if (funeralGuideShownThisSession) return;
+      if (stamps['funeral_check']?.done) return;
+      funeralGuideShownThisSession = true;
+
+      // Ensure home page is visible
+      if (typeof showPage === 'function') showPage('home');
+
+      const titles = {
+        ko: '우선 확인: Funeral / 긴급 주문',
+        en: 'Priority: Funeral / Urgent orders',
+        ja: '優先確認: Funeral / 緊急注文',
+        es: 'Prioridad: Funeral / pedidos urgentes'
+      };
+      const msgs = {
+        ko: 'Funeral 주문은 Uber ASAP 개별 배달이라 가장 먼저 확인해야 합니다.\nMessages / In Wire를 열고 Funeral 또는 긴급 주문이 있는지 바로 확인하세요.',
+        en: 'Funeral orders are individual Uber ASAP deliveries — check them first.\nOpen Messages / In Wire and look for Funeral or urgent orders right away.',
+        ja: 'Funeral注文はUber ASAPの個別配達のため最優先です。\nMessages / In Wireを開き、Funeralや緊急注文がないかすぐに確認してください。',
+        es: 'Los pedidos Funeral son entregas individuales Uber ASAP — revíselos primero.\nAbra Messages / In Wire y busque pedidos Funeral o urgentes de inmediato.'
+      };
+      const btnLabels = {
+        ko: 'Funeral 항목으로 이동',
+        en: 'Go to Funeral task',
+        ja: 'Funeral項目へ',
+        es: 'Ir a tarea Funeral'
+      };
+      const laterLabels = {
+        ko: '나중에',
+        en: 'Later',
+        ja: '後で',
+        es: 'Después'
+      };
+
+      const modal = document.getElementById('modal-content');
+      modal.innerHTML = `
+        <button class="close-modal" onclick="closeModal(); highlightFuneralTask()">×</button>
+        <h3 style="margin-bottom:12px">⚠️ ${titles[currentLang] || titles.en}</h3>
+        <div class="alert alert-warn" style="margin-bottom:14px;white-space:pre-wrap;line-height:1.5">${msgs[currentLang] || msgs.en}</div>
+        <button class="btn" style="width:100%;margin-bottom:8px" onclick="closeModal(); highlightFuneralTask()">${btnLabels[currentLang] || btnLabels.en}</button>
+        <button class="btn btn-outline" style="width:100%" onclick="closeModal()">${laterLabels[currentLang] || laterLabels.en}</button>
+      `;
+      document.getElementById('modal-overlay').classList.remove('hidden');
+      playBell();
+    }
+
+    function highlightFuneralTask() {
+      if (typeof showPage === 'function') showPage('home');
       setTimeout(() => {
         const el = document.getElementById('stamp-funeral_check');
-        if (el && !stamps['funeral_check']?.done) {
+        if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          playBell(); // 2. funeral emphasis
+          el.classList.add('next-task');
+          playBell();
         }
-      }, 300);
+      }, 200);
     }
 
     // Called by the Logout button in the More tab
@@ -191,15 +245,14 @@
         }[currentLang] || 'Reset today\'s checked tasks?\n\nOK = Clear and logout\nCancel = Keep and logout';
 
         if (confirm(msg)) {
-          // User chose to clear
           try {
             localStorage.removeItem(stampKey());
           } catch (e) {}
           stamps = {};
         }
-        // If cancelled, just logout without clearing
       }
 
+      funeralGuideShownThisSession = false;
       logout();
     }
 
