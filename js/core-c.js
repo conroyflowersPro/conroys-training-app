@@ -1,4 +1,4 @@
-/* Conroy's Training App - content modals v1.16.0 */
+/* Conroy's Training App - content modals v1.16.1 */
     // Checklist items are language maps so guides follow currentLang (or voice-detected lang)
     const taskDetails = {
       funeral_check: {

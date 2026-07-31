@@ -1,4 +1,6 @@
-# Conroy's Flowers Training App - v1.15.0
+# Conroy's Flowers Training App - v1.16.1
+
+Floral Sales Representative Training PWA (Progressive Web App)
 
 Admin login → More tab → 「👔 Admin 관리」 → Open account management
 
@@ -15,9 +17,29 @@ Admin login → More tab → 「👔 Admin 관리」 → Open account management
 
 Admin PIN (backup): `7890`
 
-## v1.15.0 Changes
+## v1.16.1 Changes (Image Optimization Complete)
+- **All images converted to optimized WebP** and code paths switched
+- GitHub Action auto-converts any new JPG/PNG → WebP on push
+- Significant size reduction (most images 60-80% smaller)
+- UI images resized to max 600px wide, Guides to 1000px
+- Lazy loading already in place
+- Cache headers tuned for WebP (long immutable cache)
+
+## Image Workflow (중요 – 앞으로 이렇게만 하세요)
+1. `images/ui/` 또는 `images/guides/` 폴더에 **원본 JPG/PNG만** 올린다.
+2. GitHub에 push한다.
+3. GitHub Action이 자동으로 `.webp`를 생성하고 커밋한다.
+4. 코드에서는 항상 `.webp` 경로를 사용한다.
+
+- UI 폴더: 가로 600px / quality 80
+- Guides 폴더: 가로 1000px / quality 80
+- 파일명: 영문 소문자 + 하이픈 권장 (예: `cooler-vase.jpg`)
+
+원본 JPG는 Action 재생성용으로 유지한다. 삭제하지 마세요.
+
+## Previous (v1.15.0)
 - Unified version number to 1.15.0 across all files
-- Updated default passwords for better security (please change them)
+- Updated default passwords for better security
 - Knowledge base and system prompt better aligned
 - Image loading improvements (lazy loading)
 - Prepared structure for future offline support & quiz feature
@@ -34,4 +56,4 @@ Admin PIN (backup): `7890`
 - On Netlify, accounts are shared via Blobs across all devices.
 - Set `XAI_API_KEY` in Netlify environment variables for voice (STT/TTS) and Grok answers.
 - Push to GitHub → Netlify auto-deploys.
-- **Image note**: Current JPG images are large. For best performance, convert them to WebP (recommended sizes: header ~400px wide, others ~800px max) and update references.
+- Images: use WebP only in code. Action handles conversion automatically.
