@@ -1,1 +1,425 @@
-PLACEHOLDER_WILL_BE_REPLACED
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1a3c34">
+  <title>Conroy's Training</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="header.jpg">
+  <style>
+    :root {
+      --primary: #1a3c34;
+      --accent: #c4a35a;
+      --bg: #f7f5f0;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --success: #16a34a;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --radius: 14px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    #login-screen {
+      min-height: 100vh; min-height: 100dvh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px 20px; text-align: center;
+    }
+    .header-img {
+      width: 100%; max-width: 320px; height: auto; border-radius: 16px;
+      margin-bottom: 20px; box-shadow: var(--shadow);
+    }
+    #login-screen h1 { font-size: 1.5rem; margin-bottom: 4px; color: var(--primary); }
+    .login-form { width: 100%; max-width: 320px; margin-top: 12px; }
+    .login-form input {
+      width: 100%; padding: 14px 16px; margin-bottom: 10px;
+      border: 1.5px solid #e5e7eb; border-radius: 12px; font-size: 1rem;
+      background: #fff;
+    }
+    .login-form input:focus { outline: none; border-color: var(--primary); }
+    #login-error { color: var(--danger); font-size: 0.9rem; margin-bottom: 8px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 13px 20px; border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      background: var(--primary); color: #fff; transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.85; }
+    .btn-outline { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
+    .btn-sm { padding: 8px 14px; font-size: 0.9rem; }
+    .hidden { display: none !important; }
+    #app { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+    .app-header {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--primary); color: #fff;
+      padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .user-info { font-size: 0.8rem; opacity: 0.85; margin-top: 2px; }
+    .lang-select {
+      background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 8px; padding: 6px 8px; font-size: 0.85rem;
+    }
+    .lang-select option { color: #111; }
+    .main { flex: 1; padding: 16px; padding-bottom: 90px; overflow-y: auto; }
+    .page { display: none; }
+    .page.active { display: block; }
+    h2 { font-size: 1.15rem; margin-bottom: 12px; color: var(--primary); }
+    .card {
+      background: var(--card); border-radius: var(--radius); padding: 16px;
+      margin-bottom: 12px; box-shadow: var(--shadow);
+    }
+    .progress-bar {
+      height: 8px; background: #e5e7eb; border-radius: 4px; margin-top: 8px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--success); border-radius: 4px; transition: width 0.3s;
+    }
+    .stamp-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 0; border-bottom: 1px solid #f0f0f0;
+    }
+    .stamp-item:last-child { border-bottom: none; }
+    .stamp-btn {
+      width: 28px; height: 28px; border-radius: 50%; border: 2px solid #d1d5db;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+      background: #fff;
+    }
+    .stamp-btn.done {
+      background: var(--success); border-color: var(--success); color: #fff;
+    }
+    .stamp-content { flex: 1; min-width: 0; }
+    .stamp-title { font-weight: 600; font-size: 0.98rem; }
+    .stamp-desc { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
+    .stamp-time { font-size: 0.8rem; color: var(--success); margin-top: 4px; }
+    .stamp-item.next-task {
+      background: #f0fdf4; margin: 0 -16px; padding: 14px 16px; border-radius: 12px;
+    }
+    .stamp-item.next-task .stamp-title::before {
+      content: "👉 ";
+    }
+    .next-banner {
+      background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .next-banner.hidden { display: none; }
+    .next-banner .next-label {
+      font-weight: 700; color: #065f46; font-size: 0.85rem;
+    }
+    .quick-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;
+    }
+    .quick-btn {
+      padding: 14px 10px; border-radius: 12px; border: none; font-weight: 600;
+      font-size: 0.92rem; cursor: pointer; text-align: center;
+    }
+    .quick-btn.customer { background: #dbeafe; color: #1e40af; }
+    .quick-btn.phone { background: #fef3c7; color: #92400e; }
+    .quick-btn.messages { background: #d1fae5; color: #065f46; }
+    .quick-btn.back { background: #f3f4f6; color: #374151; }
+    .nav-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 1px solid #e5e7eb;
+      display: flex; justify-content: space-around;
+      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center;
+      background: none; border: none; font-size: 0.7rem; color: var(--muted);
+      cursor: pointer; padding: 4px 8px; min-width: 56px;
+    }
+    .nav-item .icon { font-size: 1.25rem; margin-bottom: 2px; }
+    .nav-item.active { color: var(--primary); font-weight: 600; }
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.hidden { display: none; }
+    #modal-content {
+      background: #fff; width: 100%; max-width: 520px;
+      max-height: 88vh; overflow-y: auto;
+      border-radius: 20px 20px 0 0; padding: 20px 18px 28px;
+      position: relative;
+    }
+    .close-modal {
+      position: absolute; top: 12px; right: 14px;
+      background: none; border: none; font-size: 1.5rem; cursor: pointer;
+      color: var(--muted); line-height: 1;
+    }
+    .script-box {
+      background: #f8fafc; border-left: 3px solid var(--accent);
+      padding: 12px 14px; border-radius: 0 10px 10px 0;
+      font-size: 0.95rem; line-height: 1.55;
+    }
+    .checklist label {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 0; font-size: 0.95rem; cursor: pointer;
+    }
+    .checklist input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; }
+    .alert { padding: 12px 14px; border-radius: 10px; font-size: 0.92rem; line-height: 1.45; }
+    .alert-warn { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+    .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .img-guide { width: 100%; border-radius: 12px; display: block; }
+    .photo-preview { max-width: 100%; border-radius: 8px; margin-top: 8px; }
+    .summary-item {
+      display: flex; justify-content: space-between; padding: 8px 0;
+      border-bottom: 1px solid #f3f4f6; font-size: 0.95rem;
+    }
+    .search-box { display: flex; gap: 8px; margin-bottom: 14px; }
+    .search-box input {
+      flex: 1; padding: 12px 14px; border: 1.5px solid #e5e7eb;
+      border-radius: 12px; font-size: 1rem;
+    }
+    .result-card, .result-item {
+      background: #fff; border-radius: 12px; padding: 14px;
+      margin-bottom: 10px; box-shadow: var(--shadow);
+    }
+    .voice-btn {
+      width: 56px; height: 56px; border-radius: 50%; border: none;
+      background: var(--primary); color: #fff; font-size: 1.4rem;
+      cursor: pointer; box-shadow: 0 4px 14px rgba(26,60,52,0.35);
+    }
+    .voice-btn.listening { background: var(--danger); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+    .float-mic {
+      position: fixed; bottom: 80px; right: 16px; width: 56px; height: 56px;
+      border-radius: 50%; background: var(--primary); color: white; border: none;
+      font-size: 1.5rem; box-shadow: 0 4px 16px rgba(45,90,61,0.35);
+      z-index: 90; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .float-mic.listening { background: var(--danger); animation: pulse 1s infinite; }
+    .float-mic-panel {
+      position: fixed; bottom: 145px; right: 16px; left: 16px; max-width: 360px;
+      margin-left: auto; background: white; border-radius: 16px; padding: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 91; display: none;
+    }
+    .float-mic-panel.show { display: block; }
+    .speak-controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .eod-banner {
+      background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 12px; display: none;
+    }
+    .eod-banner.show { display: block; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.9rem; margin-bottom: 4px; }
+    .form-group input { width: 100%; padding: 10px; border: 1.5px solid #e5e7eb; border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <div id="login-screen">
+    <img src="header.jpg" alt="Conroy's Flowers Training" class="header-img">
+    <h1 data-i18n="login_title">직원 로그인</h1>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:4px">v1.14.6</p>
+    <p data-i18n="login_desc">아이디와 비밀번호를 입력하세요</p>
+    <div class="login-form">
+      <input type="text" id="login-username" placeholder="아이디" data-i18n-placeholder="username_ph" autocomplete="username" autocapitalize="none">
+      <input type="password" id="login-password" placeholder="비밀번호" data-i18n-placeholder="password_ph" autocomplete="current-password">
+      <div id="login-error" class="hidden"></div>
+      <button class="btn" style="width:100%;margin-top:4px" onclick="doLogin()" data-i18n="login_btn">로그인</button>
+    </div>
+  </div>
+
+  <div id="app" class="hidden">
+    <header class="app-header">
+      <div>
+        <div style="font-weight:700;font-size:1.05rem;">Conroy's Training <span style="font-size:0.75rem;opacity:0.8;font-weight:500" onclick="onVersionTap()">v1.14.6</span></div>
+        <div class="user-info" id="header-user"></div>
+      </div>
+      <select class="lang-select" id="lang-select" onchange="changeLang(this.value)" aria-label="Language">
+        <option value="en">EN</option>
+        <option value="ko">한국어</option>
+        <option value="ja">日本語</option>
+        <option value="es">ES</option>
+      </select>
+    </header>
+
+    <div class="main">
+      <div id="page-home" class="page active">
+        <div class="card">
+          <h2>📋 <span data-i18n="today_routine">오늘의 루틴</span></h2>
+          <div id="progress-text" style="font-size:0.9rem;color:var(--muted)"></div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        </div>
+
+        <div id="eod-banner" class="eod-banner">
+          <strong id="eod-title">⏰ 퇴근 시간이 가까워요</strong>
+          <span id="eod-desc">오늘 요약을 확인하고 End Day를 완료해주세요.</span>
+          <button class="btn btn-sm" id="eod-btn" style="margin-top:10px;background:#f59e0b;color:#111" onclick="showSummary()">오늘 요약 보기</button>
+        </div>
+
+        <div id="next-banner" class="next-banner hidden">
+          <span class="next-label" id="next-label">다음</span>
+          <span id="next-task-text"></span>
+        </div>
+
+        <div class="quick-grid">
+          <button class="quick-btn customer" onclick="showPage('customer')">👤 <span data-i18n="customer">손님 응대</span></button>
+          <button class="quick-btn phone" onclick="showPage('phone')">📞 <span data-i18n="phone">전화 받기</span></button>
+          <button class="quick-btn messages" onclick="showPage('messages')">💬 <span data-i18n="messages">Messages 확인</span></button>
+          <button class="quick-btn back" onclick="showPage('home')">↩️ <span data-i18n="back_routine">루틴으로</span></button>
+        </div>
+
+        <div class="card" id="stamp-list"></div>
+
+        <div class="card">
+          <h2>🏁 <span data-i18n="day_end_summary">하루 마무리</span></h2>
+          <button class="btn btn-outline" style="width:100%" onclick="showSummary()" data-i18n="view_summary">오늘 요약 보기</button>
+        </div>
+      </div>
+
+      <div id="page-customer" class="page">
+        <div class="card">
+          <h2 data-i18n="customer_title">손님 응대 가이드</h2>
+          <div class="alert alert-info" style="margin-bottom:12px" data-i18n="customer_priority">고객 우선! 하던 일을 멈추고 즉시 인사하세요.</div>
+          <div class="script-box" style="margin-bottom:10px">
+            <strong data-i18n="greeting">인사말</strong><br>
+            <span data-i18n="greeting_script">"Welcome! How can I help you today?"</span>
+          </div>
+          <div class="script-box" style="margin-bottom:10px">
+            <strong data-i18n="needs">니즈 파악</strong><br>
+            <span data-i18n="needs_script">"Who's going to receive the flowers?"</span>
+          </div>
+          <div class="script-box" style="margin-bottom:10px">
+            <strong data-i18n="color_guide">색상 추천</strong><br>
+            <span data-i18n="color_romance">Romance → Red / Hot Pink</span><br>
+            <span data-i18n="color_family">Family → Light Pink</span><br>
+            <span data-i18n="color_friends">Friends / Get Well → Bright Colors</span><br>
+            <span data-i18n="color_sympathy">Sympathy → White / Soft Pastels</span>
+          </div>
+          <div class="script-box">
+            <strong data-i18n="size_guide">사이즈 추천 스크립트</strong><br>
+            <span data-i18n="size_small"></span><br><br>
+            <em data-i18n="size_medium_rec">가장 기본 추천</em><br>
+            <span data-i18n="size_medium"></span><br><br>
+            <span data-i18n="size_large"></span>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-phone" class="page">
+        <div class="card">
+          <h2 data-i18n="phone_title">전화 응대</h2>
+          <div class="alert alert-warn" style="margin-bottom:12px" data-i18n="phone_priority">손님이 매장에 있으면 먼저 손님을 도와주세요.</div>
+          <div class="script-box" style="margin-bottom:10px">
+            <strong data-i18n="phone_greeting">인사말</strong><br>
+            <span data-i18n="phone_script">"Thank you for calling Conroy's Flowers. How may I help you?"</span>
+          </div>
+          <div class="script-box">
+            <strong data-i18n="phone_hold">홀드할 때</strong><br>
+            <span data-i18n="phone_hold_script">"Thank you for calling Conroy's. May I place you on a brief hold?"</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-messages" class="page">
+        <div class="card">
+          <h2 data-i18n="messages_title">Messages / In Wire 확인</h2>
+          <div class="alert alert-warn" style="margin-bottom:12px" data-i18n="messages_warn">Wire-In 주문이 들어오면 Messages와 In Wire 카운터가 올라갑니다. 수시로 확인하세요!</div>
+          <ol style="padding-left:20px;line-height:1.8;margin-bottom:12px">
+            <li data-i18n="msg_step1">Messages 열기 → 내용 확인</li>
+            <li data-i18n="msg_step2">Mark Read 클릭</li>
+            <li data-i18n="msg_step3">In Wire로 이동 → Accept</li>
+            <li data-i18n="msg_step4">Accept 후 SuperTicket 출력</li>
+          </ol>
+          <div class="alert alert-info" data-i18n="msg_reject">Reject는 매니저 승인 없이 절대 누르지 마세요.</div>
+          <img src="superticket.jpg" class="img-guide" style="margin-top:12px" alt="SuperTicket">
+          <p style="font-size:0.85rem;color:var(--muted);margin-top:6px" data-i18n="superticket_caption">SuperTicket 예시</p>
+          <button class="btn" style="width:100%;margin-top:14px" onclick="showPage('home')" data-i18n="checked_back">확인 완료 & 루틴으로</button>
+        </div>
+      </div>
+
+      <div id="page-search" class="page">
+        <div class="card">
+          <h2 data-i18n="search_title">질문하기 / 검색</h2>
+          <div class="search-box">
+            <input type="text" id="search-input" placeholder="예: SuperTicket, CardIsle..." data-i18n-placeholder="search_ph">
+            <button class="btn" onclick="doSearch()" data-i18n="search_btn">검색</button>
+          </div>
+          <div style="text-align:center;margin:12px 0">
+            <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">🎤</button>
+          </div>
+          <div id="search-results"></div>
+          <p style="font-size:0.85rem;color:var(--muted);margin-top:8px" data-i18n="quick_topics">자주 찾는 주제</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('superticket')">SuperTicket</button>
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('attachment')">Attachment</button>
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('cardisle')">CardIsle</button>
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('delivery')">Delivery</button>
+            <button class="btn btn-sm btn-outline" onclick="quickSearch('golden')">Golden Rules</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-more" class="page">
+        <div class="card">
+          <h2>📖 <span data-i18n="training_title">트레이닝 & 가이드</span></h2>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('attachments')" data-i18n="att_check">첨부물 확인 · 부착 절차</button>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('bmsflow')" data-i18n="bms_flow">BMS 주문 처리 흐름</button>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('delivery')" data-i18n="delivery_guide">배달 가이드</button>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('golden')" data-i18n="golden_rules">Golden Rules</button>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('decision')" data-i18n="decision_helper">모르겠을 때 도우미</button>
+        </div>
+        <div class="card" id="admin-card" style="display:none">
+          <h2>⚙️ Admin</h2>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showAdminPanel()">Admin Panel</button>
+        </div>
+        <div class="card">
+          <h2 data-i18n="feedback_title">피드백 / 업그레이드</h2>
+          <textarea id="feedback-text" rows="3" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:0.95rem;margin-bottom:10px" data-i18n-placeholder="feedback_ph"></textarea>
+          <button class="btn" style="width:100%" onclick="saveFeedback()" data-i18n="save_feedback">저장하기</button>
+        </div>
+        <div class="card">
+          <button class="btn btn-outline" style="width:100%;color:var(--danger);border-color:var(--danger)" onclick="doLogout()" data-i18n="logout">로그아웃</button>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav-bar">
+      <button class="nav-item active" data-page="home" onclick="showPage('home')"><span class="icon">📋</span><span data-i18n="nav_home">루틴</span></button>
+      <button class="nav-item" data-page="customer" onclick="showPage('customer')"><span class="icon">👤</span><span data-i18n="nav_customer">손님</span></button>
+      <button class="nav-item" data-page="messages" onclick="showPage('messages')"><span class="icon">💬</span><span data-i18n="nav_msg">Messages</span></button>
+      <button class="nav-item" data-page="search" onclick="showPage('search')"><span class="icon">🔍</span><span data-i18n="nav_search">검색</span></button>
+      <button class="nav-item" data-page="more" onclick="showPage('more')"><span class="icon">☰</span><span data-i18n="nav_more">더보기</span></button>
+    </nav>
+  </div>
+
+  <button class="float-mic" id="float-mic" onclick="toggleFloatMic()" title="음성으로 질문">🎤</button>
+  <div class="float-mic-panel" id="float-mic-panel">
+    <div style="font-weight:600;margin-bottom:8px">음성으로 질문하기</div>
+    <div id="float-status" style="font-size:0.9rem;color:var(--muted);margin-bottom:8px">🎤 누르고 말하세요 (언어 자동 인식)</div>
+    <div id="float-answer" style="font-size:0.92rem;white-space:pre-wrap;max-height:180px;overflow-y:auto"></div>
+    <div class="speak-controls">
+      <button class="btn btn-sm" id="float-speak-btn" style="display:none" onclick="speakText(window._lastGrokAnswer, this)">🔊 읽어주기</button>
+      <button class="btn btn-sm btn-outline" id="float-stop-btn" style="display:none" onclick="stopSpeaking()">⏹ 중지</button>
+      <button class="btn btn-sm btn-outline" onclick="closeFloatPanel()">닫기</button>
+    </div>
+  </div>
+
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this) closeModal()">
+    <div id="modal-content"></div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/core-a.js"></script>
+  <script src="js/core-b.js"></script>
+  <script src="js/core-c.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
