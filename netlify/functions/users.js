@@ -1,7 +1,7 @@
 /**
  * Netlify Function: users (Functions v2)
  * Shared employee accounts via Netlify Blobs
- * v1.15.0 – updated default passwords
+ * v1.15.4 – admin password ADMIN7890
  */
 
 import { getStore } from "@netlify/blobs";
@@ -11,7 +11,7 @@ const STORE_NAME = "conroys-training";
 const BLOB_KEY = "users";
 
 const DEFAULT_USERS = [
-  { username: "admin",     password: "AdminConroy26", name: "Admin" },
+  { username: "admin",     password: "ADMIN7890", name: "Admin" },
   { username: "employee1", password: "Trainee01",   name: "Employee 1" },
   { username: "employee2", password: "Trainee02",   name: "Employee 2" },
   { username: "employee3", password: "Trainee03",   name: "Employee 3" },
