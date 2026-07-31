@@ -1,7 +1,7 @@
 /**
  * Netlify Function: users (Functions v2)
  * Shared employee accounts via Netlify Blobs
- * v1.15.4 – admin password ADMIN7890
+ * v1.16.2 – requires @netlify/blobs in package.json
  */
 
 import { getStore } from "@netlify/blobs";
@@ -37,7 +37,9 @@ async function loadUsers(store) {
   try {
     const data = await store.get(BLOB_KEY, { type: "json" });
     if (Array.isArray(data) && data.length > 0) return data;
-  } catch (e) {}
+  } catch (e) {
+    console.error("loadUsers get failed", e);
+  }
   try {
     await store.setJSON(BLOB_KEY, DEFAULT_USERS);
   } catch (e) {
@@ -70,7 +72,7 @@ export default async (req) => {
 
   let store;
   try {
-    store = getStore(STORE_NAME);
+    store = getStore({ name: STORE_NAME });
   } catch (e) {
     console.error("getStore failed:", e);
     return jsonResponse(500, { error: "Blobs not available: " + (e.message || String(e)) });
@@ -85,7 +87,7 @@ export default async (req) => {
       }
       const users = await loadUsers(store);
       const user = users.find(
-        (u) => u.username.toLowerCase() === username && u.password === password
+        (u) => (u.username || "").toLowerCase() === username && u.password === password
       );
       if (!user) {
         return jsonResponse(401, { ok: false, error: "Invalid username or password" });
@@ -110,7 +112,7 @@ export default async (req) => {
         return jsonResponse(400, { error: "username, password, name required" });
       }
       const users = await loadUsers(store);
-      if (users.some((u) => u.username.toLowerCase() === username)) {
+      if (users.some((u) => (u.username || "").toLowerCase() === username)) {
         return jsonResponse(409, { error: "Username already exists" });
       }
       users.push({ username, password, name });
@@ -125,7 +127,7 @@ export default async (req) => {
         return jsonResponse(400, { error: "username and password required" });
       }
       const users = await loadUsers(store);
-      const idx = users.findIndex((u) => u.username.toLowerCase() === username);
+      const idx = users.findIndex((u) => (u.username || "").toLowerCase() === username);
       if (idx === -1) return jsonResponse(404, { error: "User not found" });
       users[idx].password = password;
       await saveUsers(store, users);
@@ -139,7 +141,7 @@ export default async (req) => {
         return jsonResponse(400, { error: "Cannot delete admin account" });
       }
       let users = await loadUsers(store);
-      users = users.filter((u) => u.username.toLowerCase() !== username);
+      users = users.filter((u) => (u.username || "").toLowerCase() !== username);
       await saveUsers(store, users);
       return jsonResponse(200, { ok: true, users });
     }

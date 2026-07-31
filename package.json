@@ -1,6 +1,9 @@
 {
   "name": "conroys-training-app",
-  "version": "1.16.1",
+  "version": "1.16.2",
   "description": "Conroy's Flowers Floral Sales Rep Training PWA",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
 }
