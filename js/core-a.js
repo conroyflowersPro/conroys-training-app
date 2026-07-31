@@ -65,9 +65,12 @@
         if (data.users && Array.isArray(data.users)) {
           users = data.users;
           serverAvailable = true;
+          saveUsersLocal();
           return;
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('loadUsers server failed', e);
+      }
       loadUsersLocal();
       serverAvailable = false;
     }
@@ -86,7 +89,6 @@
     let isListening = false;
     let recognition = null;
 
-    // Simple unified bell / ding sound (Web Audio, no extra file)
     function playBell() {
       try {
         const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -108,11 +110,11 @@
     }
 
     async function doLogin() {
-      const username = document.getElementById('login-username').value.trim();
+      const username = document.getElementById('login-username').value.trim().toLowerCase();
       const password = document.getElementById('login-password').value;
       const errEl = document.getElementById('login-error');
       await loadUsers();
-      const user = users.find(u => u.username === username && u.password === password);
+      const user = users.find(u => (u.username || '').toLowerCase() === username && u.password === password);
       if (!user) {
         errEl.textContent = (i18n[currentLang] || i18n.en).login_error || 'Invalid username or password.';
         errEl.classList.remove('hidden');
@@ -124,7 +126,6 @@
     }
 
     function startApp() {
-      // Restore preferred language after login
       currentLang = localStorage.getItem('cf_lang') || 'en';
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
@@ -139,7 +140,6 @@
       loadStamps();
       renderStamps();
       applyI18n();
-      // Always show welcome on each login (training flow for new staff)
       showWelcomeModal();
     }
 
@@ -166,13 +166,11 @@
 
     function closeWelcomeModal() {
       document.getElementById('modal-overlay').classList.add('hidden');
-      // After welcome → Funeral priority guidance
       setTimeout(() => {
         showFuneralPriority();
       }, 250);
     }
 
-    // Clear funeral guidance shown once per login session
     let funeralGuideShownThisSession = false;
 
     function showFuneralPriority() {
@@ -180,7 +178,6 @@
       if (stamps['funeral_check']?.done) return;
       funeralGuideShownThisSession = true;
 
-      // Ensure home page is visible
       if (typeof showPage === 'function') showPage('home');
 
       const titles = {
@@ -232,7 +229,6 @@
       }, 200);
     }
 
-    // Called by the Logout button in the More tab
     function doLogout() {
       const hasTasks = Object.keys(stamps).length > 0 && Object.values(stamps).some(s => s && s.done);
 
@@ -259,7 +255,6 @@
     function logout() {
       localStorage.removeItem('cf_currentUser');
       currentUser = null;
-      // Login screen always English
       currentLang = 'en';
       applyI18n();
       const langSel = document.getElementById('lang-select');
