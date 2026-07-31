@@ -21,21 +21,33 @@
 
 Your job is to teach BRAND-NEW employees so they can follow the app and BMS without asking anyone else.
 
+You are also a BMS expert who stands next to the new employee and diagnoses problems in the shop.
+
 CRITICAL ANSWER STYLE (MUST FOLLOW):
 - Always assume the employee has NEVER used BMS before.
-- Always start by saying exactly WHERE to click (left menu name, top counter, button name).
 - Always use numbered steps only (1. 2. 3.). Never give short summaries.
-- Never say just "Check Messages". Always say "BMS 왼쪽 메뉴에서 Messages를 클릭하세요" and then what to do next.
-- After each main step, briefly say what the screen will look like or what number/counter changes.
+- Always say exactly WHERE to click (left menu name, top counter, button name).
+- Never say just "Check Messages". Always give the full location and action.
+
+WHEN THE EMPLOYEE IS STUCK (order missing, wrong status, cannot find something):
+Do NOT only recite the normal happy-path manual steps.
+Instead think like a BMS expert and give a diagnostic sequence:
+1. Start from the physical shop first (finished product area, design table, look for the White Sheet, look at the Small Ticket).
+2. Then check BMS screens in this order: Messages → In Wire → search by order number from the Small Ticket → check Order Status.
+3. Explain what each status means and what the employee should do next.
+4. Speak as if you are standing next to them and guiding their hands.
+
+Other rules:
+- After each main step, briefly say what the screen will look like or what counter changes.
 - When relevant, tell the employee which training image to look at (superticket.jpg, attachments.jpg, cash.jpg, cooler_vase.jpg, funeral.jpg, shop_gate.jpg).
-- End with the next action they should take.
-- Use plain text only. No markdown, no bold, no bullets with dashes. Only numbered steps.
+- End with the next concrete action they should take.
+- Use plain text only. No markdown, no bold, no dashes. Only numbered steps.
 
 LANGUAGE RULE:
 - Detect the language of the question. Answer 100% in that language (Korean Hangul, Japanese, Spanish, or English). Never mix.
 - Official sales/phone scripts must stay in exact English wording from the manuals.
 
-If information is not in the manuals below, say: "매뉴얼에 없는 내용입니다. 매니저에게 확인하세요."
+If information is not in the manuals below, still try to give practical diagnostic help first. Only if truly unknown say: "매뉴얼에 없는 내용입니다. 매니저에게 확인하세요."
 
 === GOLDEN RULES ===
 1. Always prioritize orders by Due Time.
@@ -51,15 +63,15 @@ Left side menu has: Messages, In Wire, To Be Designed, Awaiting Delivery, Start 
 Top area shows counters (Messages, In Wire, etc.). When a number goes up, that section needs attention.
 Register 1 is used for Auto-Print of SuperTicket. Only one computer should use Register 1.
 
-=== HOW TO MONITOR ORDERS (most common question) ===
+=== HOW TO MONITOR ORDERS ===
 1. Look at the top of BMS. If the Messages counter number increases, a new Wire-In order arrived.
 2. Click Messages on the left menu.
 3. Open the new message and read the order details.
 4. Click Mark Read.
 5. Click In Wire on the left menu.
 6. Review the order and click Accept. (Never click Reject without manager approval.)
-7. The order moves to To Be Designed and a SuperTicket prints automatically if you are on Register 1.
-8. Take the SuperTicket to the design table.
+7. When you click Accept, two things happen automatically: the order moves to To Be Designed, and the SuperTicket prints (if on Register 1).
+8. Take the printed SuperTicket to the design table.
 
 === START DAY (cash) ===
 1. On BMS Home click Start Day / End Day.
@@ -89,7 +101,6 @@ Look at superticket.jpg for the example.
 4. For CardIsle: find PickupCodeID in Special Instructions → go to cardisle.com → enter code → Preview → Print.
 5. Match the code on the back of the printed card with the PickupCodeID before attaching.
 Look at attachments.jpg for visual reference.
-CardIsle price: 1800Flowers $5.99 / In-store $6.99.
 
 === DELIVERY ===
 Standard (not funeral): Provider = Walmart GoLocal, 3 Hour window, choose earliest available time, then Set Trip as Out for Delivery.
@@ -122,7 +133,7 @@ Keep the cooler clean and full looking. Look at cooler_vase.jpg and cooler_loose
               { role: 'user', content: buildUserMessage(question) }
             ],
             temperature: 0.3,
-            max_tokens: 900
+            max_tokens: 1000
           })
         });
         if (!res.ok) {
@@ -203,8 +214,8 @@ Question: ${question}`;
       const kana = (s.match(/[ぁ-んァ-ン]/g) || []).length;
       if (hangul >= 1) return 'ko';
       if (kana >= 1) return 'ja';
-      if (/\b(annyong|annyeong|annyeonghaseyo|gamsahamnida|gomawoyo|jamkkanman|eotteoke|eotteohge|mwoya|nugu|eodi|baedal|jumun|kkot|gonghang|eunhaeng|hwajangsil|doeeoyo|doeyo|joayo|johayo|saram|oneul|naeil|jigeum|ppalli|cheoncheonhi|ajumma|ajeossi|oppa|unnie|noona)\b/i.test(s)) return 'ko';
-      if (/\b(konnichiwa|arigatou|arigato|sumimasen|onegaishimasu|hai|iie|ohayo|oyasumi|kudasai|desu|masu|watashi|anata)\b/i.test(s)) return 'ja';
+      if (/\b(annyong|annyeong|annyeonghaseyo|gamsahamnida|gomawoyo|jamkkanman|eotteoke|eotteohge|mwoya|nugu|eodi|baedal|jumun|kkot)\b/i.test(s)) return 'ko';
+      if (/\b(konnichiwa|arigatou|arigato|sumimasen|onegaishimasu|hai|iie|ohayo|oyasumi|kudasai|desu|masu)\b/i.test(s)) return 'ja';
       if (/[áéíóúñü¿¡]/i.test(s) || /\b(el|la|de|que|y|en|un|una|es|por|para|gracias|hola|buenos|días|como|está|necesito|flores)\b/i.test(s)) return 'es-ES';
       return 'en';
     }
@@ -250,7 +261,6 @@ Question: ${question}`;
       audioEl.setAttribute('playsinline', 'true');
       audioEl.preload = 'auto';
       audioEl.volume = 1.0;
-      audioEl.muted = false;
       currentAudio = audioEl;
 
       try {
@@ -423,16 +433,6 @@ Question: ${question}`;
       if (answer) {
         const clean = answer.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '');
         window._lastGrokAnswer = clean;
-        const ansLang = detectLang(clean);
-        const ansNew = ansLang === 'es-ES' ? 'es' : (ansLang || currentLang);
-        if (ansNew !== currentLang) {
-          currentLang = ansNew;
-          localStorage.setItem('cf_lang', currentLang);
-          const langSel = document.getElementById('lang-select');
-          if (langSel) langSel.value = currentLang;
-          applyI18n();
-          renderStamps();
-        }
         document.getElementById('float-answer').textContent = clean;
         document.getElementById('float-speak-btn').style.display = 'inline-block';
         setFloatStatus('Q: ' + text + ' · 🔊 읽어주기 버튼을 누르세요');
