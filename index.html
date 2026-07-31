@@ -50,9 +50,7 @@
       background: #fff;
     }
     .login-form input:focus { outline: none; border-color: var(--primary); }
-    #login-error {
-      color: var(--danger); font-size: 0.9rem; margin-bottom: 8px;
-    }
+    #login-error { color: var(--danger); font-size: 0.9rem; margin-bottom: 8px; }
     .btn {
       display: inline-flex; align-items: center; justify-content: center;
       padding: 13px 20px; border: none; border-radius: 12px;
@@ -60,9 +58,7 @@
       background: var(--primary); color: #fff; transition: opacity 0.15s;
     }
     .btn:active { opacity: 0.85; }
-    .btn-outline {
-      background: #fff; color: var(--primary); border: 1.5px solid var(--primary);
-    }
+    .btn-outline { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
     .btn-sm { padding: 8px 14px; font-size: 0.9rem; }
     .hidden { display: none !important; }
     #app { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
@@ -94,16 +90,13 @@
     .stamp {
       width: 28px; height: 28px; border-radius: 50%; border: 2px solid #d1d5db;
       display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; font-size: 0.85rem; cursor: pointer;
-      transition: all 0.2s;
+      flex-shrink: 0; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
     }
     .stamp.done { background: var(--success); border-color: var(--success); color: #fff; }
     .routine-body { flex: 1; min-width: 0; }
     .routine-title { font-weight: 600; font-size: 0.98rem; }
     .routine-desc { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
-    .quick-btns {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;
-    }
+    .quick-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
     .quick-btn {
       padding: 14px 10px; border-radius: 12px; border: none; font-weight: 600;
       font-size: 0.92rem; cursor: pointer; text-align: center;
@@ -152,22 +145,16 @@
       padding: 8px 0; font-size: 0.95rem; cursor: pointer;
     }
     .checklist input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; }
-    .alert {
-      padding: 12px 14px; border-radius: 10px; font-size: 0.92rem; line-height: 1.45;
-    }
+    .alert { padding: 12px 14px; border-radius: 10px; font-size: 0.92rem; line-height: 1.45; }
     .alert-warn { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
     .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
     .alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-    .img-guide {
-      width: 100%; border-radius: 12px; display: block;
-    }
+    .img-guide { width: 100%; border-radius: 12px; display: block; }
     .summary-item {
       display: flex; justify-content: space-between; padding: 8px 0;
       border-bottom: 1px solid #f3f4f6; font-size: 0.95rem;
     }
-    .search-box {
-      display: flex; gap: 8px; margin-bottom: 14px;
-    }
+    .search-box { display: flex; gap: 8px; margin-bottom: 14px; }
     .search-box input {
       flex: 1; padding: 12px 14px; border: 1.5px solid #e5e7eb;
       border-radius: 12px; font-size: 1rem;
@@ -185,6 +172,46 @@
     }
     .voice-btn.listening { background: var(--danger); animation: pulse 1s infinite; }
     @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+    /* Floating mic - always visible */
+    .float-mic {
+      position: fixed;
+      bottom: 80px;
+      right: 16px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 16px rgba(45,90,61,0.35);
+      z-index: 90;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .float-mic.listening {
+      background: var(--danger);
+      animation: pulse 1s infinite;
+    }
+    .float-mic-panel {
+      position: fixed;
+      bottom: 145px;
+      right: 16px;
+      left: 16px;
+      max-width: 360px;
+      margin-left: auto;
+      background: white;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      z-index: 91;
+      display: none;
+    }
+    .float-mic-panel.show { display: block; }
+    .speak-controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   </style>
 </head>
 <body>
@@ -359,8 +386,21 @@
     </nav>
   </div>
 
+  <!-- Floating Mic (always visible after login) -->
+  <button class="float-mic" id="float-mic" onclick="toggleFloatMic()" title="음성으로 질문">🎤</button>
+  <div class="float-mic-panel" id="float-mic-panel">
+    <div style="font-weight:600;margin-bottom:8px">음성으로 질문하기</div>
+    <div id="float-status" style="font-size:0.9rem;color:var(--muted);margin-bottom:8px">🎤 누르고 말하세요 (언어 자동 인식)</div>
+    <div id="float-answer" style="font-size:0.92rem;white-space:pre-wrap;max-height:180px;overflow-y:auto"></div>
+    <div class="speak-controls">
+      <button class="btn btn-sm" id="float-speak-btn" style="display:none" onclick="speakText(window._lastGrokAnswer, this)">🔊 읽어주기</button>
+      <button class="btn btn-sm btn-outline" id="float-stop-btn" style="display:none" onclick="stopSpeaking()">⏹ 중지</button>
+      <button class="btn btn-sm btn-outline" onclick="closeFloatPanel()">닫기</button>
+    </div>
+  </div>
+
   <!-- MODAL -->
-  <div id="modal-overlay" class="modal-overlay hidden">
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this) closeModal()">
     <div id="modal-content"></div>
   </div>
 
