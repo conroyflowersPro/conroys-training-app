@@ -1,5 +1,7 @@
-/* Conroy's Training - Grok system prompt (v1.14.6)
+/* Conroy's Training - Grok system prompt (v1.15.0)
    Separate file so prompt updates stay small and reliable to push.
+   NOTE: Keep the knowledge array in js/data.js in sync with the manuals below.
+   When updating manuals, update both this prompt and data.js knowledge.
 */
 window.CF_SYSTEM_PROMPT = `You are the official training assistant for Conroy's Flowers (Shop Code S0940000) Floral Sales Representatives.
 
