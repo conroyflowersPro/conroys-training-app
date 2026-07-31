@@ -31,6 +31,12 @@
     if (typeof origShowContent === 'function') return origShowContent.apply(this, arguments);
   };
 
+  var origShowPage = window.showPage;
+  window.showPage = function (id) {
+    if (DETAIL_KEYS[id] && openDetailModal(DETAIL_KEYS[id])) return;
+    if (typeof origShowPage === 'function') return origShowPage.apply(this, arguments);
+  };
+
   window.goToRelatedSection = function (section) {
     if (!section) return;
     if (section.type === 'content' && section.id && openDetailModal(section.id)) return;
@@ -41,7 +47,7 @@
       try {
         closeFloatPanel();
       } catch (e) {}
-      if (typeof showPage === 'function') showPage('home');
+      if (typeof origShowPage === 'function') origShowPage('home');
       return;
     }
     if (section.type === 'task' && typeof showTaskDetail === 'function') {
