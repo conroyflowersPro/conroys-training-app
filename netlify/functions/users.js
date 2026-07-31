@@ -1,7 +1,7 @@
 /**
  * Netlify Function: users (Functions v2)
  * Shared employee accounts via Netlify Blobs
- * v1.16.2 – requires @netlify/blobs in package.json
+ * v1.16.3 – list allowed without pin (needed for login); mutations require adminPin
  */
 
 import { getStore } from "@netlify/blobs";
@@ -31,6 +31,18 @@ function jsonResponse(status, body) {
     status,
     headers: corsHeaders
   });
+}
+
+async function getBlobStore() {
+  try {
+    return getStore({ name: STORE_NAME });
+  } catch (e1) {
+    try {
+      return getStore(STORE_NAME);
+    } catch (e2) {
+      throw e1;
+    }
+  }
 }
 
 async function loadUsers(store) {
@@ -72,13 +84,14 @@ export default async (req) => {
 
   let store;
   try {
-    store = getStore({ name: STORE_NAME });
+    store = await getBlobStore();
   } catch (e) {
     console.error("getStore failed:", e);
     return jsonResponse(500, { error: "Blobs not available: " + (e.message || String(e)) });
   }
 
   try {
+    // Public: login (no pin)
     if (action === "login") {
       const username = String(body.username || "").trim().toLowerCase();
       const password = String(body.password || "");
@@ -95,13 +108,16 @@ export default async (req) => {
       return jsonResponse(200, { ok: true, name: user.name, username: user.username });
     }
 
-    if (body.adminPin !== ADMIN_PIN) {
-      return jsonResponse(403, { error: "Invalid Admin PIN" });
-    }
-
+    // Public: list (needed so every device can sync the same account list for login)
+    // Passwords are included because this is an internal staff tool; mutations still require pin.
     if (action === "list") {
       const users = await loadUsers(store);
       return jsonResponse(200, { ok: true, users });
+    }
+
+    // Mutations require admin pin
+    if (body.adminPin !== ADMIN_PIN) {
+      return jsonResponse(403, { error: "Invalid Admin PIN" });
     }
 
     if (action === "add") {

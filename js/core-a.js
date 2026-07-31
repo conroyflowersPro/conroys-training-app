@@ -113,6 +113,25 @@
       const username = document.getElementById('login-username').value.trim().toLowerCase();
       const password = document.getElementById('login-password').value;
       const errEl = document.getElementById('login-error');
+
+      // Prefer server-side login when on Netlify (shared accounts)
+      if (isNetlifyHost()) {
+        try {
+          const data = await callUsersApi({ action: 'login', username, password });
+          if (data.ok) {
+            currentUser = data.name || data.username || username;
+            localStorage.setItem('cf_currentUser', currentUser);
+            serverAvailable = true;
+            // refresh local cache of users in background
+            loadUsers().catch(() => {});
+            startApp();
+            return;
+          }
+        } catch (e) {
+          console.warn('server login failed, trying local', e);
+        }
+      }
+
       await loadUsers();
       const user = users.find(u => (u.username || '').toLowerCase() === username && u.password === password);
       if (!user) {
@@ -193,7 +212,7 @@
         es: 'Los pedidos Funeral son entregas individuales Uber ASAP — revíselos primero.\nAbra Messages / In Wire y busque pedidos Funeral o urgentes de inmediato.'
       };
       const btnLabels = {
-        ko: 'Funeral 항목으로 이동',
+        ko: 'Funeral 項目으로 이동',
         en: 'Go to Funeral task',
         ja: 'Funeral項目へ',
         es: 'Ir a tarea Funeral'
