@@ -156,7 +156,7 @@
       modal.innerHTML = `
         <button class="close-modal" onclick="closeWelcomeModal()">×</button>
         <h3 style="text-align:center;margin-bottom:12px">${g.title}</h3>
-        <img src="welcome.jpg" class="img-guide" style="max-height:200px;object-fit:cover;border-radius:12px;margin-bottom:12px" alt="Welcome" onerror="this.style.display='none'">
+        <img src="images/ui/welcome.webp" class="img-guide" style="max-height:200px;object-fit:cover;border-radius:12px;margin-bottom:12px" alt="Welcome" onerror="this.style.display='none'">
         <p style="text-align:center;white-space:pre-wrap;margin-bottom:16px;line-height:1.5">${g.msg}</p>
         <button class="btn" style="width:100%" onclick="closeWelcomeModal()">${okLabel}</button>
       `;
