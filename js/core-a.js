@@ -180,15 +180,26 @@
 
     // Called by the Logout button in the More tab
     function doLogout() {
-      // Reset today's daily tasks for this user on logout
-      if (currentUser) {
-        try {
-          localStorage.removeItem(stampKey());
-          // Also clear the welcome flag so it shows again next login if desired
-          // localStorage.removeItem('cf_welcome_' + currentUser + '_' + todayKey());
-        } catch (e) {}
+      const hasTasks = Object.keys(stamps).length > 0 && Object.values(stamps).some(s => s && s.done);
+
+      if (hasTasks) {
+        const msg = {
+          ko: '오늘 체크한 루틴(태스크)을 초기화할까요?\n\n확인 = 지우고 로그아웃\n취소 = 그대로 두고 로그아웃',
+          en: 'Reset today\'s checked tasks?\n\nOK = Clear and logout\nCancel = Keep and logout',
+          ja: '今日チェックしたルーティンをリセットしますか？\n\nOK = 消してログアウト\nキャンセル = そのままログアウト',
+          es: '¿Restablecer las tareas marcadas de hoy?\n\nOK = Borrar y cerrar sesión\nCancelar = Mantener y cerrar sesión'
+        }[currentLang] || 'Reset today\'s checked tasks?\n\nOK = Clear and logout\nCancel = Keep and logout';
+
+        if (confirm(msg)) {
+          // User chose to clear
+          try {
+            localStorage.removeItem(stampKey());
+          } catch (e) {}
+          stamps = {};
+        }
+        // If cancelled, just logout without clearing
       }
-      stamps = {};
+
       logout();
     }
 
