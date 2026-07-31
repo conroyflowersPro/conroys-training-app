@@ -1,4 +1,4 @@
-/* Conroy's Training App - voice module v1.14.6 (prompt moved to system-prompt.js) */
+/* Conroy's Training App - voice module v1.15.3 (prompt moved to system-prompt.js) */
 // ========== API KEY & GROK ==========
     function saveApiKey() {
       const key = document.getElementById('api-key-input').value.trim();
@@ -48,6 +48,62 @@
       }
     }
 
+    // Map question/answer keywords → app section so staff can jump to the visual guide
+    function detectRelatedSection(question, answer) {
+      const text = ((question || '') + ' ' + (answer || '')).toLowerCase();
+
+      // Attachments / CardIsle / balloons etc.
+      if (/attach|첨부|cardisle|balloon|풍선|chocolate|초콜릿|plush|인형|white\s*sheet|product\s*detail|awaiting\s*delivery/.test(text)) {
+        return { type: 'content', id: 'attachments', label: { ko: '첨부물 가이드', en: 'Attachments guide', ja: '添付物ガイド', es: 'Guía de adjuntos' } };
+      }
+      // Delivery
+      if (/deliver|배달|配達|entrega|uber|golocal|walmart|3hr|asap\s*trip|out\s*for\s*delivery/.test(text)) {
+        return { type: 'content', id: 'delivery', label: { ko: '배달 가이드', en: 'Delivery guide', ja: '配達ガイド', es: 'Guía de entrega' } };
+      }
+      // BMS flow / SuperTicket / Accept
+      if (/bms|workflow|super\s*ticket|superticket|accept|reject|in\s*wire|mark\s*read|design\s*ticket/.test(text)) {
+        return { type: 'content', id: 'bmsflow', label: { ko: 'BMS 흐름', en: 'BMS workflow', ja: 'BMSフロー', es: 'Flujo BMS' } };
+      }
+      // Messages page
+      if (/message|messages|wire\s*in|funeral|긴급|funeral\s*order/.test(text)) {
+        return { type: 'page', id: 'messages', label: { ko: 'Messages 화면', en: 'Messages page', ja: 'Messages画面', es: 'Página Messages' } };
+      }
+      // Golden rules
+      if (/golden|rule|due\s*time|매니저|manager\s*first|확신/.test(text)) {
+        return { type: 'content', id: 'golden', label: { ko: 'Golden Rules', en: 'Golden Rules', ja: 'Golden Rules', es: 'Golden Rules' } };
+      }
+      // Customer service
+      if (/customer|손님|greeting|인사|color|색상|size|사이즈|romance|sympathy|needs|니즈/.test(text)) {
+        return { type: 'page', id: 'customer', label: { ko: '손님 응대', en: 'Customer guide', ja: '接客ガイド', es: 'Guía de cliente' } };
+      }
+      // Phone
+      if (/phone|전화|電話|teléfono|hold|홀드|on\s*hold/.test(text)) {
+        return { type: 'page', id: 'phone', label: { ko: '전화 응대', en: 'Phone guide', ja: '電話対応', es: 'Guía telefónica' } };
+      }
+      // Decision helper
+      if (/unsure|모르겠|decision|어떻게\s*하|what\s*should|매니저한테|ask\s*manager/.test(text)) {
+        return { type: 'content', id: 'decision', label: { ko: '모르겠을 때', en: 'If unsure', ja: '迷ったとき', es: 'Si no está seguro' } };
+      }
+      // Cash / start-end day → home routine
+      if (/start\s*day|end\s*day|cash|현금|드로어|drawer|\$200|200\.00/.test(text)) {
+        return { type: 'page', id: 'home', label: { ko: '오늘 루틴', en: 'Today routine', ja: '今日のルーティン', es: 'Rutina de hoy' } };
+      }
+      return null;
+    }
+
+    function goToRelatedSection(section) {
+      if (!section) return;
+      // Close the float mic panel so the guide is fully visible
+      try { closeFloatPanel(); } catch (e) {}
+      if (section.type === 'page' && typeof showPage === 'function') {
+        showPage(section.id);
+      } else if (section.type === 'content' && typeof showContent === 'function') {
+        showContent(section.id);
+      } else if (section.type === 'task' && typeof showTaskDetail === 'function') {
+        showTaskDetail(section.id);
+      }
+    }
+
     async function doSearch() {
       const q = document.getElementById('search-input').value.trim();
       if (!q) return;
@@ -57,6 +113,13 @@
       if (grokAnswer) {
         const cleanAnswer = grokAnswer.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '').replace(/^\s*[-•]\s*/gm, '');
         window._lastGrokAnswer = cleanAnswer;
+        const section = detectRelatedSection(q, cleanAnswer);
+        window._lastRelatedSection = section;
+        let jumpBtn = '';
+        if (section) {
+          const lbl = (section.label && (section.label[currentLang] || section.label.en)) || 'Guide';
+          jumpBtn = `<button class="btn btn-sm" style="margin-top:10px;width:100%" onclick="goToRelatedSection(window._lastRelatedSection)">📖 ${lbl}</button>`;
+        }
         box.innerHTML = `
           <div class="result-item" style="background:#f0f7f2;border-radius:12px;padding:14px;margin-bottom:12px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -64,8 +127,13 @@
               <button class="btn btn-sm" id="speak-btn" onclick="speakText(window._lastGrokAnswer, this)">🔊 읽어주기</button>
             </div>
             <p style="font-size:0.95rem;margin-top:4px;white-space:pre-wrap">${cleanAnswer}</p>
+            ${jumpBtn}
           </div>`;
         logQuestion(q);
+        // Auto-jump shortly after answer so staff land on the visual guide
+        if (section) {
+          setTimeout(() => goToRelatedSection(section), 1400);
+        }
         return;
       }
       const ql = q.toLowerCase();
@@ -98,6 +166,7 @@ Detected question language: ${qLang}.
 CRITICAL: You MUST answer 100% in ${langName}. Do not answer in English unless the question is English.
 If the question is Korean (including romanized Korean like "annyong"), write every sentence in Korean Hangul.
 If Japanese (including romaji), answer in Japanese. If Spanish, answer in Spanish.
+Keep answers short and practical (max 4-6 short sentences). Prefer steps over long paragraphs.
 Question: ${question}`;
     }
 
@@ -325,13 +394,40 @@ Question: ${question}`;
       document.getElementById('float-answer').textContent = '로딩 중... 답변 생성 중';
       document.getElementById('float-speak-btn').style.display = 'none';
 
+      // Remove previous jump button if any
+      const oldJump = document.getElementById('float-jump-btn');
+      if (oldJump) oldJump.remove();
+
       const answer = await askGrok(questionForGrok);
       if (answer) {
         const clean = answer.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '');
         window._lastGrokAnswer = clean;
         document.getElementById('float-answer').textContent = clean;
         document.getElementById('float-speak-btn').style.display = 'inline-block';
-        setFloatStatus('Q: ' + text + ' · 🔊 읽어주기 버튼을 누르세요');
+
+        const section = detectRelatedSection(text, clean);
+        window._lastRelatedSection = section;
+
+        if (section) {
+          const lbl = (section.label && (section.label[currentLang] || section.label.en)) || 'Guide';
+          setFloatStatus('Q: ' + text + ' · 관련 가이드로 이동 중…');
+          // Add manual jump button
+          const controls = document.querySelector('.speak-controls');
+          if (controls && !document.getElementById('float-jump-btn')) {
+            const btn = document.createElement('button');
+            btn.id = 'float-jump-btn';
+            btn.className = 'btn btn-sm';
+            btn.textContent = '📖 ' + lbl;
+            btn.onclick = () => goToRelatedSection(window._lastRelatedSection);
+            controls.insertBefore(btn, controls.firstChild);
+          }
+          // Auto-navigate after a short beat so staff see the answer first
+          setTimeout(() => {
+            goToRelatedSection(section);
+          }, 1500);
+        } else {
+          setFloatStatus('Q: ' + text + ' · 🔊 읽어주기 버튼을 누르세요');
+        }
       } else {
         document.getElementById('float-answer').textContent = '답변을 받지 못했습니다.';
         setFloatStatus('다시 질문해 주세요.');
@@ -378,6 +474,8 @@ Question: ${question}`;
       const micBtn = document.getElementById('float-mic');
       document.getElementById('float-answer').textContent = '';
       document.getElementById('float-speak-btn').style.display = 'none';
+      const oldJump = document.getElementById('float-jump-btn');
+      if (oldJump) oldJump.remove();
       setFloatStatus('마이크 준비 중...');
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
