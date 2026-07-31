@@ -1,4 +1,4 @@
-/* Conroy's Training App - admin + i18n v1.20.0 */
+/* Conroy's Training App - admin + i18n v1.21.0 */
     let versionTapCount = 0;
     let versionTapTimer = null;
     function onVersionTap() {
@@ -66,7 +66,7 @@
         : '⚠️ Local mode · Saved on this device only';
 
       let html = `<button class="close-modal" onclick="closeModal()">×</button>
-        <h3>👔 Admin – v1.20.0</h3>
+        <h3>👔 Admin – v1.21.0</h3>
         <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px">${modeText}</p>
         <p id="admin-status-msg" style="font-size:0.9rem;margin-bottom:10px;min-height:1.2em"></p>
 
