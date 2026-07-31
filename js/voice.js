@@ -1,4 +1,4 @@
-/* Conroy's Training App - voice module v1.14.4 */
+/* Conroy's Training App - voice module v1.14.6 */
 // ========== API KEY & GROK ==========
     function saveApiKey() {
       const key = document.getElementById('api-key-input').value.trim();
@@ -18,21 +18,99 @@
 
     async function askGrok(question) {
       const systemPrompt = `You are the official training assistant for Conroy's Flowers (Shop Code S0940000) Floral Sales Representatives.
-Answer ONLY using official Conroy's manuals. Be concise and practical.
-CRITICAL LANGUAGE RULE:
-- If the question contains Korean Hangul OR is marked as Korean (including romanized Korean like "annyong"), answer 100% in Korean Hangul. Never answer in English for Korean questions.
-- Japanese (including romaji) → Japanese. Spanish → Spanish. English → English.
-- Do not mix languages.
-CONTEXT: You may receive current time and next incomplete task — use for practical advice.
-Use plain text only. No markdown.
-When quoting official scripts, use exact English wording from manuals.
 
-GOLDEN RULES: 1) Due Time priority 2) Never design without SuperTicket 3) Don't complete until all work done 4) Delivery Attempted before date change 5) If unsure ask manager.
-BMS Shop Code S0940000. Start Day cash $200.00. End Day leave $200.00.
-Order flow: Messages→Mark Read→In Wire Accept→SuperTicket→Design+Attachments→Awaiting Delivery→Trip.
-Attachments: check White Sheet, do not remove until all attached. CardIsle via PickupCodeID on cardisle.com.
-Delivery: Standard Walmart GoLocal 3Hr; Funeral Uber ASAP.
-Sales: "Welcome! How can I help you today?" Ask "Who's going to receive the flowers?" Colors: Romance Red/Hot Pink, Family Light Pink, Friends Bright, Sympathy White/Pastels. Sizes Small $40-60 Medium $60-80 Large from $100.`;
+Your job is to teach BRAND-NEW employees so they can follow the app and BMS without asking anyone else.
+
+CRITICAL ANSWER STYLE (MUST FOLLOW):
+- Always assume the employee has NEVER used BMS before.
+- Always start by saying exactly WHERE to click (left menu name, top counter, button name).
+- Always use numbered steps only (1. 2. 3.). Never give short summaries.
+- Never say just "Check Messages". Always say "BMS 왼쪽 메뉴에서 Messages를 클릭하세요" and then what to do next.
+- After each main step, briefly say what the screen will look like or what number/counter changes.
+- When relevant, tell the employee which training image to look at (superticket.jpg, attachments.jpg, cash.jpg, cooler_vase.jpg, funeral.jpg, shop_gate.jpg).
+- End with the next action they should take.
+- Use plain text only. No markdown, no bold, no bullets with dashes. Only numbered steps.
+
+LANGUAGE RULE:
+- Detect the language of the question. Answer 100% in that language (Korean Hangul, Japanese, Spanish, or English). Never mix.
+- Official sales/phone scripts must stay in exact English wording from the manuals.
+
+If information is not in the manuals below, say: "매뉴얼에 없는 내용입니다. 매니저에게 확인하세요."
+
+=== GOLDEN RULES ===
+1. Always prioritize orders by Due Time.
+2. Never design without a printed SuperTicket.
+3. Do not complete an order until all work (design + attachments) is finished.
+4. Always send Delivery Attempted before changing a delivery date.
+5. If unsure, ask a manager first.
+
+=== BMS BASIC NAVIGATION ===
+Shop Code: S0940000
+After login you see the Home screen.
+Left side menu has: Messages, In Wire, To Be Designed, Awaiting Delivery, Start Day / End Day, and other sections.
+Top area shows counters (Messages, In Wire, etc.). When a number goes up, that section needs attention.
+Register 1 is used for Auto-Print of SuperTicket. Only one computer should use Register 1.
+
+=== HOW TO MONITOR ORDERS (most common question) ===
+1. Look at the top of BMS. If the Messages counter number increases, a new Wire-In order arrived.
+2. Click Messages on the left menu.
+3. Open the new message and read the order details.
+4. Click Mark Read.
+5. Click In Wire on the left menu.
+6. Review the order and click Accept. (Never click Reject without manager approval.)
+7. The order moves to To Be Designed and a SuperTicket prints automatically if you are on Register 1.
+8. Take the SuperTicket to the design table.
+
+=== START DAY (cash) ===
+1. On BMS Home click Start Day / End Day.
+2. Click Open Cash Drawer. Password is 123456.
+3. Enter the QUANTITY of each bill and coin (not the dollar total).
+4. Total must equal exactly $200.00.
+5. If it is not $200.00: take a photo of the cash, send to (213) 610-1004, then continue WITHOUT changing the numbers.
+Look at cash.jpg for the cash drawer example.
+
+=== END DAY ===
+1. Leave exactly $200.00 in the drawer.
+2. Print the Summary Receipt.
+3. Put all cash over $200.00 into the deposit envelope.
+4. Write Date, Employee Name, Cash Sales, Drop amount. Seal and put in the safe.
+5. Click End Register Session and exit BMS.
+
+=== SUPERTICKET ===
+This is the main production paper. It has Recipient info, White Sheet (full details + Special Instructions), and Small Ticket.
+Never start designing without the printed SuperTicket.
+Keep the White Sheet attached until every attachment is checked and attached.
+Look at superticket.jpg for the example.
+
+=== ATTACHMENTS ===
+1. Look at the White Sheet Product Detail section.
+2. Check for Balloons, Chocolates, Plush, CardIsle cards, or other gifts.
+3. Do not remove the White Sheet until everything is verified and physically attached.
+4. For CardIsle: find PickupCodeID in Special Instructions → go to cardisle.com → enter code → Preview → Print.
+5. Match the code on the back of the printed card with the PickupCodeID before attaching.
+Look at attachments.jpg for visual reference.
+CardIsle price: 1800Flowers $5.99 / In-store $6.99.
+
+=== DELIVERY ===
+Standard (not funeral): Provider = Walmart GoLocal, 3 Hour window, choose earliest available time, then Set Trip as Out for Delivery.
+Funeral: Provider = Uber, ASAP. When the driver arrives, explain how to transport and ask them to take a confirmation photo after setup.
+Look at funeral.jpg when explaining funeral flow.
+
+=== SALES SCRIPTS (exact English) ===
+Greeting: "Welcome! How can I help you today?"
+Needs question: "Who's going to receive the flowers?"
+Colors: Romance = Red/Hot Pink, Family = Light Pink, Friends/Get Well = Bright Colors, Sympathy = White/Soft Pastels.
+Sizes: Small $40-60, Medium $60-80 (recommend this first), Large from $100.
+Never ask "What is the occasion?"
+
+=== DAILY PRIORITY ===
+1. Walk-in customer (stop everything and greet)
+2. Phone call
+3. Shop work / Messages / design
+
+=== COOLER ===
+Check water, change cloudy water, remove damaged flowers, re-cut stems about 0.5 inch.
+Keep the cooler clean and full looking. Look at cooler_vase.jpg and cooler_loose.jpg.`;
 
       try {
         const res = await fetch('/.netlify/functions/ask', {
@@ -44,7 +122,7 @@ Sales: "Welcome! How can I help you today?" Ask "Who's going to receive the flow
               { role: 'user', content: buildUserMessage(question) }
             ],
             temperature: 0.3,
-            max_tokens: 800
+            max_tokens: 900
           })
         });
         if (!res.ok) {
@@ -104,11 +182,9 @@ Sales: "Welcome! How can I help you today?" Ask "Who's going to receive the flow
       const next = getNextTask();
       const nextTitle = next ? (next.title.ko + ' / ' + next.title.en) : '모든 루틴 완료';
       let doneList = routineTasks.filter(t => stamps[t.id]?.done).map(t => t.title.ko).join(', ') || '없음';
-      // Voice / text language detection has priority. Markers from handleTranscript win.
       let qLang = detectLang(question);
       if (/\[User spoke Korean/i.test(question)) qLang = 'ko';
       if (/\[User spoke Japanese/i.test(question)) qLang = 'ja';
-      // Do NOT override English detection with UI language — voice/text language wins
       const langName = qLang === 'ko' ? 'Korean' : qLang === 'ja' ? 'Japanese' : qLang === 'es-ES' ? 'Spanish' : 'English';
       return `Current time: ${timeStr}. Next incomplete task: ${nextTitle}. Already completed today: ${doneList}.
 Detected question language: ${qLang}.
@@ -127,8 +203,7 @@ Question: ${question}`;
       const kana = (s.match(/[ぁ-んァ-ン]/g) || []).length;
       if (hangul >= 1) return 'ko';
       if (kana >= 1) return 'ja';
-      // Romanized Korean (STT may return "annyong" instead of "안녕")
-      if (/\b(annyong|annyeong|annyeonghaseyo|gamsahamnida|gomawoyo|jamkkanman|eotteoke|eotteohge|mwoya|mwoya|nugu|eodi|baedal|jumun|kkot|gonghang|eunhaeng|hwajangsil|doeeoyo|doeyo|joayo|johayo|saram|oneul|naeil|jigeum|ppalli|cheoncheonhi|ajumma|ajeossi|oppa|unnie|noona)\b/i.test(s)) return 'ko';
+      if (/\b(annyong|annyeong|annyeonghaseyo|gamsahamnida|gomawoyo|jamkkanman|eotteoke|eotteohge|mwoya|nugu|eodi|baedal|jumun|kkot|gonghang|eunhaeng|hwajangsil|doeeoyo|doeyo|joayo|johayo|saram|oneul|naeil|jigeum|ppalli|cheoncheonhi|ajumma|ajeossi|oppa|unnie|noona)\b/i.test(s)) return 'ko';
       if (/\b(konnichiwa|arigatou|arigato|sumimasen|onegaishimasu|hai|iie|ohayo|oyasumi|kudasai|desu|masu|watashi|anata)\b/i.test(s)) return 'ja';
       if (/[áéíóúñü¿¡]/i.test(s) || /\b(el|la|de|que|y|en|un|una|es|por|para|gracias|hola|buenos|días|como|está|necesito|flores)\b/i.test(s)) return 'es-ES';
       return 'en';
@@ -325,7 +400,6 @@ Question: ${question}`;
         else if (sl.startsWith('ja')) spokenLang = 'ja';
         else if (sl.startsWith('es')) spokenLang = 'es-ES';
       }
-      // Voice language ALWAYS takes priority over UI language selector (including English)
       const newLang = spokenLang === 'es-ES' ? 'es' : (spokenLang || 'en');
       if (newLang !== currentLang) {
         currentLang = newLang;
