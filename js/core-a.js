@@ -1,4 +1,4 @@
-/* Conroy's Training App - core part A */
+/* Conroy's Training App - core part A v1.18.0 */
 // ========== AUTH / USERS ==========
     const DEFAULT_USERS = [
       { username: 'admin',     password: 'ADMIN7890', name: 'Admin' },
@@ -89,6 +89,30 @@
     let isListening = false;
     let recognition = null;
 
+    function updateLangSelectVisibility() {
+      const langSel = document.getElementById('lang-select');
+      if (!langSel) return;
+      // Staff: hide header language (auto-detect from chat/voice only)
+      // Admin: also auto-detect, but selector stays available
+      if (currentUser === 'Admin') {
+        langSel.style.display = '';
+      } else {
+        langSel.style.display = 'none';
+      }
+    }
+
+    function setAppLanguage(lang) {
+      const next = (lang === 'es-ES') ? 'es' : (lang || 'en');
+      if (next !== 'ko' && next !== 'en' && next !== 'ja' && next !== 'es') return;
+      currentLang = next;
+      localStorage.setItem('cf_lang', currentLang);
+      const langSel = document.getElementById('lang-select');
+      if (langSel) langSel.value = currentLang;
+      if (typeof applyI18n === 'function') applyI18n();
+      if (typeof renderStamps === 'function') renderStamps();
+      if (typeof checkEndOfDayReminder === 'function') checkEndOfDayReminder();
+    }
+
     function playBell() {
       try {
         const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -114,7 +138,6 @@
       const password = document.getElementById('login-password').value;
       const errEl = document.getElementById('login-error');
 
-      // Prefer server-side login when on Netlify (shared accounts)
       if (isNetlifyHost()) {
         try {
           const data = await callUsersApi({ action: 'login', username, password });
@@ -122,7 +145,6 @@
             currentUser = data.name || data.username || username;
             localStorage.setItem('cf_currentUser', currentUser);
             serverAvailable = true;
-            // refresh local cache of users in background
             loadUsers().catch(() => {});
             startApp();
             return;
@@ -145,7 +167,9 @@
     }
 
     function startApp() {
-      currentLang = localStorage.getItem('cf_lang') || 'en';
+      // Default UI language: English on each login; chat/voice may change it later
+      currentLang = 'en';
+      localStorage.setItem('cf_lang', 'en');
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
       document.getElementById('header-user').textContent = currentUser + ' · ' + new Date().toLocaleDateString();
@@ -154,6 +178,7 @@
         if (currentUser === 'Admin') adminCard.classList.remove('hidden');
         else adminCard.classList.add('hidden');
       }
+      updateLangSelectVisibility();
       const langSel = document.getElementById('lang-select');
       if (langSel) langSel.value = currentLang;
       loadStamps();
@@ -212,7 +237,7 @@
         es: 'Los pedidos Funeral son entregas individuales Uber ASAP — revíselos primero.\nAbra Messages / In Wire y busque pedidos Funeral o urgentes de inmediato.'
       };
       const btnLabels = {
-        ko: 'Funeral 項目으로 이동',
+        ko: 'Funeral 항목으로 이동',
         en: 'Go to Funeral task',
         ja: 'Funeral項目へ',
         es: 'Ir a tarea Funeral'
@@ -277,7 +302,10 @@
       currentLang = 'en';
       applyI18n();
       const langSel = document.getElementById('lang-select');
-      if (langSel) langSel.value = 'en';
+      if (langSel) {
+        langSel.value = 'en';
+        langSel.style.display = '';
+      }
       document.getElementById('app').classList.add('hidden');
       document.getElementById('login-screen').classList.remove('hidden');
       const adminCard = document.getElementById('admin-card');
