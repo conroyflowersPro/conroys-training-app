@@ -33,7 +33,7 @@
         : '⚠️ Local mode · Saved on this device only (syncs after Netlify deploy)';
 
       let html = `<button class="close-modal" onclick="closeModal()">×</button>
-        <h3>👔 Admin – v1.15.3</h3>
+        <h3>👔 Admin – v1.15.5</h3>
         <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px">${modeText}</p>
 
         <div class="card" style="margin-bottom:14px">
