@@ -1,7 +1,11 @@
 /* Conroy's Training App - core part B */
 
     function renderStamps() {
-      const container = document.getElementById('stamp-list');
+      const container = document.getElementById('stamp-list') || document.getElementById('routine-list');
+      if (!container) {
+        console.warn('renderStamps: no stamp-list or routine-list found');
+        return;
+      }
       let html = '';
       let doneCount = 0;
       const nextTask = getNextTask();
@@ -32,17 +36,19 @@
       container.innerHTML = html;
 
       const pct = Math.round((doneCount / routineTasks.length) * 100);
-      document.getElementById('progress-fill').style.width = pct + '%';
-      document.getElementById('progress-text').textContent = `${doneCount} / ${routineTasks.length} ${currentLang==='ko'?'완료':'completed'} (${pct}%)`;
+      const pf = document.getElementById('progress-fill'); if (pf) pf.style.width = pct + '%';
+      const pt = document.getElementById('progress-text'); if (pt) pt.textContent = `${doneCount} / ${routineTasks.length} ${currentLang==='ko'?'완료':'completed'} (${pct}%)`;
 
       const nextBanner = document.getElementById('next-banner');
       const nextText = document.getElementById('next-task-text');
-      if (nextTask) {
-        nextBanner.classList.remove('hidden');
-        nextText.textContent = nextTask.title[currentLang] || nextTask.title.en;
-      } else {
-        nextBanner.classList.remove('hidden');
-        nextText.textContent = currentLang === 'ko' ? '오늘 루틴을 모두 완료했습니다! 🎉' : 'All routines completed! 🎉';
+      if (nextBanner && nextText) {
+        if (nextTask) {
+          nextBanner.classList.remove('hidden');
+          nextText.textContent = nextTask.title[currentLang] || nextTask.title.en;
+        } else {
+          nextBanner.classList.remove('hidden');
+          nextText.textContent = currentLang === 'ko' ? '오늘 루틴을 모두 완료했습니다! 🎉' : 'All routines completed! 🎉';
+        }
       }
 
       checkEndOfDayReminder();
