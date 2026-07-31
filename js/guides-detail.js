@@ -1,5 +1,6 @@
-/* Official training guides — detailed for brand-new staff (v1.20.0)
+/* Official training guides — detailed for brand-new staff (v1.21.0)
    Principle: new employee can follow the guide alone without asking others.
+   Sales philosophy deeply embedded in Customer guide.
    Used by showContent / page modals when available.
 */
 window.CF_GUIDE_DETAIL = {
@@ -248,7 +249,7 @@ window.CF_GUIDE_DETAIL = {
       es: 'Golden Rules'
     },
     goal: {
-      ko: '매장에서 매일 지키는 다섯 가지 규칙이다.',
+      ko: '매장에서 매일 지키는 다섯 가지 규칙입니다.',
       en: 'Five rules every team member follows every day.',
       ja: '毎日守る5つのルール。',
       es: 'Cinco reglas diarias del equipo.'
@@ -374,66 +375,138 @@ window.CF_GUIDE_DETAIL = {
       es: 'Atención al cliente'
     },
     goal: {
-      ko: '매장 손님을 최우선으로 맞이하고, 인사·니즈·색·사이즈까지 안내한다.',
-      en: 'Put walk-in customers first; greet, learn needs, guide color and size.',
-      ja: '来店客を最優先し、挨拶・ニーズ・色・サイズを案内する。',
-      es: 'Priorice al cliente en tienda; saludo, necesidades, color y tamaño.'
+      ko: '매장 손님을 최우선으로 맞이하고, Conroy’s 세일즈 철학(가이드하고 인터뷰하지 않기 · 카드 메시지가 이야기를 말함 · 행사를 판다)에 따라 Medium을 기본으로 추천하며 자연스럽게 응대한다.',
+      en: 'Put walk-in customers first. Guide (don’t interview), let the card message tell the story, sell the occasion — and lead with Medium as the standard recommendation.',
+      ja: '来店客を最優先。ガイドしインタビューしない・カードが物語る・機会を売る。Mediumを標準推奨として案内する。',
+      es: 'Priorice al cliente en tienda. Guía (no entreviste), el mensaje de la tarjeta cuenta la historia, venda la ocasión — y lidere con Medium como recomendación estándar.'
     },
     before: {
-      ko: ['손님이 문에 들어오면 다른 일(전화·BMS)보다 손님이 1순위다.'],
-      en: ['When a customer enters, they are priority #1 over phone and BMS work.'],
-      ja: ['来店客が最優先。'],
-      es: ['Cliente en tienda es prioridad 1.']
+      ko: [
+        '손님이 문에 들어오면 다른 일(전화·BMS·루틴)보다 손님이 1순위다.',
+        '세일즈 철학을 기억한다: 가이드하지 인터뷰하지 않는다. 카드 메시지가 이야기를 말한다. 꽃을 팔지 말고 행사를 판다.',
+        'Medium($60–80)이 대부분의 경우 표준 추천이다.'
+      ],
+      en: [
+        'When a customer enters, they are priority #1 over phone, BMS, and routine work.',
+        'Remember the philosophy: Guide, don’t interview. The card message tells the story. Sell the occasion, not the flowers.',
+        'Medium ($60–80) is the standard recommendation for most occasions.'
+      ],
+      ja: [
+        '来店客が最優先（電話・BMSより上）。',
+        '哲学を思い出す：ガイドする・インタビューしない。カードが物語る。機会を売る。',
+        'Medium($60–80)がほとんどの場合の標準推奨。'
+      ],
+      es: [
+        'Cliente en tienda es prioridad 1 sobre teléfono y BMS.',
+        'Recuerde la filosofía: Guía, no entreviste. El mensaje cuenta la historia. Venda la ocasión.',
+        'Medium ($60–80) es la recomendación estándar para la mayoría.'
+      ]
     },
     steps: {
       ko: [
         '하던 일을 즉시 멈춘다.',
         '손님 쪽으로 몸을 향한다.',
         '정확히 이렇게 인사한다: "Welcome! How can I help you today?"',
-        '이어서 묻는다: "Who\'s going to receive the flowers?"',
+        '이어서 오직 이것만 묻는다: "Who\'s going to receive the flowers?" (행사를 묻지 않는다. 카드 메시지가 이미 이야기를 말해 준다.)',
         '받는 분 관계에 맞춰 색을 안내한다: Romance → Red/Hot Pink · Family → Light Pink · Friends/Get Well → Bright Colors · Sympathy → White/Soft Pastels',
-        '사이즈를 안내한다: Small $40–60 · Medium $60–80(가장 먼저 추천) · Large $100부터',
+        '사이즈는 Medium을 먼저 추천한다: "I’d recommend a medium vase arrangement, perfect for a desk or end table, filled with fresh garden flowers in our appropriate color scheme. The price range is between $60 and $80."',
+        '손님이 Medium을 거절하거나 소박한 선물을 원하면 Small($40–60)을 안내한다.',
+        '기념일·90th birthday·퇴직·그랜드 오픈·장례 등 Milestone이면 Large($100부터)를 추천한다. Placement로 크기를 시각화한다 (centerpiece, entryway 등).',
+        '가격은 마지막에 말한다. 꽃 종류를 나열하지 말고 "fresh garden flowers"라고 말한다.',
         '손님이 결정을 돕도록 질문에 답하고, 필요하면 매니저를 부른다.'
       ],
       en: [
         'Stop what you are doing immediately.',
         'Turn toward the customer.',
         'Say exactly: "Welcome! How can I help you today?"',
-        'Then ask: "Who\'s going to receive the flowers?"',
+        'Then ask only: "Who\'s going to receive the flowers?" (Never ask "What is the occasion?" — the card message tells the story.)',
         'Guide color by relationship: Romance → Red/Hot Pink; Family → Light Pink; Friends/Get Well → Bright Colors; Sympathy → White/Soft Pastels.',
-        'Guide size: Small $40–60; Medium $60–80 (recommend first); Large from $100.',
+        'Lead with Medium: "I’d recommend a medium vase arrangement, perfect for a desk or end table, filled with fresh garden flowers in our appropriate color scheme. The price range is between $60 and $80."',
+        'Offer Small ($40–60) only if the customer declines Medium or wants a modest gift.',
+        'Recommend Large (from $100) for milestones (anniversaries, 90th birthdays, retirements, grand openings, funerals). Use placement to help visualize size (centerpiece, entryway).',
+        'Present the price last. Say "fresh garden flowers" — do not list flower varieties.',
         'Answer questions; call a manager if needed.'
       ],
       ja: [
         '作業を止める。',
         'お客様の方を向く。',
         '"Welcome! How can I help you today?"',
-        '"Who\'s going to receive the flowers?"',
-        '色の案内（Romance/Family/Friends/Sympathy）。',
-        'サイズ: Small / Medium推奨 / Large。',
+        '"Who\'s going to receive the flowers?"のみ聞く（occasionは聞かない）。',
+        '関係に合わせて色を案内。',
+        'Mediumを先に推奨する（$60–80）。',
+        'Mediumを断られた場合のみSmall。',
+        'MilestoneならLarge（$100から）。Placementで大きさを想像させる。',
+        '価格は最後。花の種類を並べず"fresh garden flowers"と言う。',
         '必要ならマネージャーを呼ぶ。'
       ],
       es: [
         'Deje lo que está haciendo.',
         'Mire al cliente.',
         '"Welcome! How can I help you today?"',
-        '"Who\'s going to receive the flowers?"',
+        'Solo pregunte: "Who\'s going to receive the flowers?" (Nunca "What is the occasion?").',
         'Guíe colores según relación.',
-        'Tamaños: Small, Medium (recomiende primero), Large.',
+        'Lidere con Medium ($60–80) como recomendación estándar.',
+        'Ofrezca Small solo si rechaza Medium.',
+        'Large desde $100 para hitos. Use placement para visualizar.',
+        'Presente el precio al final. Diga "fresh garden flowers".',
         'Llame al gerente si hace falta.'
       ]
     },
     never: {
-      ko: ['"What is the occasion?"이라고 묻지 않는다.', '손님이 있는데 전화를 먼저 받지 않는다.'],
-      en: ['Do not ask "What is the occasion?"', 'Do not take a phone call before helping a customer in the shop.'],
-      ja: ['occasionと聞かない。', '来店客より電話を優先しない。'],
-      es: ['No pregunte "What is the occasion?"', 'No atienda el teléfono antes que al cliente en tienda.']
+      ko: [
+        '"What is the occasion?"이라고 묻지 않는다. (카드 메시지가 이미 이야기를 말한다.)',
+        '손님이 있는데 전화를 먼저 받지 않는다.',
+        'Small을 먼저 추천하지 않는다. Medium이 표준이다.',
+        '꽃 종류를 나열하지 않는다. "fresh garden flowers"라고 말한다.',
+        '가격을 먼저 말하지 않는다. 가격은 마지막이다.'
+      ],
+      en: [
+        'Do not ask "What is the occasion?" — the card message tells the story.',
+        'Do not take a phone call before helping a customer in the shop.',
+        'Do not lead with Small. Medium is the standard recommendation.',
+        'Do not list flower varieties. Say "fresh garden flowers".',
+        'Do not present the price first. Price comes last.'
+      ],
+      ja: [
+        'occasionと聞かない。',
+        '来店客より電話を優先しない。',
+        'Smallを先に推奨しない。Mediumが標準。',
+        '花の種類を並べない。',
+        '価格を先に言わない。'
+      ],
+      es: [
+        'No pregunte "What is the occasion?".',
+        'No atienda el teléfono antes que al cliente en tienda.',
+        'No lidere con Small. Medium es el estándar.',
+        'No enumere variedades de flores.',
+        'No presente el precio primero.'
+      ]
     },
     done: {
-      ko: ['인사와 니즈 질문 완료', '색·사이즈 안내 완료'],
-      en: ['Greeting and needs question done', 'Color and size guidance given'],
-      ja: ['挨拶・ニーズ', '色・サイズ案内'],
-      es: ['Saludo y necesidades', 'Color y tamaño']
+      ko: [
+        '인사와 "Who’s going to receive..." 질문 완료',
+        '색 안내 + Medium을 먼저 추천함',
+        '가격을 마지막에 말했음',
+        '인터뷰하지 않고 가이드했음'
+      ],
+      en: [
+        'Greeting and "Who’s going to receive..." done',
+        'Color guidance + led with Medium',
+        'Price presented last',
+        'Guided instead of interviewing'
+      ],
+      ja: [
+        '挨拶とWho’s going to receive完了',
+        '色案内 + Mediumを先に推奨',
+        '価格は最後',
+        'ガイドした（インタビューしていない）'
+      ],
+      es: [
+        'Saludo y pregunta Who’s going to receive hecha',
+        'Color + lideró con Medium',
+        'Precio al final',
+        'Guió en lugar de entrevistar'
+      ]
     }
   },
 
