@@ -1,6 +1,6 @@
 {
   "name": "conroys-training-app",
-  "version": "1.18.0",
+  "version": "1.20.0",
   "description": "Conroy's Flowers Floral Sales Rep Training PWA",
   "private": true,
   "dependencies": {

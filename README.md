@@ -1,4 +1,4 @@
-# Conroy's Flowers Training App - v1.16.1
+# Conroy's Flowers Training App - v1.20.0
 
 Floral Sales Representative Training PWA (Progressive Web App)
 
@@ -17,13 +17,13 @@ Admin login → More tab → 「👔 Admin 관리」 → Open account management
 
 Admin PIN (backup): `7890`
 
-## v1.16.1 Changes (Image Optimization Complete)
-- **All images converted to optimized WebP** and code paths switched
-- GitHub Action auto-converts any new JPG/PNG → WebP on push
-- Significant size reduction (most images 60-80% smaller)
-- UI images resized to max 600px wide, Guides to 1000px
-- Lazy loading already in place
-- Cache headers tuned for WebP (long immutable cache)
+## v1.20.0 Changes
+- Detailed guides for brand-new staff (`CF_GUIDE_DETAIL`) with goal / before / steps / never / done structure
+- Guide modals + TTS Read aloud (xAI preferred, browser fallback)
+- Home quick buttons and nav route to detailed guide modals (guide-router)
+- Answer UI refinements: short answers + related guide button inside chat
+- Default EN UI, language selector hidden for staff
+- Image optimization (WebP + GitHub Action) complete
 
 ## Image Workflow (중요 – 앞으로 이렇게만 하세요)
 1. `images/ui/` 또는 `images/guides/` 폴더에 **원본 JPG/PNG만** 올린다.
@@ -36,6 +36,20 @@ Admin PIN (backup): `7890`
 - 파일명: 영문 소문자 + 하이픈 권장 (예: `cooler-vase.jpg`)
 
 원본 JPG는 Action 재생성용으로 유지한다. 삭제하지 마세요.
+
+## Previous (v1.18.0 ~ v1.19.x)
+- Prefer server TTS (xAI) for Read aloud
+- Default EN, hide lang select for staff
+- Guide modal TTS + sentence cache
+- Answer-ui short answers + related guide button
+
+## Previous (v1.16.1)
+- **All images converted to optimized WebP** and code paths switched
+- GitHub Action auto-converts any new JPG/PNG → WebP on push
+- Significant size reduction (most images 60-80% smaller)
+- UI images resized to max 600px wide, Guides to 1000px
+- Lazy loading already in place
+- Cache headers tuned for WebP (long immutable cache)
 
 ## Previous (v1.15.0)
 - Unified version number to 1.15.0 across all files
