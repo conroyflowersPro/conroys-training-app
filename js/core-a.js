@@ -178,6 +178,20 @@
       }, 300);
     }
 
+    // Called by the Logout button in the More tab
+    function doLogout() {
+      // Reset today's daily tasks for this user on logout
+      if (currentUser) {
+        try {
+          localStorage.removeItem(stampKey());
+          // Also clear the welcome flag so it shows again next login if desired
+          // localStorage.removeItem('cf_welcome_' + currentUser + '_' + todayKey());
+        } catch (e) {}
+      }
+      stamps = {};
+      logout();
+    }
+
     function logout() {
       localStorage.removeItem('cf_currentUser');
       currentUser = null;
