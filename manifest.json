@@ -9,9 +9,9 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "header.jpg",
+      "src": "images/ui/header.webp",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/webp",
       "purpose": "any"
     }
   ]
