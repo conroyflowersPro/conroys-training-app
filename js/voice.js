@@ -1,4 +1,6 @@
-/* Conroy's Training App - voice module v1.17.1 – server TTS first */
+/* Conroy's Training App - voice module v1.19.0
+   mic beep, guide modal (no auto-jump), server TTS + sentence cache
+*/
     function saveApiKey() {
       const key = document.getElementById('api-key-input').value.trim();
       if (!key) {
@@ -78,13 +80,14 @@
       return null;
     }
 
+    /** Open official guide in modal (click only). Does not auto-close answer panel. */
     function goToRelatedSection(section) {
       if (!section) return;
-      try { closeFloatPanel(); } catch (e) {}
-      if (section.type === 'page' && typeof showPage === 'function') {
-        showPage(section.id);
-      } else if (section.type === 'content' && typeof showContent === 'function') {
+      if (section.type === 'content' && typeof showContent === 'function') {
         showContent(section.id);
+      } else if (section.type === 'page' && typeof showPage === 'function') {
+        try { closeFloatPanel(); } catch (e) {}
+        showPage(section.id);
       } else if (section.type === 'task' && typeof showTaskDetail === 'function') {
         showTaskDetail(section.id);
       }
@@ -134,7 +137,7 @@
       window._lastRelatedSection = section;
       if (section) {
         const lbl = (section.label && (section.label[currentLang] || section.label.en)) || 'Guide';
-        setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '📖 아래 가이드를 확인하세요');
+        setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '📖 Tap guide to open');
         const controls = document.querySelector('.speak-controls');
         if (controls && !document.getElementById('float-jump-btn')) {
           const btn = document.createElement('button');
@@ -145,7 +148,7 @@
           controls.insertBefore(btn, controls.firstChild);
         }
       } else {
-        setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '🔊 읽어주기 또는 📋 오늘 할 일');
+        setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '🔊 Read aloud or 📋 tasks');
       }
     }
 
@@ -157,16 +160,15 @@
       input.value = '';
       let spokenLang = detectLang(q);
       const newLang = spokenLang === 'es-ES' ? 'es' : (spokenLang || 'en');
-      if (newLang !== currentLang) {
+      if (typeof setAppLanguage === 'function') setAppLanguage(newLang);
+      else if (newLang !== currentLang) {
         currentLang = newLang;
         localStorage.setItem('cf_lang', currentLang);
-        const langSel = document.getElementById('lang-select');
-        if (langSel) langSel.value = currentLang;
         applyI18n();
         if (typeof renderStamps === 'function') renderStamps();
       }
       setFloatStatus('Q: ' + q);
-      document.getElementById('float-answer').textContent = '로딩 중... 답변 생성 중';
+      document.getElementById('float-answer').textContent = 'Loading answer...';
       document.getElementById('float-speak-btn').style.display = 'none';
       const tasksBtn = document.getElementById('float-tasks-btn');
       if (tasksBtn) tasksBtn.style.display = 'none';
@@ -175,8 +177,8 @@
       const answer = await askGrok(q);
       if (answer) showAnswerInPanel(q, answer);
       else {
-        document.getElementById('float-answer').textContent = '답변을 받지 못했습니다.';
-        setFloatStatus('다시 질문해 주세요.');
+        document.getElementById('float-answer').textContent = 'No answer received.';
+        setFloatStatus('Please try again.');
       }
     }
 
@@ -184,7 +186,10 @@
       const q = document.getElementById('search-input').value.trim();
       if (!q) return;
       const box = document.getElementById('search-results');
-      box.innerHTML = `<div class="alert alert-info">검색 중...</div>`;
+      box.innerHTML = `<div class="alert alert-info">Searching...</div>`;
+      const detected = detectLang(q);
+      const newLang = detected === 'es-ES' ? 'es' : detected;
+      if (typeof setAppLanguage === 'function') setAppLanguage(newLang);
       const grokAnswer = await askGrok(q);
       if (grokAnswer) {
         const cleanAnswer = grokAnswer.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '').replace(/^\s*[-•]\s*/gm, '');
@@ -199,10 +204,10 @@
         box.innerHTML = `
           <div class="result-item" style="background:#f0f7f2;border-radius:12px;padding:14px;margin-bottom:12px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">
-              <strong>🤖 Grok 답변</strong>
+              <strong>🤖 Grok</strong>
               <div style="display:flex;gap:6px;flex-wrap:wrap">
-                <button class="btn btn-sm" id="speak-btn" onclick="speakText(window._lastGrokAnswer, this)">🔊 읽어주기</button>
-                <button class="btn btn-sm btn-outline" onclick="speakRemainingTasks(this)">📋 오늘 할 일</button>
+                <button class="btn btn-sm" id="speak-btn" onclick="speakText(window._lastGrokAnswer, this)">🔊 Read aloud</button>
+                <button class="btn btn-sm btn-outline" onclick="speakRemainingTasks(this)">📋 Tasks</button>
               </div>
             </div>
             <p style="font-size:0.95rem;margin-top:4px;white-space:pre-wrap">${cleanAnswer}</p>
@@ -214,7 +219,7 @@
       const ql = q.toLowerCase();
       const results = knowledge.filter(k => k.keys.some(key => key.includes(ql) || ql.includes(key)));
       if (results.length === 0) {
-        box.innerHTML = `<div class="alert alert-info">${currentLang==='ko'?'결과가 없습니다.':'No results.'}</div>`;
+        box.innerHTML = `<div class="alert alert-info">No results.</div>`;
         return;
       }
       box.innerHTML = results.map(r => `
@@ -241,11 +246,23 @@ Detected question language: ${qLang}.
 CRITICAL: You MUST answer 100% in ${langName}. Do not answer in English unless the question is English.
 If the question is Korean (including romanized Korean like "annyong"), write every sentence in Korean Hangul.
 If Japanese (including romaji), answer in Japanese. If Spanish, answer in Spanish.
-Prefer short guide-first answers when an in-app guide applies.
+Prefer short guide-first answers when an in-app guide applies. Tell the user the related guide can be opened with the button.
 Question: ${question}`;
     }
 
     let currentAudio = null;
+    const ttsMemoryCache = new Map();
+
+    function hashText(s) {
+      let h = 5381;
+      const str = String(s || '');
+      for (let i = 0; i < str.length; i++) h = ((h << 5) + h) ^ str.charCodeAt(i);
+      return (h >>> 0).toString(36);
+    }
+
+    function ttsCacheKey(text, lang) {
+      return lang + ':' + hashText(text);
+    }
 
     function detectLang(text) {
       if (!text) return 'en';
@@ -268,7 +285,9 @@ Question: ${question}`;
       const speakBtn = document.getElementById('float-speak-btn');
       if (speakBtn) speakBtn.style.display = 'inline-block';
       const searchSpeak = document.getElementById('speak-btn');
-      if (searchSpeak) { searchSpeak.disabled = false; searchSpeak.textContent = '🔊 읽어주기'; }
+      if (searchSpeak) { searchSpeak.disabled = false; searchSpeak.textContent = '🔊 Read aloud'; }
+      const guideSpeak = document.getElementById('guide-speak-btn');
+      if (guideSpeak) { guideSpeak.disabled = false; guideSpeak.textContent = '🔊 Read aloud'; }
     }
 
     function waitForVoices() {
@@ -293,91 +312,133 @@ Question: ${question}`;
         utter.rate = 0.95;
         const preferred = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(browserLang.slice(0, 2)));
         if (preferred) utter.voice = preferred;
-        utter.onend = () => { if (stopBtn) stopBtn.style.display = 'none'; if (statusEl) statusEl.textContent = '재생 완료'; };
+        utter.onend = () => { if (stopBtn) stopBtn.style.display = 'none'; if (statusEl) statusEl.textContent = 'Done'; };
         window.speechSynthesis.speak(utter);
-        if (statusEl) statusEl.textContent = '브라우저 음성으로 재생 중...';
+        if (statusEl) statusEl.textContent = 'Browser voice...';
         return true;
       } catch (e) {
         return false;
       }
     }
 
+    function playMicBeep() {
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        const ctx = new Ctx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.13);
+        setTimeout(() => { try { ctx.close(); } catch (e) {} }, 200);
+      } catch (e) {}
+    }
+
     async function speakText(text, btn) {
       if (!text) return;
       stopSpeaking();
-      let detected = detectLang(text);
+      const plain = String(text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!plain) return;
+      let detected = detectLang(plain);
       if (detected === 'es') detected = 'es-ES';
       const ttsLang = (detected === 'es-ES') ? 'es-ES' : (detected === 'ko' ? 'ko' : (detected === 'ja' ? 'ja' : 'en'));
-      const originalBtnText = btn ? btn.textContent : '🔊 읽어주기';
-      if (btn) { btn.disabled = true; btn.textContent = '로딩 중...'; }
+      const originalBtnText = btn ? btn.textContent : '🔊 Read aloud';
+      if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
       const stopBtn = document.getElementById('float-stop-btn');
       if (stopBtn) stopBtn.style.display = 'inline-block';
       const statusEl = document.getElementById('float-status');
-      if (statusEl) statusEl.textContent = 'TTS 로딩 중...';
+      if (statusEl) statusEl.textContent = 'TTS loading...';
 
       let played = false;
       let lastErr = '';
+      const cacheKey = ttsCacheKey(plain, ttsLang);
 
-      // Server TTS (xAI) first — required quality
       const audioEl = new Audio();
       audioEl.setAttribute('playsinline', 'true');
       audioEl.preload = 'auto';
       audioEl.volume = 1.0;
       currentAudio = audioEl;
-      try {
-        const res = await fetch('/.netlify/functions/tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: text.slice(0, 14000), voice_id: 'eve', language: ttsLang })
-        });
-        if (res.ok) {
-          const ct = (res.headers.get('content-type') || '').toLowerCase();
-          let buf = await res.arrayBuffer();
-          if (buf && buf.byteLength > 100 && !ct.includes('audio') && !ct.includes('mpeg')) {
-            try {
-              const textBody = new TextDecoder().decode(buf);
-              if (/^[A-Za-z0-9+/=\s]+$/.test(textBody.slice(0, 200))) {
-                const bin = atob(textBody.replace(/\s/g, ''));
-                const arr = new Uint8Array(bin.length);
-                for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-                buf = arr.buffer;
-              }
-            } catch (_) {}
-          }
-          if (buf && buf.byteLength > 100) {
-            const blob = new Blob([buf], { type: ct.includes('audio') ? ct : 'audio/mpeg' });
-            const url = URL.createObjectURL(blob);
-            audioEl.src = url;
-            audioEl.onended = () => {
-              URL.revokeObjectURL(url);
-              currentAudio = null;
-              if (stopBtn) stopBtn.style.display = 'none';
-              if (statusEl) statusEl.textContent = '재생 완료';
-            };
-            try {
-              await audioEl.play();
-              played = true;
-              if (statusEl) statusEl.textContent = 'TTS 재생 중...';
-            } catch (playErr) {
-              lastErr = 'play blocked: ' + (playErr.message || playErr);
-            }
-          } else lastErr = 'empty audio body';
-        } else {
-          lastErr = 'TTS ' + res.status;
+
+      const playBuf = async (buf, mime) => {
+        const blob = new Blob([buf], { type: mime || 'audio/mpeg' });
+        const url = URL.createObjectURL(blob);
+        audioEl.src = url;
+        audioEl.onended = () => {
+          URL.revokeObjectURL(url);
+          currentAudio = null;
+          if (stopBtn) stopBtn.style.display = 'none';
+          if (statusEl) statusEl.textContent = 'Done';
+        };
+        await audioEl.play();
+        if (statusEl) statusEl.textContent = 'TTS playing...';
+        return true;
+      };
+
+      // Cache hit — no API
+      if (ttsMemoryCache.has(cacheKey)) {
+        try {
+          const cached = ttsMemoryCache.get(cacheKey);
+          await playBuf(cached.buf, cached.mime);
+          played = true;
+          if (statusEl) statusEl.textContent = 'TTS (cached)...';
+        } catch (e) {
+          lastErr = 'cache play: ' + (e.message || e);
         }
-      } catch (e) {
-        lastErr = 'TTS fetch: ' + (e.message || e);
       }
 
-      // Fallback only if server TTS failed
       if (!played) {
-        played = await speakBrowserOnly(text, ttsLang, statusEl, stopBtn);
+        try {
+          const res = await fetch('/.netlify/functions/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: plain.slice(0, 14000), voice_id: 'eve', language: ttsLang })
+          });
+          if (res.ok) {
+            const ct = (res.headers.get('content-type') || '').toLowerCase();
+            let buf = await res.arrayBuffer();
+            if (buf && buf.byteLength > 100 && !ct.includes('audio') && !ct.includes('mpeg')) {
+              try {
+                const textBody = new TextDecoder().decode(buf);
+                if (/^[A-Za-z0-9+/=\s]+$/.test(textBody.slice(0, 200))) {
+                  const bin = atob(textBody.replace(/\s/g, ''));
+                  const arr = new Uint8Array(bin.length);
+                  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+                  buf = arr.buffer;
+                }
+              } catch (_) {}
+            }
+            if (buf && buf.byteLength > 100) {
+              const mime = ct.includes('audio') ? ct : 'audio/mpeg';
+              ttsMemoryCache.set(cacheKey, { buf: buf.slice(0), mime });
+              try {
+                await playBuf(buf, mime);
+                played = true;
+              } catch (playErr) {
+                lastErr = 'play blocked: ' + (playErr.message || playErr);
+              }
+            } else lastErr = 'empty audio body';
+          } else {
+            lastErr = 'TTS ' + res.status;
+          }
+        } catch (e) {
+          lastErr = 'TTS fetch: ' + (e.message || e);
+        }
+      }
+
+      if (!played) {
+        played = await speakBrowserOnly(plain, ttsLang, statusEl, stopBtn);
         if (!played) lastErr = (lastErr ? lastErr + ' | ' : '') + 'browser TTS failed';
       }
 
       if (btn) { btn.disabled = false; btn.textContent = originalBtnText; }
       if (!played) {
-        if (statusEl) statusEl.textContent = '음성 재생 실패. ' + lastErr;
+        if (statusEl) statusEl.textContent = 'TTS failed. ' + lastErr;
         if (stopBtn) stopBtn.style.display = 'none';
       }
     }
@@ -448,7 +509,7 @@ Question: ${question}`;
 
     async function handleTranscript(text, sttLang) {
       if (!text) {
-        setFloatStatus('음성을 인식하지 못했습니다. 다시 눌러 말하세요.');
+        setFloatStatus('Could not recognize speech. Try again.');
         return;
       }
       let spokenLang = detectLang(text);
@@ -459,11 +520,10 @@ Question: ${question}`;
         else if (sl.startsWith('es')) spokenLang = 'es-ES';
       }
       const newLang = spokenLang === 'es-ES' ? 'es' : (spokenLang || 'en');
-      if (newLang !== currentLang) {
+      if (typeof setAppLanguage === 'function') setAppLanguage(newLang);
+      else if (newLang !== currentLang) {
         currentLang = newLang;
         localStorage.setItem('cf_lang', currentLang);
-        const langSel = document.getElementById('lang-select');
-        if (langSel) langSel.value = currentLang;
         applyI18n();
         if (typeof renderStamps === 'function') renderStamps();
       }
@@ -474,7 +534,7 @@ Question: ${question}`;
         questionForGrok = '[User spoke Japanese; STT may be romanized] ' + text;
       }
       setFloatStatus('Q: ' + text);
-      document.getElementById('float-answer').textContent = '로딩 중... 답변 생성 중';
+      document.getElementById('float-answer').textContent = 'Loading answer...';
       document.getElementById('float-speak-btn').style.display = 'none';
       const tasksBtn = document.getElementById('float-tasks-btn');
       if (tasksBtn) tasksBtn.style.display = 'none';
@@ -484,8 +544,8 @@ Question: ${question}`;
       const answer = await askGrok(questionForGrok);
       if (answer) showAnswerInPanel(text, answer);
       else {
-        document.getElementById('float-answer').textContent = '답변을 받지 못했습니다.';
-        setFloatStatus('다시 질문해 주세요.');
+        document.getElementById('float-answer').textContent = 'No answer received.';
+        setFloatStatus('Please try again.');
       }
     }
 
@@ -499,7 +559,7 @@ Question: ${question}`;
         source.connect(analyserNode);
         const data = new Uint8Array(analyserNode.frequencyBinCount);
         const SPEECH_THRESHOLD = 18;
-        const SILENCE_MS = 1600;
+        const SILENCE_MS = 2200;
         let silenceStarted = 0;
         const tick = () => {
           if (!isListening || !analyserNode) return;
@@ -510,11 +570,11 @@ Question: ${question}`;
           if (avg > SPEECH_THRESHOLD) {
             hasHeardSpeech = true;
             silenceStarted = 0;
-            setFloatStatus('듣는 중... 말씀하세요');
+            setFloatStatus('Listening... speak now');
           } else if (hasHeardSpeech) {
             if (!silenceStarted) silenceStarted = Date.now();
             else if (Date.now() - silenceStarted > SILENCE_MS) {
-              setFloatStatus('로딩 중... 음성 인식');
+              setFloatStatus('Recognizing speech...');
               try { if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop(); } catch (e) {}
               return;
             }
@@ -533,9 +593,10 @@ Question: ${question}`;
       if (tasksBtn) tasksBtn.style.display = 'none';
       const oldJump = document.getElementById('float-jump-btn');
       if (oldJump) oldJump.remove();
-      setFloatStatus('마이크 준비 중...');
+      setFloatStatus('Preparing mic...');
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        playMicBeep();
         audioChunks = [];
         const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
           ? 'audio/webm;codecs=opus'
@@ -552,12 +613,12 @@ Question: ${question}`;
           try { if (audioContext) audioContext.close(); } catch (e) {}
           audioContext = null;
           if (!audioChunks.length) {
-            setFloatStatus('녹음이 비었습니다. 다시 눌러 말하세요.');
+            setFloatStatus('Empty recording. Try again.');
             return;
           }
           const blob = new Blob(audioChunks, { type: (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm' });
           mediaRecorder = null;
-          setFloatStatus('로딩 중... 언어 자동 인식');
+          setFloatStatus('Recognizing language...');
           try {
             const result = await transcribeWithXAI(blob);
             const text = (result && result.text) ? result.text : (typeof result === 'string' ? result : '');
@@ -565,23 +626,23 @@ Question: ${question}`;
             await handleTranscript(text, sttLang);
           } catch (err) {
             console.error(err);
-            setFloatStatus('음성 인식 실패: ' + (err.message || err));
+            setFloatStatus('Speech recognition failed: ' + (err.message || err));
           }
         };
         mediaRecorder.start(200);
         isListening = true;
         if (micBtn) micBtn.classList.add('listening');
-        setFloatStatus('듣는 중... 말씀하세요 (끝나면 자동 인식)');
+        setFloatStatus('Listening... (beep = mic on)');
         watchSilence(mediaStream);
         maxRecordTimer = setTimeout(() => {
           if (mediaRecorder && mediaRecorder.state === 'recording') {
-            setFloatStatus('로딩 중... 음성 인식');
+            setFloatStatus('Recognizing speech...');
             mediaRecorder.stop();
           }
-        }, 20000);
+        }, 25000);
       } catch (e) {
         isListening = false;
-        setFloatStatus(e.name === 'NotAllowedError' ? '마이크 권한이 필요합니다.' : ('마이크 오류: ' + (e.message || e)));
+        setFloatStatus(e.name === 'NotAllowedError' ? 'Microphone permission needed.' : ('Mic error: ' + (e.message || e)));
       }
     }
 
@@ -589,7 +650,7 @@ Question: ${question}`;
       const panel = document.getElementById('float-mic-panel');
       panel.classList.add('show');
       if (isListening) {
-        setFloatStatus('로딩 중... 음성 인식');
+        setFloatStatus('Recognizing speech...');
         try {
           if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
         } catch (e) { stopFloatMic(true); }
@@ -597,9 +658,4 @@ Question: ${question}`;
       }
       stopFloatMic(true);
       startRecording();
-    }
-
-    function openFloatPanelOnly() {
-      document.getElementById('float-mic-panel').classList.add('show');
-      setFloatStatus('말하거나 아래에 입력하세요 (언어 자동 인식)');
     }
