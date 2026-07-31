@@ -1,4 +1,4 @@
-/* Conroy's Training App - content modals v1.14.6 */
+/* Conroy's Training App - content modals v1.16.0 */
     // Checklist items are language maps so guides follow currentLang (or voice-detected lang)
     const taskDetails = {
       funeral_check: {
@@ -14,7 +14,7 @@
           ja: ['Messages / In Wireを開く', 'Funeral / 緊急注文を確認', 'あればすぐにAccept', 'SuperTicket印刷後デザイン準備'],
           es: ['Abrir Messages / In Wire', 'Revisar si hay Funeral / urgentes', 'Si hay, Accept de inmediato', 'Imprimir SuperTicket y preparar diseño']
         },
-        image: 'funeral.jpg'
+        image: 'images/guides/funeral.webp'
       },
       open_shop: {
         content: {
