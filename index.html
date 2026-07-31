@@ -10,54 +10,36 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Conroy's Training</title>
-  <link rel="manifest" href="manifest.json?v=1.19.1">
+  <link rel="manifest" href="manifest.json?v=1.20.0">
   <link rel="apple-touch-icon" href="images/ui/header.webp">
   <style>
     :root {
-      --primary: #1a3c34;
-      --accent: #c4a35a;
-      --bg: #f7f5f0;
-      --card: #ffffff;
-      --text: #1a1a1a;
-      --muted: #6b7280;
-      --success: #16a34a;
-      --warn: #d97706;
-      --danger: #dc2626;
-      --radius: 14px;
-      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --primary: #1a3c34; --accent: #c4a35a; --bg: #f7f5f0; --card: #ffffff;
+      --text: #1a1a1a; --muted: #6b7280; --success: #16a34a; --warn: #d97706;
+      --danger: #dc2626; --radius: 14px; --shadow: 0 2px 12px rgba(0,0,0,0.08);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      min-height: 100dvh;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
+      background: var(--bg); color: var(--text); min-height: 100vh; min-height: 100dvh;
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
     }
     #login-screen {
-      min-height: 100vh; min-height: 100dvh;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 24px 20px; text-align: center;
+      min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px 20px; text-align: center;
     }
-    .header-img {
-      width: 100%; max-width: 320px; height: auto; border-radius: 16px;
-      margin-bottom: 20px; box-shadow: var(--shadow);
-    }
+    .header-img { width: 100%; max-width: 320px; height: auto; border-radius: 16px; margin-bottom: 20px; box-shadow: var(--shadow); }
     #login-screen h1 { font-size: 1.5rem; margin-bottom: 4px; color: var(--primary); }
     .login-form { width: 100%; max-width: 320px; margin-top: 12px; }
     .login-form input {
-      width: 100%; padding: 14px 16px; margin-bottom: 10px;
-      border: 1.5px solid #e5e7eb; border-radius: 12px; font-size: 1rem;
-      background: #fff;
+      width: 100%; padding: 14px 16px; margin-bottom: 10px; border: 1.5px solid #e5e7eb;
+      border-radius: 12px; font-size: 1rem; background: #fff;
     }
     .login-form input:focus { outline: none; border-color: var(--primary); }
     #login-error { color: var(--danger); font-size: 0.9rem; margin-bottom: 8px; }
     .btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      padding: 13px 20px; border: none; border-radius: 12px;
-      font-size: 1rem; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; padding: 13px 20px;
+      border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer;
       background: var(--primary); color: #fff; transition: opacity 0.15s;
     }
     .btn:active { opacity: 0.85; }
@@ -66,8 +48,7 @@
     .hidden { display: none !important; }
     #app { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
     .app-header {
-      position: sticky; top: 0; z-index: 50;
-      background: var(--primary); color: #fff;
+      position: sticky; top: 0; z-index: 50; background: var(--primary); color: #fff;
       padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
@@ -81,37 +62,22 @@
     .page { display: none; }
     .page.active { display: block; }
     h2 { font-size: 1.15rem; margin-bottom: 12px; color: var(--primary); }
-    .card {
-      background: var(--card); border-radius: var(--radius); padding: 16px;
-      margin-bottom: 12px; box-shadow: var(--shadow);
-    }
-    .progress-bar {
-      height: 8px; background: #e5e7eb; border-radius: 4px; margin-top: 8px; overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%; background: var(--success); border-radius: 4px; transition: width 0.3s;
-    }
-    .stamp-item {
-      display: flex; align-items: flex-start; gap: 12px;
-      padding: 14px 0; border-bottom: 1px solid #f0f0f0;
-    }
+    .card { background: var(--card); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); }
+    .progress-bar { height: 8px; background: #e5e7eb; border-radius: 4px; margin-top: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--success); border-radius: 4px; transition: width 0.3s; }
+    .stamp-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f0f0f0; }
     .stamp-item:last-child { border-bottom: none; }
     .stamp-btn {
       width: 28px; height: 28px; border-radius: 50%; border: 2px solid #d1d5db;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
-      background: #fff;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      font-size: 0.85rem; cursor: pointer; background: #fff;
     }
-    .stamp-btn.done {
-      background: var(--success); border-color: var(--success); color: #fff;
-    }
+    .stamp-btn.done { background: var(--success); border-color: var(--success); color: #fff; }
     .stamp-content { flex: 1; min-width: 0; }
     .stamp-title { font-weight: 600; font-size: 0.98rem; }
     .stamp-desc { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
     .stamp-time { font-size: 0.8rem; color: var(--success); margin-top: 4px; }
-    .stamp-item.next-task {
-      background: #f0fdf4; margin: 0 -16px; padding: 14px 16px; border-radius: 12px;
-    }
+    .stamp-item.next-task { background: #f0fdf4; margin: 0 -16px; padding: 14px 16px; border-radius: 12px; }
     .stamp-item.next-task .stamp-title::before { content: "👉 "; }
     .next-banner {
       background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px;
@@ -119,9 +85,7 @@
     }
     .next-banner.hidden { display: none; }
     .next-banner .next-label { font-weight: 700; color: #065f46; font-size: 0.85rem; }
-    .quick-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;
-    }
+    .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
     .quick-btn {
       padding: 14px 10px; border-radius: 12px; border: none; font-weight: 600;
       font-size: 0.92rem; cursor: pointer; text-align: center;
@@ -131,82 +95,63 @@
     .quick-btn.messages { background: #d1fae5; color: #065f46; }
     .quick-btn.back { background: #f3f4f6; color: #374151; }
     .nav-bar {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: #fff; border-top: 1px solid #e5e7eb;
-      display: flex; justify-content: space-around;
-      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
-      z-index: 100;
+      position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e5e7eb;
+      display: flex; justify-content: space-around; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); z-index: 100;
     }
     .nav-item {
-      display: flex; flex-direction: column; align-items: center;
-      background: none; border: none; font-size: 0.7rem; color: var(--muted);
-      cursor: pointer; padding: 4px 8px; min-width: 56px;
+      display: flex; flex-direction: column; align-items: center; background: none; border: none;
+      font-size: 0.7rem; color: var(--muted); cursor: pointer; padding: 4px 8px; min-width: 56px;
     }
     .nav-item .icon { font-size: 1.25rem; margin-bottom: 2px; }
     .nav-item.active { color: var(--primary); font-weight: 600; }
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-      z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200;
+      display: flex; align-items: flex-end; justify-content: center;
     }
     .modal-overlay.hidden { display: none; }
     #modal-content {
-      background: #fff; width: 100%; max-width: 520px;
-      max-height: 88vh; overflow-y: auto;
-      border-radius: 20px 20px 0 0; padding: 20px 18px 28px;
-      position: relative;
+      background: #fff; width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto;
+      border-radius: 20px 20px 0 0; padding: 20px 18px 28px; position: relative;
     }
     .close-modal {
-      position: absolute; top: 12px; right: 14px;
-      background: none; border: none; font-size: 1.5rem; cursor: pointer;
-      color: var(--muted); line-height: 1;
+      position: absolute; top: 12px; right: 14px; background: none; border: none;
+      font-size: 1.5rem; cursor: pointer; color: var(--muted); line-height: 1;
     }
     .script-box {
-      background: #f8fafc; border-left: 3px solid var(--accent);
-      padding: 12px 14px; border-radius: 0 10px 10px 0;
-      font-size: 0.95rem; line-height: 1.55;
+      background: #f8fafc; border-left: 3px solid var(--accent); padding: 12px 14px;
+      border-radius: 0 10px 10px 0; font-size: 0.95rem; line-height: 1.55;
     }
-    .checklist label {
-      display: flex; align-items: flex-start; gap: 10px;
-      padding: 8px 0; font-size: 0.95rem; cursor: pointer;
-    }
+    .checklist label { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; font-size: 0.95rem; cursor: pointer; }
     .checklist input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; }
     .alert { padding: 12px 14px; border-radius: 10px; font-size: 0.92rem; line-height: 1.45; }
     .alert-warn { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
     .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
     .alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
     .img-guide { width: 100%; border-radius: 12px; display: block; }
-    .photo-preview { max-width: 100%; border-radius: 8px; margin-top: 8px; }
     .summary-item {
       display: flex; justify-content: space-between; padding: 8px 0;
       border-bottom: 1px solid #f3f4f6; font-size: 0.95rem;
     }
     .search-box { display: flex; gap: 8px; margin-bottom: 14px; }
-    .search-box input {
-      flex: 1; padding: 12px 14px; border: 1.5px solid #e5e7eb;
-      border-radius: 12px; font-size: 1rem;
-    }
-    .result-card, .result-item {
-      background: #fff; border-radius: 12px; padding: 14px;
-      margin-bottom: 10px; box-shadow: var(--shadow);
-    }
+    .search-box input { flex: 1; padding: 12px 14px; border: 1.5px solid #e5e7eb; border-radius: 12px; font-size: 1rem; }
+    .result-item { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow); }
     .voice-btn {
-      width: 56px; height: 56px; border-radius: 50%; border: none;
-      background: var(--primary); color: #fff; font-size: 1.4rem;
-      cursor: pointer; box-shadow: 0 4px 14px rgba(26,60,52,0.35);
+      width: 56px; height: 56px; border-radius: 50%; border: none; background: var(--primary);
+      color: #fff; font-size: 1.4rem; cursor: pointer; box-shadow: 0 4px 14px rgba(26,60,52,0.35);
     }
     .voice-btn.listening { background: var(--danger); animation: pulse 1s infinite; }
     @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
     .float-mic {
-      position: fixed; bottom: 80px; right: 16px; width: 56px; height: 56px;
-      border-radius: 50%; background: var(--primary); color: white; border: none;
-      font-size: 1.5rem; box-shadow: 0 4px 16px rgba(45,90,61,0.35);
-      z-index: 90; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      position: fixed; bottom: 80px; right: 16px; width: 56px; height: 56px; border-radius: 50%;
+      background: var(--primary); color: white; border: none; font-size: 1.5rem;
+      box-shadow: 0 4px 16px rgba(45,90,61,0.35); z-index: 90; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
     }
     .float-mic.listening { background: var(--danger); animation: pulse 1s infinite; }
     .float-mic-panel {
-      position: fixed; bottom: 145px; right: 16px; left: 16px; max-width: 360px;
-      margin-left: auto; background: white; border-radius: 16px; padding: 14px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 91; display: none;
+      position: fixed; bottom: 145px; right: 16px; left: 16px; max-width: 360px; margin-left: auto;
+      background: white; border-radius: 16px; padding: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      z-index: 91; display: none;
     }
     .float-mic-panel.show { display: block; }
     .speak-controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
@@ -219,16 +164,13 @@
       padding: 12px 14px; margin-bottom: 12px; display: none;
     }
     .eod-banner.show { display: block; }
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 0.9rem; margin-bottom: 4px; }
-    .form-group input { width: 100%; padding: 10px; border: 1.5px solid #e5e7eb; border-radius: 10px; }
   </style>
 </head>
 <body>
   <div id="login-screen">
     <img src="images/ui/header.webp" alt="Conroy's Flowers Training" class="header-img" loading="lazy">
     <h1 data-i18n="login_title">Staff Login</h1>
-    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:4px">v1.19.1</p>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:4px">v1.20.0</p>
     <p data-i18n="login_desc">Enter your username and password</p>
     <div class="login-form">
       <input type="text" id="login-username" placeholder="Username" data-i18n-placeholder="username_ph" autocomplete="username" autocapitalize="none">
@@ -241,7 +183,7 @@
   <div id="app" class="hidden">
     <header class="app-header">
       <div>
-        <div style="font-weight:700;font-size:1.05rem;">Conroy's Training <span style="font-size:0.75rem;opacity:0.8;font-weight:500" onclick="onVersionTap()">v1.19.1</span></div>
+        <div style="font-weight:700;font-size:1.05rem;">Conroy's Training <span style="font-size:0.75rem;opacity:0.8;font-weight:500" onclick="onVersionTap()">v1.20.0</span></div>
         <div class="user-info" id="header-user"></div>
       </div>
       <select class="lang-select" id="lang-select" onchange="changeLang(this.value)" aria-label="Language">
@@ -281,66 +223,9 @@
         </div>
       </div>
 
-      <div id="page-customer" class="page">
-        <div class="card">
-          <h2 data-i18n="customer_title">Customer guide</h2>
-          <div class="alert alert-info" style="margin-bottom:12px" data-i18n="customer_priority">Customer first! Stop and greet immediately.</div>
-          <div class="script-box" style="margin-bottom:10px">
-            <strong data-i18n="greeting">Greeting</strong><br>
-            <span data-i18n="greeting_script">"Welcome! How can I help you today?"</span>
-          </div>
-          <div class="script-box" style="margin-bottom:10px">
-            <strong data-i18n="needs">Needs</strong><br>
-            <span data-i18n="needs_script">"Who's going to receive the flowers?"</span>
-          </div>
-          <div class="script-box" style="margin-bottom:10px">
-            <strong data-i18n="color_guide">Colors</strong><br>
-            <span data-i18n="color_romance">Romance → Red / Hot Pink</span><br>
-            <span data-i18n="color_family">Family → Light Pink</span><br>
-            <span data-i18n="color_friends">Friends / Get Well → Bright Colors</span><br>
-            <span data-i18n="color_sympathy">Sympathy → White / Soft Pastels</span>
-          </div>
-          <div class="script-box">
-            <strong data-i18n="size_guide">Size scripts</strong><br>
-            <span data-i18n="size_small"></span><br><br>
-            <em data-i18n="size_medium_rec">Recommended first</em><br>
-            <span data-i18n="size_medium"></span><br><br>
-            <span data-i18n="size_large"></span>
-          </div>
-        </div>
-      </div>
-
-      <div id="page-phone" class="page">
-        <div class="card">
-          <h2 data-i18n="phone_title">Phone</h2>
-          <div class="alert alert-warn" style="margin-bottom:12px" data-i18n="phone_priority">If a customer is in the shop, help them first.</div>
-          <div class="script-box" style="margin-bottom:10px">
-            <strong data-i18n="phone_greeting">Greeting</strong><br>
-            <span data-i18n="phone_script">"Thank you for calling Conroy's Flowers. How may I help you?"</span>
-          </div>
-          <div class="script-box">
-            <strong data-i18n="phone_hold">On hold</strong><br>
-            <span data-i18n="phone_hold_script">"Thank you for calling Conroy's. May I place you on a brief hold?"</span>
-          </div>
-        </div>
-      </div>
-
-      <div id="page-messages" class="page">
-        <div class="card">
-          <h2 data-i18n="messages_title">Messages / In Wire</h2>
-          <div class="alert alert-warn" style="margin-bottom:12px" data-i18n="messages_warn">When a Wire-In order arrives, Messages and In Wire counters go up. Check often!</div>
-          <ol style="padding-left:20px;line-height:1.8;margin-bottom:12px">
-            <li data-i18n="msg_step1">Open Messages → review</li>
-            <li data-i18n="msg_step2">Mark Read</li>
-            <li data-i18n="msg_step3">In Wire → Accept</li>
-            <li data-i18n="msg_step4">Print SuperTicket after Accept</li>
-          </ol>
-          <div class="alert alert-info" data-i18n="msg_reject">Never Reject without manager approval.</div>
-          <img src="images/guides/superticket.webp" class="img-guide" style="margin-top:12px" alt="SuperTicket" loading="lazy">
-          <p style="font-size:0.85rem;color:var(--muted);margin-top:6px" data-i18n="superticket_caption">SuperTicket example</p>
-          <button class="btn" style="width:100%;margin-top:14px" onclick="showPage('home')" data-i18n="checked_back">Done & back to routine</button>
-        </div>
-      </div>
+      <div id="page-customer" class="page"></div>
+      <div id="page-phone" class="page"></div>
+      <div id="page-messages" class="page"></div>
 
       <div id="page-search" class="page">
         <div class="card">
@@ -372,6 +257,9 @@
           <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('delivery')" data-i18n="delivery_guide">Delivery guide</button>
           <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('golden')" data-i18n="golden_rules">Golden Rules</button>
           <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('decision')" data-i18n="decision_helper">If unsure</button>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('customer')">Customer service</button>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('phone')">Phone</button>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('messages')">Messages / In Wire</button>
         </div>
         <div class="card hidden" id="admin-card">
           <h2>⚙️ Admin</h2>
@@ -390,8 +278,8 @@
 
     <nav class="nav-bar">
       <button class="nav-item active" data-page="home" onclick="showPage('home')"><span class="icon">📋</span><span data-i18n="nav_home">Routine</span></button>
-      <button class="nav-item" data-page="customer" onclick="showPage('customer')"><span class="icon">👤</span><span data-i18n="nav_customer">Customer</span></button>
-      <button class="nav-item" data-page="messages" onclick="showPage('messages')"><span class="icon">💬</span><span data-i18n="nav_msg">Messages</span></button>
+      <button class="nav-item" data-page="customer" onclick="showContent('customer')"><span class="icon">👤</span><span data-i18n="nav_customer">Customer</span></button>
+      <button class="nav-item" data-page="messages" onclick="showContent('messages')"><span class="icon">💬</span><span data-i18n="nav_msg">Messages</span></button>
       <button class="nav-item" data-page="search" onclick="showPage('search')"><span class="icon">🔍</span><span data-i18n="nav_search">Search</span></button>
       <button class="nav-item" data-page="more" onclick="showPage('more')"><span class="icon">☰</span><span data-i18n="nav_more">More</span></button>
     </nav>
@@ -418,15 +306,17 @@
     <div id="modal-content"></div>
   </div>
 
-  <script src="js/data.js?v=1.19.1"></script>
-  <script src="js/core-a.js?v=1.19.1"></script>
-  <script src="js/core-b.js?v=1.19.1"></script>
-  <script src="js/core-c.js?v=1.19.1"></script>
-  <script src="js/system-prompt.js?v=1.19.1"></script>
-  <script src="js/voice.js?v=1.19.1"></script>
-  <script src="js/answer-ui.js?v=1.19.1"></script>
-  <script src="js/guide-speak.js?v=1.19.1"></script>
-  <script src="js/admin.js?v=1.19.1"></script>
+  <script src="js/data.js?v=1.20.0"></script>
+  <script src="js/core-a.js?v=1.20.0"></script>
+  <script src="js/core-b.js?v=1.20.0"></script>
+  <script src="js/core-c.js?v=1.20.0"></script>
+  <script src="js/guides-detail.js?v=1.20.0"></script>
+  <script src="js/system-prompt.js?v=1.20.0"></script>
+  <script src="js/voice.js?v=1.20.0"></script>
+  <script src="js/answer-ui.js?v=1.20.0"></script>
+  <script src="js/guide-router.js?v=1.20.0"></script>
+  <script src="js/guide-speak.js?v=1.20.0"></script>
+  <script src="js/admin.js?v=1.20.0"></script>
   <script>
     (function() {
       var input = document.getElementById('float-chat-input');
