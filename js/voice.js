@@ -1,4 +1,4 @@
-/* Conroy's Training App - voice module v1.17.0 */
+/* Conroy's Training App - voice module v1.17.1 – server TTS first */
     function saveApiKey() {
       const key = document.getElementById('api-key-input').value.trim();
       if (!key) {
@@ -313,64 +313,66 @@ Question: ${question}`;
       const stopBtn = document.getElementById('float-stop-btn');
       if (stopBtn) stopBtn.style.display = 'inline-block';
       const statusEl = document.getElementById('float-status');
-      if (statusEl) statusEl.textContent = '음성 준비 중...';
+      if (statusEl) statusEl.textContent = 'TTS 로딩 중...';
 
       let played = false;
       let lastErr = '';
 
-      // Cost saving: browser TTS first (no API)
-      played = await speakBrowserOnly(text, ttsLang, statusEl, stopBtn);
-
-      if (!played) {
-        const audioEl = new Audio();
-        audioEl.setAttribute('playsinline', 'true');
-        audioEl.preload = 'auto';
-        audioEl.volume = 1.0;
-        currentAudio = audioEl;
-        try {
-          const res = await fetch('/.netlify/functions/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text.slice(0, 14000), voice_id: 'eve', language: ttsLang })
-          });
-          if (res.ok) {
-            const ct = (res.headers.get('content-type') || '').toLowerCase();
-            let buf = await res.arrayBuffer();
-            if (buf && buf.byteLength > 100 && !ct.includes('audio') && !ct.includes('mpeg')) {
-              try {
-                const textBody = new TextDecoder().decode(buf);
-                if (/^[A-Za-z0-9+/=\s]+$/.test(textBody.slice(0, 200))) {
-                  const bin = atob(textBody.replace(/\s/g, ''));
-                  const arr = new Uint8Array(bin.length);
-                  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-                  buf = arr.buffer;
-                }
-              } catch (_) {}
-            }
-            if (buf && buf.byteLength > 100) {
-              const blob = new Blob([buf], { type: ct.includes('audio') ? ct : 'audio/mpeg' });
-              const url = URL.createObjectURL(blob);
-              audioEl.src = url;
-              audioEl.onended = () => {
-                URL.revokeObjectURL(url);
-                currentAudio = null;
-                if (stopBtn) stopBtn.style.display = 'none';
-                if (statusEl) statusEl.textContent = '재생 완료';
-              };
-              try {
-                await audioEl.play();
-                played = true;
-                if (statusEl) statusEl.textContent = '재생 중...';
-              } catch (playErr) {
-                lastErr = 'play blocked: ' + (playErr.message || playErr);
+      // Server TTS (xAI) first — required quality
+      const audioEl = new Audio();
+      audioEl.setAttribute('playsinline', 'true');
+      audioEl.preload = 'auto';
+      audioEl.volume = 1.0;
+      currentAudio = audioEl;
+      try {
+        const res = await fetch('/.netlify/functions/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text.slice(0, 14000), voice_id: 'eve', language: ttsLang })
+        });
+        if (res.ok) {
+          const ct = (res.headers.get('content-type') || '').toLowerCase();
+          let buf = await res.arrayBuffer();
+          if (buf && buf.byteLength > 100 && !ct.includes('audio') && !ct.includes('mpeg')) {
+            try {
+              const textBody = new TextDecoder().decode(buf);
+              if (/^[A-Za-z0-9+/=\s]+$/.test(textBody.slice(0, 200))) {
+                const bin = atob(textBody.replace(/\s/g, ''));
+                const arr = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+                buf = arr.buffer;
               }
-            } else lastErr = 'empty audio body';
-          } else {
-            lastErr = 'TTS ' + res.status;
+            } catch (_) {}
           }
-        } catch (e) {
-          lastErr = 'TTS fetch: ' + (e.message || e);
+          if (buf && buf.byteLength > 100) {
+            const blob = new Blob([buf], { type: ct.includes('audio') ? ct : 'audio/mpeg' });
+            const url = URL.createObjectURL(blob);
+            audioEl.src = url;
+            audioEl.onended = () => {
+              URL.revokeObjectURL(url);
+              currentAudio = null;
+              if (stopBtn) stopBtn.style.display = 'none';
+              if (statusEl) statusEl.textContent = '재생 완료';
+            };
+            try {
+              await audioEl.play();
+              played = true;
+              if (statusEl) statusEl.textContent = 'TTS 재생 중...';
+            } catch (playErr) {
+              lastErr = 'play blocked: ' + (playErr.message || playErr);
+            }
+          } else lastErr = 'empty audio body';
+        } else {
+          lastErr = 'TTS ' + res.status;
         }
+      } catch (e) {
+        lastErr = 'TTS fetch: ' + (e.message || e);
+      }
+
+      // Fallback only if server TTS failed
+      if (!played) {
+        played = await speakBrowserOnly(text, ttsLang, statusEl, stopBtn);
+        if (!played) lastErr = (lastErr ? lastErr + ' | ' : '') + 'browser TTS failed';
       }
 
       if (btn) { btn.disabled = false; btn.textContent = originalBtnText; }
