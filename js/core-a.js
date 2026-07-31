@@ -1,7 +1,7 @@
 /* Conroy's Training App - core part A */
 // ========== AUTH / USERS ==========
     const DEFAULT_USERS = [
-      { username: 'admin',     password: 'AdminConroy26', name: 'Admin' },
+      { username: 'admin',     password: 'ADMIN7890', name: 'Admin' },
       { username: 'employee1', password: 'Trainee01',   name: 'Employee 1' },
       { username: 'employee2', password: 'Trainee02',   name: 'Employee 2' },
       { username: 'employee3', password: 'Trainee03',   name: 'Employee 3' },
