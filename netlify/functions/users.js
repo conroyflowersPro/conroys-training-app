@@ -1,7 +1,7 @@
 /**
  * Netlify Function: users (Functions v2)
  * Shared employee accounts via Netlify Blobs
- * v1.14.0 – Functions v2 + shared employee accounts via Netlify Blobs
+ * v1.15.0 – updated default passwords
  */
 
 import { getStore } from "@netlify/blobs";
@@ -11,12 +11,12 @@ const STORE_NAME = "conroys-training";
 const BLOB_KEY = "users";
 
 const DEFAULT_USERS = [
-  { username: "admin",     password: "admin7890", name: "Admin" },
-  { username: "employee1", password: "conroy1",   name: "Employee 1" },
-  { username: "employee2", password: "conroy2",   name: "Employee 2" },
-  { username: "employee3", password: "conroy3",   name: "Employee 3" },
-  { username: "employee4", password: "conroy4",   name: "Employee 4" },
-  { username: "employee5", password: "conroy5",   name: "Employee 5" }
+  { username: "admin",     password: "AdminConroy26", name: "Admin" },
+  { username: "employee1", password: "Trainee01",   name: "Employee 1" },
+  { username: "employee2", password: "Trainee02",   name: "Employee 2" },
+  { username: "employee3", password: "Trainee03",   name: "Employee 3" },
+  { username: "employee4", password: "Trainee04",   name: "Employee 4" },
+  { username: "employee5", password: "Trainee05",   name: "Employee 5" }
 ];
 
 const corsHeaders = {
