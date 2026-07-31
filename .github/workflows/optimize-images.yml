@@ -1,0 +1,57 @@
+name: Optimize Images to WebP
+
+on:
+  push:
+    paths:
+      - 'images/**/*.jpg'
+      - 'images/**/*.jpeg'
+      - 'images/**/*.png'
+      - 'images/**/*.JPG'
+      - 'images/**/*.JPEG'
+      - 'images/**/*.PNG'
+  workflow_dispatch:  # 수동으로도 실행 가능
+
+permissions:
+  contents: write
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install cwebp
+        run: sudo apt-get update && sudo apt-get install -y webp
+
+      - name: Convert JPG/PNG to WebP
+        run: |
+          echo "Starting image conversion..."
+          find images -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) | while read -r file; do
+            dir=$(dirname "$file")
+            base=$(basename "$file")
+            name="${base%.*}"
+            out="$dir/$name.webp"
+
+            # 이미 webp가 있고 원본보다 최신이면 건너뜀
+            if [ -f "$out" ] && [ "$out" -nt "$file" ]; then
+              echo "Skip (up to date): $out"
+              continue
+            fi
+
+            echo "Converting: $file → $out"
+
+            # UI 이미지는 작게, guides는 조금 더 크게
+            if [[ "$dir" == *"/ui"* ]]; then
+              cwebp -q 80 -resize 600 0 "$file" -o "$out"
+            else
+              cwebp -q 80 -resize 1000 0 "$file" -o "$out"
+            fi
+          done
+          echo "Conversion finished."
+
+      - name: Commit WebP files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: auto-convert images to WebP"
+          file_pattern: "images/**/*.webp"
