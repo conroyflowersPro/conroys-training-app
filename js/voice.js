@@ -1,5 +1,4 @@
-/* Conroy's Training App - voice module v1.15.3 (prompt moved to system-prompt.js) */
-// ========== API KEY & GROK ==========
+/* Conroy's Training App - voice module v1.17.0 */
     function saveApiKey() {
       const key = document.getElementById('api-key-input').value.trim();
       if (!key) {
@@ -18,7 +17,6 @@
 
     async function askGrok(question) {
       const systemPrompt = window.CF_SYSTEM_PROMPT || '';
-
       try {
         const res = await fetch('/.netlify/functions/ask', {
           method: 'POST',
@@ -48,43 +46,32 @@
       }
     }
 
-    // Map question/answer keywords → app section so staff can jump to the visual guide
     function detectRelatedSection(question, answer) {
       const text = ((question || '') + ' ' + (answer || '')).toLowerCase();
-
-      // Attachments / CardIsle / balloons etc.
       if (/attach|첨부|cardisle|balloon|풍선|chocolate|초콜릿|plush|인형|white\s*sheet|product\s*detail|awaiting\s*delivery/.test(text)) {
         return { type: 'content', id: 'attachments', label: { ko: '첨부물 가이드', en: 'Attachments guide', ja: '添付物ガイド', es: 'Guía de adjuntos' } };
       }
-      // Delivery
       if (/deliver|배달|配達|entrega|uber|golocal|walmart|3hr|asap\s*trip|out\s*for\s*delivery/.test(text)) {
         return { type: 'content', id: 'delivery', label: { ko: '배달 가이드', en: 'Delivery guide', ja: '配達ガイド', es: 'Guía de entrega' } };
       }
-      // BMS flow / SuperTicket / Accept
       if (/bms|workflow|super\s*ticket|superticket|accept|reject|in\s*wire|mark\s*read|design\s*ticket/.test(text)) {
         return { type: 'content', id: 'bmsflow', label: { ko: 'BMS 흐름', en: 'BMS workflow', ja: 'BMSフロー', es: 'Flujo BMS' } };
       }
-      // Messages page
       if (/message|messages|wire\s*in|funeral|긴급|funeral\s*order/.test(text)) {
         return { type: 'page', id: 'messages', label: { ko: 'Messages 화면', en: 'Messages page', ja: 'Messages画面', es: 'Página Messages' } };
       }
-      // Golden rules
       if (/golden|rule|due\s*time|매니저|manager\s*first|확신/.test(text)) {
         return { type: 'content', id: 'golden', label: { ko: 'Golden Rules', en: 'Golden Rules', ja: 'Golden Rules', es: 'Golden Rules' } };
       }
-      // Customer service
       if (/customer|손님|greeting|인사|color|색상|size|사이즈|romance|sympathy|needs|니즈/.test(text)) {
         return { type: 'page', id: 'customer', label: { ko: '손님 응대', en: 'Customer guide', ja: '接客ガイド', es: 'Guía de cliente' } };
       }
-      // Phone
       if (/phone|전화|電話|teléfono|hold|홀드|on\s*hold/.test(text)) {
         return { type: 'page', id: 'phone', label: { ko: '전화 응대', en: 'Phone guide', ja: '電話対応', es: 'Guía telefónica' } };
       }
-      // Decision helper
       if (/unsure|모르겠|decision|어떻게\s*하|what\s*should|매니저한테|ask\s*manager/.test(text)) {
         return { type: 'content', id: 'decision', label: { ko: '모르겠을 때', en: 'If unsure', ja: '迷ったとき', es: 'Si no está seguro' } };
       }
-      // Cash / start-end day → home routine
       if (/start\s*day|end\s*day|cash|현금|드로어|drawer|\$200|200\.00/.test(text)) {
         return { type: 'page', id: 'home', label: { ko: '오늘 루틴', en: 'Today routine', ja: '今日のルーティン', es: 'Rutina de hoy' } };
       }
@@ -93,7 +80,6 @@
 
     function goToRelatedSection(section) {
       if (!section) return;
-      // Close the float mic panel so the guide is fully visible
       try { closeFloatPanel(); } catch (e) {}
       if (section.type === 'page' && typeof showPage === 'function') {
         showPage(section.id);
@@ -101,6 +87,96 @@
         showContent(section.id);
       } else if (section.type === 'task' && typeof showTaskDetail === 'function') {
         showTaskDetail(section.id);
+      }
+    }
+
+    function buildRemainingTasksText() {
+      const lang = currentLang || 'en';
+      const pending = (typeof routineTasks !== 'undefined' ? routineTasks : []).filter(t => !stamps[t.id]?.done);
+      if (!pending.length) {
+        return {
+          ko: '오늘 남은 할 일이 없습니다. 모든 루틴을 완료했습니다.',
+          en: 'No remaining tasks today. All routines are done.',
+          ja: '今日の残りのタスクはありません。すべて完了です。',
+          es: 'No quedan tareas hoy. Todas las rutinas están hechas.'
+        }[lang] || 'No remaining tasks today.';
+      }
+      const titles = pending.map((t, i) => (i + 1) + '. ' + (t.title[lang] || t.title.en || t.id));
+      const head = {
+        ko: '오늘 남은 할 일입니다. ',
+        en: 'Remaining tasks for today. ',
+        ja: '今日の残りのタスクです。',
+        es: 'Tareas restantes de hoy. '
+      }[lang] || 'Remaining tasks. ';
+      return head + titles.join(' ');
+    }
+
+    function speakRemainingTasks(btn) {
+      const text = buildRemainingTasksText();
+      window._lastGrokAnswer = text;
+      speakText(text, btn);
+    }
+
+    function showAnswerInPanel(question, answer) {
+      const clean = (answer || '').replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '');
+      window._lastGrokAnswer = clean;
+      const ansEl = document.getElementById('float-answer');
+      if (ansEl) ansEl.textContent = clean;
+      const speakBtn = document.getElementById('float-speak-btn');
+      if (speakBtn) speakBtn.style.display = 'inline-block';
+      const tasksBtn = document.getElementById('float-tasks-btn');
+      if (tasksBtn) tasksBtn.style.display = 'inline-block';
+
+      const oldJump = document.getElementById('float-jump-btn');
+      if (oldJump) oldJump.remove();
+
+      const section = detectRelatedSection(question, clean);
+      window._lastRelatedSection = section;
+      if (section) {
+        const lbl = (section.label && (section.label[currentLang] || section.label.en)) || 'Guide';
+        setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '📖 아래 가이드를 확인하세요');
+        const controls = document.querySelector('.speak-controls');
+        if (controls && !document.getElementById('float-jump-btn')) {
+          const btn = document.createElement('button');
+          btn.id = 'float-jump-btn';
+          btn.className = 'btn btn-sm';
+          btn.textContent = '📖 ' + lbl;
+          btn.onclick = () => goToRelatedSection(window._lastRelatedSection);
+          controls.insertBefore(btn, controls.firstChild);
+        }
+      } else {
+        setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '🔊 읽어주기 또는 📋 오늘 할 일');
+      }
+    }
+
+    async function submitFloatChat() {
+      const input = document.getElementById('float-chat-input');
+      if (!input) return;
+      const q = (input.value || '').trim();
+      if (!q) return;
+      input.value = '';
+      let spokenLang = detectLang(q);
+      const newLang = spokenLang === 'es-ES' ? 'es' : (spokenLang || 'en');
+      if (newLang !== currentLang) {
+        currentLang = newLang;
+        localStorage.setItem('cf_lang', currentLang);
+        const langSel = document.getElementById('lang-select');
+        if (langSel) langSel.value = currentLang;
+        applyI18n();
+        if (typeof renderStamps === 'function') renderStamps();
+      }
+      setFloatStatus('Q: ' + q);
+      document.getElementById('float-answer').textContent = '로딩 중... 답변 생성 중';
+      document.getElementById('float-speak-btn').style.display = 'none';
+      const tasksBtn = document.getElementById('float-tasks-btn');
+      if (tasksBtn) tasksBtn.style.display = 'none';
+      const oldJump = document.getElementById('float-jump-btn');
+      if (oldJump) oldJump.remove();
+      const answer = await askGrok(q);
+      if (answer) showAnswerInPanel(q, answer);
+      else {
+        document.getElementById('float-answer').textContent = '답변을 받지 못했습니다.';
+        setFloatStatus('다시 질문해 주세요.');
       }
     }
 
@@ -122,18 +198,17 @@
         }
         box.innerHTML = `
           <div class="result-item" style="background:#f0f7f2;border-radius:12px;padding:14px;margin-bottom:12px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">
               <strong>🤖 Grok 답변</strong>
-              <button class="btn btn-sm" id="speak-btn" onclick="speakText(window._lastGrokAnswer, this)">🔊 읽어주기</button>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-sm" id="speak-btn" onclick="speakText(window._lastGrokAnswer, this)">🔊 읽어주기</button>
+                <button class="btn btn-sm btn-outline" onclick="speakRemainingTasks(this)">📋 오늘 할 일</button>
+              </div>
             </div>
             <p style="font-size:0.95rem;margin-top:4px;white-space:pre-wrap">${cleanAnswer}</p>
             ${jumpBtn}
           </div>`;
         logQuestion(q);
-        // Auto-jump shortly after answer so staff land on the visual guide
-        if (section) {
-          setTimeout(() => goToRelatedSection(section), 1400);
-        }
         return;
       }
       const ql = q.toLowerCase();
@@ -166,7 +241,7 @@ Detected question language: ${qLang}.
 CRITICAL: You MUST answer 100% in ${langName}. Do not answer in English unless the question is English.
 If the question is Korean (including romanized Korean like "annyong"), write every sentence in Korean Hangul.
 If Japanese (including romaji), answer in Japanese. If Spanish, answer in Spanish.
-Keep answers short and practical (max 4-6 short sentences). Prefer steps over long paragraphs.
+Prefer short guide-first answers when an in-app guide applies.
 Question: ${question}`;
     }
 
@@ -207,6 +282,26 @@ Question: ${question}`;
       });
     }
 
+    async function speakBrowserOnly(text, ttsLang, statusEl, stopBtn) {
+      if (!window.speechSynthesis) return false;
+      try {
+        window.speechSynthesis.cancel();
+        const voices = await waitForVoices();
+        const utter = new SpeechSynthesisUtterance(text);
+        const browserLang = ttsLang === 'ko' ? 'ko-KR' : ttsLang === 'ja' ? 'ja-JP' : ttsLang === 'es-ES' ? 'es-ES' : 'en-US';
+        utter.lang = browserLang;
+        utter.rate = 0.95;
+        const preferred = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(browserLang.slice(0, 2)));
+        if (preferred) utter.voice = preferred;
+        utter.onend = () => { if (stopBtn) stopBtn.style.display = 'none'; if (statusEl) statusEl.textContent = '재생 완료'; };
+        window.speechSynthesis.speak(utter);
+        if (statusEl) statusEl.textContent = '브라우저 음성으로 재생 중...';
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
     async function speakText(text, btn) {
       if (!text) return;
       stopSpeaking();
@@ -218,77 +313,63 @@ Question: ${question}`;
       const stopBtn = document.getElementById('float-stop-btn');
       if (stopBtn) stopBtn.style.display = 'inline-block';
       const statusEl = document.getElementById('float-status');
-      if (statusEl) statusEl.textContent = '로딩 중... 음성 파일 준비';
+      if (statusEl) statusEl.textContent = '음성 준비 중...';
 
       let played = false;
       let lastErr = '';
-      const audioEl = new Audio();
-      audioEl.setAttribute('playsinline', 'true');
-      audioEl.preload = 'auto';
-      audioEl.volume = 1.0;
-      currentAudio = audioEl;
 
-      try {
-        const res = await fetch('/.netlify/functions/tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: text.slice(0, 14000), voice_id: 'eve', language: ttsLang })
-        });
-        if (res.ok) {
-          const ct = (res.headers.get('content-type') || '').toLowerCase();
-          let buf = await res.arrayBuffer();
-          if (buf && buf.byteLength > 100 && !ct.includes('audio') && !ct.includes('mpeg')) {
-            try {
-              const textBody = new TextDecoder().decode(buf);
-              if (/^[A-Za-z0-9+/=\s]+$/.test(textBody.slice(0, 200))) {
-                const bin = atob(textBody.replace(/\s/g, ''));
-                const arr = new Uint8Array(bin.length);
-                for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-                buf = arr.buffer;
-              }
-            } catch (_) {}
-          }
-          if (buf && buf.byteLength > 100) {
-            const blob = new Blob([buf], { type: ct.includes('audio') ? ct : 'audio/mpeg' });
-            const url = URL.createObjectURL(blob);
-            audioEl.src = url;
-            audioEl.onended = () => {
-              URL.revokeObjectURL(url);
-              currentAudio = null;
-              if (stopBtn) stopBtn.style.display = 'none';
-              if (statusEl) statusEl.textContent = '재생 완료';
-            };
-            try {
-              await audioEl.play();
-              played = true;
-              if (statusEl) statusEl.textContent = '재생 중...';
-            } catch (playErr) {
-              lastErr = 'play blocked: ' + (playErr.message || playErr);
-            }
-          } else lastErr = 'empty audio body';
-        } else {
-          lastErr = 'TTS ' + res.status;
-        }
-      } catch (e) {
-        lastErr = 'TTS fetch: ' + (e.message || e);
-      }
+      // Cost saving: browser TTS first (no API)
+      played = await speakBrowserOnly(text, ttsLang, statusEl, stopBtn);
 
-      if (!played && window.speechSynthesis) {
+      if (!played) {
+        const audioEl = new Audio();
+        audioEl.setAttribute('playsinline', 'true');
+        audioEl.preload = 'auto';
+        audioEl.volume = 1.0;
+        currentAudio = audioEl;
         try {
-          window.speechSynthesis.cancel();
-          const voices = await waitForVoices();
-          const utter = new SpeechSynthesisUtterance(text);
-          const browserLang = ttsLang === 'ko' ? 'ko-KR' : ttsLang === 'ja' ? 'ja-JP' : ttsLang === 'es-ES' ? 'es-ES' : 'en-US';
-          utter.lang = browserLang;
-          utter.rate = 0.95;
-          const preferred = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(browserLang.slice(0, 2)));
-          if (preferred) utter.voice = preferred;
-          utter.onend = () => { if (stopBtn) stopBtn.style.display = 'none'; };
-          window.speechSynthesis.speak(utter);
-          played = true;
-          if (statusEl) statusEl.textContent = '브라우저 음성으로 재생 중...';
-        } catch (e2) {
-          lastErr = (lastErr ? lastErr + ' | ' : '') + 'browser TTS';
+          const res = await fetch('/.netlify/functions/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text.slice(0, 14000), voice_id: 'eve', language: ttsLang })
+          });
+          if (res.ok) {
+            const ct = (res.headers.get('content-type') || '').toLowerCase();
+            let buf = await res.arrayBuffer();
+            if (buf && buf.byteLength > 100 && !ct.includes('audio') && !ct.includes('mpeg')) {
+              try {
+                const textBody = new TextDecoder().decode(buf);
+                if (/^[A-Za-z0-9+/=\s]+$/.test(textBody.slice(0, 200))) {
+                  const bin = atob(textBody.replace(/\s/g, ''));
+                  const arr = new Uint8Array(bin.length);
+                  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+                  buf = arr.buffer;
+                }
+              } catch (_) {}
+            }
+            if (buf && buf.byteLength > 100) {
+              const blob = new Blob([buf], { type: ct.includes('audio') ? ct : 'audio/mpeg' });
+              const url = URL.createObjectURL(blob);
+              audioEl.src = url;
+              audioEl.onended = () => {
+                URL.revokeObjectURL(url);
+                currentAudio = null;
+                if (stopBtn) stopBtn.style.display = 'none';
+                if (statusEl) statusEl.textContent = '재생 완료';
+              };
+              try {
+                await audioEl.play();
+                played = true;
+                if (statusEl) statusEl.textContent = '재생 중...';
+              } catch (playErr) {
+                lastErr = 'play blocked: ' + (playErr.message || playErr);
+              }
+            } else lastErr = 'empty audio body';
+          } else {
+            lastErr = 'TTS ' + res.status;
+          }
+        } catch (e) {
+          lastErr = 'TTS fetch: ' + (e.message || e);
         }
       }
 
@@ -382,7 +463,7 @@ Question: ${question}`;
         const langSel = document.getElementById('lang-select');
         if (langSel) langSel.value = currentLang;
         applyI18n();
-        renderStamps();
+        if (typeof renderStamps === 'function') renderStamps();
       }
       let questionForGrok = text;
       if (spokenLang === 'ko' && !/[가-힣]/.test(text)) {
@@ -393,42 +474,14 @@ Question: ${question}`;
       setFloatStatus('Q: ' + text);
       document.getElementById('float-answer').textContent = '로딩 중... 답변 생성 중';
       document.getElementById('float-speak-btn').style.display = 'none';
-
-      // Remove previous jump button if any
+      const tasksBtn = document.getElementById('float-tasks-btn');
+      if (tasksBtn) tasksBtn.style.display = 'none';
       const oldJump = document.getElementById('float-jump-btn');
       if (oldJump) oldJump.remove();
 
       const answer = await askGrok(questionForGrok);
-      if (answer) {
-        const clean = answer.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '');
-        window._lastGrokAnswer = clean;
-        document.getElementById('float-answer').textContent = clean;
-        document.getElementById('float-speak-btn').style.display = 'inline-block';
-
-        const section = detectRelatedSection(text, clean);
-        window._lastRelatedSection = section;
-
-        if (section) {
-          const lbl = (section.label && (section.label[currentLang] || section.label.en)) || 'Guide';
-          setFloatStatus('Q: ' + text + ' · 관련 가이드로 이동 중…');
-          // Add manual jump button
-          const controls = document.querySelector('.speak-controls');
-          if (controls && !document.getElementById('float-jump-btn')) {
-            const btn = document.createElement('button');
-            btn.id = 'float-jump-btn';
-            btn.className = 'btn btn-sm';
-            btn.textContent = '📖 ' + lbl;
-            btn.onclick = () => goToRelatedSection(window._lastRelatedSection);
-            controls.insertBefore(btn, controls.firstChild);
-          }
-          // Auto-navigate after a short beat so staff see the answer first
-          setTimeout(() => {
-            goToRelatedSection(section);
-          }, 1500);
-        } else {
-          setFloatStatus('Q: ' + text + ' · 🔊 읽어주기 버튼을 누르세요');
-        }
-      } else {
+      if (answer) showAnswerInPanel(text, answer);
+      else {
         document.getElementById('float-answer').textContent = '답변을 받지 못했습니다.';
         setFloatStatus('다시 질문해 주세요.');
       }
@@ -474,6 +527,8 @@ Question: ${question}`;
       const micBtn = document.getElementById('float-mic');
       document.getElementById('float-answer').textContent = '';
       document.getElementById('float-speak-btn').style.display = 'none';
+      const tasksBtn = document.getElementById('float-tasks-btn');
+      if (tasksBtn) tasksBtn.style.display = 'none';
       const oldJump = document.getElementById('float-jump-btn');
       if (oldJump) oldJump.remove();
       setFloatStatus('마이크 준비 중...');
@@ -540,4 +595,9 @@ Question: ${question}`;
       }
       stopFloatMic(true);
       startRecording();
+    }
+
+    function openFloatPanelOnly() {
+      document.getElementById('float-mic-panel').classList.add('show');
+      setFloatStatus('말하거나 아래에 입력하세요 (언어 자동 인식)');
     }
