@@ -33,8 +33,18 @@
   [headers.values]
     Cache-Control = "no-cache, must-revalidate"
 
-# Images can stay cached longer
+# Optimized images – cache longer (WebP + legacy JPG)
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, immutable"
+
 [[headers]]
   for = "/*.jpg"
   [headers.values]
     Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/*.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, immutable"
