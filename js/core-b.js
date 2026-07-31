@@ -94,8 +94,7 @@
       const descEl = document.getElementById('eod-desc');
       const btnEl = document.getElementById('eod-btn');
       if (titleEl) titleEl.textContent = t.title;
-      if (descEl) descEl.textContent = t.desc;
-      if (btnEl) btnEl.textContent = t.btn;
+      if (descEl) descEl.textContent = t.btn;
       if (hour >= 17 && !endDone) {
         banner.classList.add('show');
       } else {
@@ -110,7 +109,7 @@
       modal.innerHTML = `
         <button class="close-modal" onclick="closeModal()">×</button>
         <h3>${title}</h3>
-        <img src="cash.jpg" class="img-guide" style="max-height:160px;object-fit:cover">
+        <img src="images/guides/cash.webp" class="img-guide" style="max-height:160px;object-fit:cover">
         <div class="form-group">
           <label>${currentLang==='ko'?'총액 ($)':'Total Amount ($)'}</label>
           <input type="number" id="cash-amount" step="0.01" placeholder="200.00" value="${stamps[isStart?'start_day':'end_day']?.amount || ''}">
