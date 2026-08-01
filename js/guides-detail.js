@@ -1,4 +1,4 @@
-/* Official training guides — detailed for brand-new staff (v2.0.1)
+/* Official training guides — detailed for brand-new staff (v2.0.2)
    Sales philosophy + charts + lexicon + phone script deeply embedded.
 */
 window.CF_GUIDE_DETAIL = {
