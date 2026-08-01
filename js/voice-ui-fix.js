@@ -1,4 +1,4 @@
-/* voice-ui-fix.js v5.0.0 — gold mic clear + Read label */
+/* voice-ui-fix.js v5.0.1 — gold mic stays while Grok speaks + Read label */
 (function () {
   function fixLabels() {
     var ids = ['float-speak-btn', 'speak-btn', 'guide-speak-btn'];
@@ -39,8 +39,9 @@
       window._speakSafetyTimer = setTimeout(function () {
         if (typeof window.setMicSpeaking === 'function') window.setMicSpeaking(false);
         window._speakSafetyTimer = null;
-      }, 90000);
+      }, 120000);
       try {
+        if (typeof window.setMicSpeaking === 'function') window.setMicSpeaking(true);
         await origSpeak(text, btn);
       } catch (e) {
         if (typeof window.setMicSpeaking === 'function') window.setMicSpeaking(false);
@@ -54,9 +55,18 @@
           var audioActive = audio && !audio.paused && !audio.ended;
           var synthActive = synth && synth.speaking;
           if (speaking && !audioActive && !synthActive) {
-            if (typeof window.setMicSpeaking === 'function') window.setMicSpeaking(false);
+            setTimeout(function () {
+              var a2 = window.currentAudio;
+              var s2 = window.speechSynthesis;
+              var still = document.getElementById('float-mic');
+              var aOk = a2 && !a2.paused && !a2.ended;
+              var sOk = s2 && s2.speaking;
+              if (still && still.classList.contains('speaking') && !aOk && !sOk) {
+                if (typeof window.setMicSpeaking === 'function') window.setMicSpeaking(false);
+              }
+            }, 2500);
           }
-        }, 2000);
+        }, 3000);
         fixLabels();
       }
     };

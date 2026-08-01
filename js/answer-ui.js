@@ -1,4 +1,4 @@
-/* Answer UI: related guide button inside chat answer area (v1.19.1) */
+/* answer-ui.js v5.0.1 — coach-box in dock (세일즈 가이드 priority), keep goToRelatedSection */
 (function () {
   function openPageGuideModal(pageId) {
     const page = document.getElementById('page-' + pageId);
@@ -18,7 +18,7 @@
     modal.innerHTML =
       '<button class="close-modal" onclick="closeModal()">×</button>' +
       body +
-      '<div style="margin-top:14px"><button class="btn" id="guide-speak-btn" style="width:100%" onclick="speakGuideModal(this)">🔊 Read aloud</button></div>';
+      '<div style="margin-top:14px"><button class="btn" id="guide-speak-btn" style="width:100%" onclick="speakGuideModal(this)">🔊 Read</button></div>';
     document.getElementById('modal-overlay').classList.remove('hidden');
   }
 
@@ -34,9 +34,7 @@
     }
     if (section.type === 'page') {
       if (section.id === 'home') {
-        try {
-          closeFloatPanel();
-        } catch (e) {}
+        try { closeFloatPanel(); } catch (e) {}
         if (typeof showPage === 'function') showPage('home');
         return;
       }
@@ -44,6 +42,7 @@
     }
   };
 
+  /** v5 coach UI: short answer text + titled coach-box in dock (not jump button inside answer) */
   window.showAnswerInPanel = function (question, answer) {
     const clean = (answer || '')
       .replace(/\*\*(.*?)\*\*/g, '$1')
@@ -52,6 +51,10 @@
     window._lastGrokAnswer = clean;
 
     const ansEl = document.getElementById('float-answer');
+    if (ansEl) {
+      ansEl.style.display = 'none';
+      ansEl.textContent = clean;
+    }
     const speakBtn = document.getElementById('float-speak-btn');
     if (speakBtn) speakBtn.style.display = 'inline-block';
     const tasksBtn = document.getElementById('float-tasks-btn');
@@ -66,44 +69,24 @@
         : null;
     window._lastRelatedSection = section;
 
-    if (!ansEl) return;
-
-    // Build answer chat HTML: text + guide button INSIDE answer area
-    let html =
-      '<div class="float-answer-text" style="white-space:pre-wrap">' +
-      escapeHtml(clean) +
-      '</div>';
+    if (typeof removeCoachBox === 'function') removeCoachBox();
+    else {
+      const oldBox = document.getElementById('float-coach-box');
+      if (oldBox) oldBox.remove();
+    }
 
     if (section) {
       const lbl =
         (section.label && (section.label[currentLang] || section.label.en)) ||
         'Guide';
-      html +=
-        '<button type="button" id="float-jump-btn" class="btn btn-sm" ' +
-        'style="margin-top:12px;width:100%" ' +
-        'onclick="goToRelatedSection(window._lastRelatedSection)">' +
-        '📖 ' +
-        escapeHtml(lbl) +
-        '</button>';
       if (typeof setFloatStatus === 'function') {
-        setFloatStatus(
-          (question ? 'Q: ' + question + ' · ' : '') + 'Tap guide button in answer'
-        );
+        setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '🏷️ ' + lbl);
+      }
+      if (typeof showCoachBox === 'function') {
+        showCoachBox(section);
       }
     } else if (typeof setFloatStatus === 'function') {
-      setFloatStatus(
-        (question ? 'Q: ' + question + ' · ' : '') + 'Read aloud or Tasks'
-      );
+      setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '🔊 Read · 📋 Tasks');
     }
-
-    ansEl.innerHTML = html;
   };
-
-  function escapeHtml(s) {
-    return String(s || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
 })();
