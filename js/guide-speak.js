@@ -1,4 +1,4 @@
-/* Guide modal Read aloud — server TTS + shared cache via speakText (v1.19.0) */
+/* Guide modal Read aloud — goal only (v3.0.0) cost control */
 (function () {
   function attachGuideSpeakButton() {
     const modal = document.getElementById('modal-content');
@@ -11,16 +11,18 @@
   }
 
   window.speakGuideModal = function (btn) {
-    const modal = document.getElementById('modal-content');
-    if (!modal || typeof speakText !== 'function') return;
-    const clone = modal.cloneNode(true);
-    clone.querySelectorAll('button, input, .close-modal').forEach(function (el) {
-      el.remove();
-    });
-    const text = (clone.innerText || clone.textContent || '')
-      .replace(/\u00d7/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+    if (typeof speakText !== 'function') return;
+    let text = '';
+    const goalEl = document.getElementById('guide-goal-text');
+    if (goalEl && goalEl.textContent) {
+      text = goalEl.textContent.trim();
+    }
+    if (!text) {
+      const modal = document.getElementById('modal-content');
+      if (!modal) return;
+      const box = modal.querySelector('.script-box');
+      if (box) text = (box.innerText || '').trim();
+    }
     if (!text) return;
     speakText(text, btn);
   };
@@ -35,7 +37,6 @@
     };
   }
 
-  // After other scripts load
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       wrap('showContent');
