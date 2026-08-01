@@ -1,5 +1,5 @@
-/* voice.js v4.0.0 */
-/* Conroy's Training App - voice module 3.1.0
+/* voice.js v4.0.1 */
+/* Conroy's Training App - voice module 4.0.1
    mic beep, guide modal (no auto-jump), server TTS + sentence cache
 */
     function saveApiKey() {
@@ -81,6 +81,7 @@
       return null;
     }
 
+    /** Open official guide in modal (click only). Does not auto-close answer panel. */
     function goToRelatedSection(section) {
       if (!section) return;
       if (section.type === 'content' && typeof showContent === 'function') {
@@ -283,6 +284,7 @@ Question: ${question}`;
       return 'en';
     }
 
+
     function setMicSpeaking(on) {
       const mic = document.getElementById('float-mic');
       if (!mic) return;
@@ -401,6 +403,7 @@ Question: ${question}`;
         return true;
       };
 
+      // Cache hit — no API
       if (ttsMemoryCache.has(cacheKey)) {
         try {
           const cached = ttsMemoryCache.get(cacheKey);
@@ -530,6 +533,9 @@ Question: ${question}`;
     async function handleTranscript(text, sttLang) {
       if (!text) {
         setFloatStatus('Could not recognize speech. Try again.');
+        if (typeof appendGrokMessage === 'function') {
+          appendGrokMessage('Could not recognize speech. Please try again.', 'warn');
+        }
         return;
       }
       let spokenLang = detectLang(text);
@@ -553,6 +559,11 @@ Question: ${question}`;
       } else if (spokenLang === 'ja' && !/[ぁ-んァ-ン]/.test(text)) {
         questionForGrok = '[User spoke Japanese; STT may be romanized] ' + text;
       }
+
+      // Always show user question in dock (voice path previously skipped this)
+      if (typeof appendGrokMessage === 'function') {
+        appendGrokMessage(text, 'user');
+      }
       setFloatStatus('Q: ' + text);
       document.getElementById('float-answer').textContent = 'Loading answer...';
       document.getElementById('float-speak-btn').style.display = 'none';
@@ -562,10 +573,24 @@ Question: ${question}`;
       if (oldJump) oldJump.remove();
 
       const answer = await askGrok(questionForGrok);
-      if (answer) showAnswerInPanel(text, answer);
-      else {
-        document.getElementById('float-answer').textContent = 'No answer received.';
+      if (answer) {
+        showAnswerInPanel(text, answer);
+        if (typeof appendGrokMessage === 'function') {
+          appendGrokMessage(answer, 'bot');
+        }
+        // Auto-speak answer after voice input (hands-free)
+        if (typeof speakText === 'function') {
+          setTimeout(function () {
+            try { speakText(answer, null); } catch (e) { console.warn('voice auto-speak', e); }
+          }, 350);
+        }
+      } else {
+        const errMsg = 'No answer received. Please try again.';
+        document.getElementById('float-answer').textContent = errMsg;
         setFloatStatus('Please try again.');
+        if (typeof appendGrokMessage === 'function') {
+          appendGrokMessage(errMsg, 'warn');
+        }
       }
     }
 
@@ -634,6 +659,9 @@ Question: ${question}`;
           audioContext = null;
           if (!audioChunks.length) {
             setFloatStatus('Empty recording. Try again.');
+            if (typeof appendGrokMessage === 'function') {
+              appendGrokMessage('Empty recording. Please try again.', 'warn');
+            }
             return;
           }
           const blob = new Blob(audioChunks, { type: (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm' });
@@ -646,7 +674,11 @@ Question: ${question}`;
             await handleTranscript(text, sttLang);
           } catch (err) {
             console.error(err);
-            setFloatStatus('Speech recognition failed: ' + (err.message || err));
+            const errMsg = 'Speech recognition failed: ' + (err.message || err);
+            setFloatStatus(errMsg);
+            if (typeof appendGrokMessage === 'function') {
+              appendGrokMessage(errMsg, 'warn');
+            }
           }
         };
         mediaRecorder.start(200);
