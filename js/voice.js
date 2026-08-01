@@ -1,6 +1,6 @@
-/* voice.js v4.0.2 */
-/* Conroy's Training App - voice module 4.0.2
-   mic beep, guide modal (no auto-jump), server TTS + sentence cache
+/* voice.js v5.0.0 */
+/* Conroy's Training App - voice module 5.0.0
+   coach box in dock, sales-priority titles, short speech + detail box
 */
     function saveApiKey() {
       const key = document.getElementById('api-key-input').value.trim();
@@ -51,32 +51,37 @@
 
     function detectRelatedSection(question, answer) {
       const text = ((question || '') + ' ' + (answer || '')).toLowerCase();
+      // Sales first (coach priority)
+      if (/customer|손님|greeting|인사|color|색상|size|사이즈|romance|sympathy|needs|니즈|가이드|guide|스크립트|script|walk-?in|응대|sales|세일즈|medium|large|suggest|제안|occasion|카드\s*메시지|card\s*message/.test(text)) {
+        return {
+          type: 'page', id: 'customer',
+          label: { ko: '세일즈 가이드', en: 'Sales Guide', ja: 'セールスガイド', es: 'Guía de ventas' },
+          summary: { ko: 'Medium부터 제안하고, 카드 메시지로 니즈를 읽으세요.', en: 'Lead with Medium. Read needs from the card message.', ja: 'Mediumから提案。カード文からニーズを読む。', es: 'Empiece con Medium. Lea necesidades del mensaje de la tarjeta.' }
+        };
+      }
       if (/attach|첨부|cardisle|balloon|풍선|chocolate|초콜릿|plush|인형|white\s*sheet|product\s*detail|awaiting\s*delivery/.test(text)) {
-        return { type: 'content', id: 'attachments', label: { ko: '첨부물 가이드', en: 'Attachments guide', ja: '添付物ガイド', es: 'Guía de adjuntos' } };
+        return { type: 'content', id: 'attachments', label: { ko: '첨부물 가이드', en: 'Attachments guide', ja: '添付物ガイド', es: 'Guía de adjuntos' }, summary: { ko: 'White Sheet가 끝날 때까지 첨부물을 완료하세요.', en: 'Finish attachments until White Sheet is clear.', ja: 'White Sheetが終わるまで添付物を完了。', es: 'Complete adjuntos hasta que White Sheet esté listo.' } };
       }
       if (/deliver|배달|配達|entrega|uber|golocal|walmart|3hr|asap\s*trip|out\s*for\s*delivery/.test(text)) {
-        return { type: 'content', id: 'delivery', label: { ko: '배달 가이드', en: 'Delivery guide', ja: '配達ガイド', es: 'Guía de entrega' } };
+        return { type: 'content', id: 'delivery', label: { ko: '배달 가이드', en: 'Delivery guide', ja: '配達ガイド', es: 'Guía de entrega' }, summary: { ko: '표준은 Walmart GoLocal 3Hr, 장례는 Uber ASAP.', en: 'Standard: Walmart GoLocal 3Hr. Funeral: Uber ASAP.', ja: '標準はWalmart GoLocal 3Hr、葬儀はUber ASAP。', es: 'Estándar: Walmart GoLocal 3Hr. Funeral: Uber ASAP.' } };
       }
       if (/bms|workflow|super\s*ticket|superticket|accept|reject|in\s*wire|mark\s*read|design\s*ticket/.test(text)) {
-        return { type: 'content', id: 'bmsflow', label: { ko: 'BMS 흐름', en: 'BMS workflow', ja: 'BMSフロー', es: 'Flujo BMS' } };
+        return { type: 'content', id: 'bmsflow', label: { ko: 'BMS 흐름', en: 'BMS workflow', ja: 'BMSフロー', es: 'Flujo BMS' }, summary: { ko: 'Mark Read → In Wire → Accept → SuperTicket.', en: 'Mark Read → In Wire → Accept → SuperTicket.', ja: 'Mark Read → In Wire → Accept → SuperTicket。', es: 'Mark Read → In Wire → Accept → SuperTicket.' } };
       }
       if (/message|messages|wire\s*in|funeral|긴급|funeral\s*order/.test(text)) {
-        return { type: 'page', id: 'messages', label: { ko: 'Messages 화면', en: 'Messages page', ja: 'Messages画面', es: 'Página Messages' } };
+        return { type: 'page', id: 'messages', label: { ko: 'Messages', en: 'Messages', ja: 'Messages', es: 'Messages' }, summary: { ko: 'Messages에서 Mark Read 후 In Wire 처리하세요.', en: 'Mark Read in Messages, then process In Wire.', ja: 'MessagesでMark Read後、In Wire処理。', es: 'Mark Read en Messages, luego procese In Wire.' } };
       }
       if (/golden|rule|due\s*time|매니저|manager\s*first|확신/.test(text)) {
-        return { type: 'content', id: 'golden', label: { ko: 'Golden Rules', en: 'Golden Rules', ja: 'Golden Rules', es: 'Golden Rules' } };
-      }
-      if (/customer|손님|greeting|인사|color|색상|size|사이즈|romance|sympathy|needs|니즈/.test(text)) {
-        return { type: 'page', id: 'customer', label: { ko: '손님 응대', en: 'Customer guide', ja: '接客ガイド', es: 'Guía de cliente' } };
+        return { type: 'content', id: 'golden', label: { ko: 'Golden Rules', en: 'Golden Rules', ja: 'Golden Rules', es: 'Golden Rules' }, summary: { ko: 'Due Time 우선. 확신이 없으면 매니저에게 먼저 물어보세요.', en: 'Prioritize by Due Time. If unsure, ask a manager first.', ja: 'Due Time優先。確信がなければマネージャーに先に聞く。', es: 'Priorice por Due Time. Si no está seguro, pregunte al gerente primero.' } };
       }
       if (/phone|전화|電話|teléfono|hold|홀드|on\s*hold/.test(text)) {
-        return { type: 'page', id: 'phone', label: { ko: '전화 응대', en: 'Phone guide', ja: '電話対応', es: 'Guía telefónica' } };
+        return { type: 'page', id: 'phone', label: { ko: 'Phone Script', en: 'Phone Script', ja: 'Phone Script', es: 'Phone Script' }, summary: { ko: '카드 메시지를 먼저 받고, Medium부터 제안하세요.', en: 'Take the card message first, then lead with Medium.', ja: 'カード文を先に受け取り、Mediumから提案。', es: 'Tome el mensaje de la tarjeta primero, luego ofrezca Medium.' } };
       }
       if (/unsure|모르겠|decision|어떻게\s*하|what\s*should|매니저한테|ask\s*manager/.test(text)) {
-        return { type: 'content', id: 'decision', label: { ko: '모르겠을 때', en: 'If unsure', ja: '迷ったとき', es: 'Si no está seguro' } };
+        return { type: 'content', id: 'decision', label: { ko: '모르겠을 때', en: 'If unsure', ja: '迷ったとき', es: 'Si no está seguro' }, summary: { ko: 'Golden Rule #5: 확신이 없으면 매니저에게 먼저 물어보세요.', en: 'Golden Rule #5: If unsure, ask a manager first.', ja: 'Golden Rule #5: 確信がなければマネージャーに先に聞く。', es: 'Golden Rule #5: Si no está seguro, pregunte al gerente primero.' } };
       }
-      if (/start\s*day|end\s*day|cash|현금|드로어|drawer|\$200|200\.00/.test(text)) {
-        return { type: 'page', id: 'home', label: { ko: '오늘 루틴', en: 'Today routine', ja: '今日のルーティン', es: 'Rutina de hoy' } };
+      if (/start\s*day|end\s*day|cash|현금|드로어|drawer|\$200|200\.00|루틴|routine/.test(text)) {
+        return { type: 'page', id: 'home', label: { ko: '오늘 루틴', en: 'Today routine', ja: '今日のルーティン', es: 'Rutina de hoy' }, summary: { ko: '다음 미완료 루틴을 확인하고 순서대로 진행하세요.', en: 'Check the next incomplete routine and proceed in order.', ja: '次の未完了ルーティンを確認して順番に進める。', es: 'Revise la siguiente rutina incompleta y avance en orden.' } };
       }
       return null;
     }
@@ -121,6 +126,38 @@
       speakText(text, btn);
     }
 
+    function removeCoachBox() {
+      const old = document.getElementById('float-coach-box');
+      if (old) old.remove();
+      const oldJump = document.getElementById('float-jump-btn');
+      if (oldJump) oldJump.remove();
+    }
+
+    function showCoachBox(section) {
+      removeCoachBox();
+      if (!section) return;
+      const lang = currentLang || 'en';
+      const title = (section.label && (section.label[lang] || section.label.en)) || 'Guide';
+      const summary = (section.summary && (section.summary[lang] || section.summary.en)) || '';
+      const messages = document.getElementById('grok-messages');
+      if (!messages) return;
+      const box = document.createElement('div');
+      box.id = 'float-coach-box';
+      box.className = 'coach-box';
+      box.innerHTML =
+        '<div class="coach-box-title">🏷️ ' + title + '</div>' +
+        (summary ? '<div class="coach-box-summary">' + summary + '</div>' : '') +
+        '<button class="btn btn-sm" id="float-coach-detail-btn" style="margin-top:6px">📖 Open guide</button>';
+      messages.appendChild(box);
+      messages.scrollTop = messages.scrollHeight;
+      const detailBtn = document.getElementById('float-coach-detail-btn');
+      if (detailBtn) {
+        detailBtn.onclick = function () {
+          goToRelatedSection(window._lastRelatedSection);
+        };
+      }
+    }
+
     function showAnswerInPanel(question, answer) {
       const clean = (answer || '').replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '');
       window._lastGrokAnswer = clean;
@@ -131,23 +168,14 @@
       const tasksBtn = document.getElementById('float-tasks-btn');
       if (tasksBtn) tasksBtn.style.display = 'inline-block';
 
-      const oldJump = document.getElementById('float-jump-btn');
-      if (oldJump) oldJump.remove();
+      removeCoachBox();
 
       const section = detectRelatedSection(question, clean);
       window._lastRelatedSection = section;
       if (section) {
         const lbl = (section.label && (section.label[currentLang] || section.label.en)) || 'Guide';
-        setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '📖 Tap guide to open');
-        const controls = document.querySelector('.speak-controls');
-        if (controls && !document.getElementById('float-jump-btn')) {
-          const btn = document.createElement('button');
-          btn.id = 'float-jump-btn';
-          btn.className = 'btn btn-sm';
-          btn.textContent = '📖 ' + lbl;
-          btn.onclick = () => goToRelatedSection(window._lastRelatedSection);
-          controls.insertBefore(btn, controls.firstChild);
-        }
+        setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '🏷️ ' + lbl);
+        showCoachBox(section);
       } else {
         setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '🔊 Read · 📋 Tasks');
       }
@@ -173,8 +201,13 @@
       document.getElementById('float-speak-btn').style.display = 'none';
       const tasksBtn = document.getElementById('float-tasks-btn');
       if (tasksBtn) tasksBtn.style.display = 'none';
-      const oldJump = document.getElementById('float-jump-btn');
-      if (oldJump) oldJump.remove();
+      if (typeof removeCoachBox === 'function') removeCoachBox();
+      else {
+        const oldJump = document.getElementById('float-jump-btn');
+        if (oldJump) oldJump.remove();
+        const oldBox = document.getElementById('float-coach-box');
+        if (oldBox) oldBox.remove();
+      }
       const answer = await askGrok(q);
       if (answer) {
         showAnswerInPanel(q, answer);
@@ -570,8 +603,13 @@ Question: ${question}`;
       document.getElementById('float-speak-btn').style.display = 'none';
       const tasksBtn = document.getElementById('float-tasks-btn');
       if (tasksBtn) tasksBtn.style.display = 'none';
-      const oldJump = document.getElementById('float-jump-btn');
-      if (oldJump) oldJump.remove();
+      if (typeof removeCoachBox === 'function') removeCoachBox();
+      else {
+        const oldJump = document.getElementById('float-jump-btn');
+        if (oldJump) oldJump.remove();
+        const oldBox = document.getElementById('float-coach-box');
+        if (oldBox) oldBox.remove();
+      }
 
       const answer = await askGrok(questionForGrok);
       if (answer) {
@@ -637,8 +675,13 @@ Question: ${question}`;
       document.getElementById('float-speak-btn').style.display = 'none';
       const tasksBtn = document.getElementById('float-tasks-btn');
       if (tasksBtn) tasksBtn.style.display = 'none';
-      const oldJump = document.getElementById('float-jump-btn');
-      if (oldJump) oldJump.remove();
+      if (typeof removeCoachBox === 'function') removeCoachBox();
+      else {
+        const oldJump = document.getElementById('float-jump-btn');
+        if (oldJump) oldJump.remove();
+        const oldBox = document.getElementById('float-coach-box');
+        if (oldBox) oldBox.remove();
+      }
       setFloatStatus('Preparing mic...');
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
