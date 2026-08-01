@@ -1,4 +1,4 @@
-/* voice-ui-fix.js v4.0.2 — gold mic clear + Read label */
+/* voice-ui-fix.js v5.0.0 — gold mic clear + Read label */
 (function () {
   function fixLabels() {
     var ids = ['float-speak-btn', 'speak-btn', 'guide-speak-btn'];
@@ -46,7 +46,6 @@
         if (typeof window.setMicSpeaking === 'function') window.setMicSpeaking(false);
         throw e;
       } finally {
-        // If still marked speaking but no audio after short delay, clear
         setTimeout(function () {
           var mic = document.getElementById('float-mic');
           var audio = window.currentAudio;
@@ -63,7 +62,6 @@
     };
   }
 
-  // Also clear gold when Stop is used (already via stopSpeaking -> setMicSpeaking)
   document.addEventListener('DOMContentLoaded', fixLabels);
   setTimeout(fixLabels, 500);
   setTimeout(fixLabels, 2000);
