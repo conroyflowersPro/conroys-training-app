@@ -1,17 +1,18 @@
-/* dock-fix.js v5.0.4 — greeting + chat dock hard recovery */
+/* dock-fix.js v5.0.5 — greeting + dock recovery (first login EN, auto-detect after) */
 (function () {
   function lang() {
     try {
       var s = localStorage.getItem('cf_lang');
-      if (s && ['en','ko','ja','es'].indexOf(s) >= 0) return s;
+      if (s && ['en', 'ko', 'ja', 'es'].indexOf(s) >= 0) return s;
     } catch (e) {}
+    return 'en';
+  }
+
+  function hideLangSelect() {
     try {
-      var n = (navigator.language || 'en').toLowerCase();
-      if (n.indexOf('ko') === 0) return 'ko';
-      if (n.indexOf('ja') === 0) return 'ja';
-      if (n.indexOf('es') === 0) return 'es';
+      var sel = document.getElementById('lang-select');
+      if (sel) sel.style.display = 'none';
     } catch (e) {}
-    return (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
   }
 
   function ensureDockVisible() {
@@ -22,6 +23,7 @@
   function ensureGreeting() {
     try {
       ensureDockVisible();
+      hideLangSelect();
       var box = document.getElementById('grok-messages');
       if (!box) return;
       if (box.querySelector('.grok-msg')) return;
@@ -51,49 +53,23 @@
 
   function patchStartApp() {
     if (typeof startApp !== 'function') return;
-    if (startApp._dockFixed) return;
+    if (startApp._dockFixed505) return;
     var orig = startApp;
     function wrapped() {
-      try {
-        var L = lang();
-        currentLang = L;
-        localStorage.setItem('cf_lang', L);
-      } catch (e) {}
+      hideLangSelect();
       var result = orig.apply(this, arguments);
-      try {
-        var L2 = lang();
-        if (currentLang === 'en' && L2 !== 'en') {
-          currentLang = L2;
-          localStorage.setItem('cf_lang', L2);
-          var sel = document.getElementById('lang-select');
-          if (sel) sel.value = L2;
-          if (typeof applyI18n === 'function') applyI18n();
-        }
-      } catch (e) {}
       setTimeout(ensureGreeting, 50);
       setTimeout(ensureGreeting, 400);
       return result;
     }
-    wrapped._dockFixed = true;
+    wrapped._dockFixed505 = true;
     startApp = wrapped;
     window.startApp = wrapped;
   }
 
-  function patchSubmit() {
-    if (typeof submitFloatChat !== 'function') return;
-    if (submitFloatChat._dockFixed) return;
-    var orig = submitFloatChat;
-    function wrapped() {
-      return orig.apply(this, arguments);
-    }
-    wrapped._dockFixed = true;
-    submitFloatChat = wrapped;
-    window.submitFloatChat = wrapped;
-  }
-
   function boot() {
+    hideLangSelect();
     patchStartApp();
-    patchSubmit();
     try {
       var app = document.getElementById('app');
       if (app && !app.classList.contains('hidden')) {
