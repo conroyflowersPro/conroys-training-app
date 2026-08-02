@@ -8,6 +8,17 @@
     return 'en';
   }
 
+  function bumpVersionLabel() {
+    try {
+      var nodes = document.querySelectorAll('p, span, div');
+      for (var i = 0; i < nodes.length; i++) {
+        var t = nodes[i].textContent || '';
+        if (t === 'v5.0.4' || t.trim() === 'v5.0.4') nodes[i].textContent = 'v5.0.5';
+        else if (t.indexOf('v5.0.4') >= 0 && t.length < 40) nodes[i].textContent = t.replace('v5.0.4', 'v5.0.5');
+      }
+    } catch (e) {}
+  }
+
   function hideLangSelect() {
     try {
       var sel = document.getElementById('lang-select');
@@ -59,7 +70,6 @@
     } catch (e) { console.warn('ensureGreeting', e); }
   }
 
-  /** Override startApp: first login EN, keep saved lang, never force EN every time */
   function patchStartApp() {
     if (typeof window.startApp !== 'function' && typeof startApp !== 'function') return;
     var orig = window.startApp || startApp;
@@ -68,13 +78,12 @@
       hideLangSelect();
       var saved = 'en';
       try {
-        saved = getSavedLang(); // first login → en
+        saved = getSavedLang();
         currentLang = saved;
         localStorage.setItem('cf_lang', saved);
       } catch (e) {}
       var result;
       try { result = orig.apply(this, arguments); } catch (e) { console.warn('startApp', e); }
-      // core-a may force en — restore saved preference (auto-detect history)
       try {
         currentLang = saved;
         localStorage.setItem('cf_lang', saved);
@@ -83,6 +92,7 @@
         if (typeof renderStamps === 'function') renderStamps();
       } catch (e) {}
       try { ensureDockVisible(); } catch (e) {}
+      bumpVersionLabel();
       setTimeout(ensureGreeting, 50);
       setTimeout(ensureGreeting, 400);
       return result;
@@ -92,7 +102,6 @@
     window.startApp = wrapped;
   }
 
-  /** Full null-safe submit with immediate dock feedback + auto lang detect */
   function patchSubmit() {
     async function safeSubmit() {
       var input = document.getElementById('float-chat-input');
@@ -100,7 +109,6 @@
       var q = (input.value || '').trim();
       if (!q) return;
       input.value = '';
-      // language detect
       var spokenLang = (typeof detectLang === 'function') ? detectLang(q) : 'en';
       var newLang = spokenLang === 'es-ES' ? 'es' : (spokenLang || 'en');
       try {
@@ -112,7 +120,6 @@
         }
       } catch (e) {}
       hideLangSelect();
-      // immediate feedback
       safeAppend(q, 'user');
       try {
         if (typeof setFloatStatus === 'function') setFloatStatus('Q: ' + q);
@@ -165,6 +172,7 @@
 
   function boot() {
     hideLangSelect();
+    bumpVersionLabel();
     patchLangVisibility();
     patchStartApp();
     patchSubmit();
