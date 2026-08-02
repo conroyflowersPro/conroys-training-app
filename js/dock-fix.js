@@ -1,6 +1,6 @@
-/* dock-fix.js v5.0.5 — greeting + dock recovery (first login EN, auto-detect after) */
+/* dock-fix.js v5.0.5 — language policy + chat/greeting hard recovery */
 (function () {
-  function lang() {
+  function getSavedLang() {
     try {
       var s = localStorage.getItem('cf_lang');
       if (s && ['en', 'ko', 'ja', 'es'].indexOf(s) >= 0) return s;
@@ -20,6 +20,21 @@
     if (dock) dock.classList.remove('hidden');
   }
 
+  function safeAppend(text, type) {
+    try {
+      if (typeof appendGrokMessage === 'function') appendGrokMessage(text, type || 'bot');
+      else {
+        var box = document.getElementById('grok-messages');
+        if (!box) return;
+        var div = document.createElement('div');
+        div.className = 'grok-msg ' + (type || 'bot');
+        div.style.whiteSpace = 'pre-wrap';
+        div.textContent = text;
+        box.appendChild(div);
+      }
+    } catch (e) { console.warn('safeAppend', e); }
+  }
+
   function ensureGreeting() {
     try {
       ensureDockVisible();
@@ -29,8 +44,8 @@
       if (box.querySelector('.grok-msg')) return;
       var name = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : '';
       if (!name) return;
-      var L = lang();
-      try { if (typeof currentLang !== 'undefined') currentLang = L; } catch (e) {}
+      var L = getSavedLang();
+      try { currentLang = L; } catch (e) {}
       if (typeof showWelcomeInDock === 'function') {
         try { showWelcomeInDock(); return; } catch (e) { console.warn(e); }
       }
@@ -40,36 +55,119 @@
         ja: name + 'さん、こんにちは。出勤されたらお手伝いします。',
         es: 'Hola ' + name + '. Si ya entró a su turno, estoy aquí para ayudar.'
       }[L] || ('Hello ' + name);
-      if (typeof appendGrokMessage === 'function') appendGrokMessage(hello, 'bot');
-      else {
-        var div = document.createElement('div');
-        div.className = 'grok-msg bot';
-        div.style.whiteSpace = 'pre-wrap';
-        div.textContent = hello;
-        box.appendChild(div);
-      }
+      safeAppend(hello, 'bot');
     } catch (e) { console.warn('ensureGreeting', e); }
   }
 
+  /** Override startApp: first login EN, keep saved lang, never force EN every time */
   function patchStartApp() {
-    if (typeof startApp !== 'function') return;
-    if (startApp._dockFixed505) return;
-    var orig = startApp;
+    if (typeof window.startApp !== 'function' && typeof startApp !== 'function') return;
+    var orig = window.startApp || startApp;
+    if (orig._cf505) return;
     function wrapped() {
       hideLangSelect();
-      var result = orig.apply(this, arguments);
+      var saved = 'en';
+      try {
+        saved = getSavedLang(); // first login → en
+        currentLang = saved;
+        localStorage.setItem('cf_lang', saved);
+      } catch (e) {}
+      var result;
+      try { result = orig.apply(this, arguments); } catch (e) { console.warn('startApp', e); }
+      // core-a may force en — restore saved preference (auto-detect history)
+      try {
+        currentLang = saved;
+        localStorage.setItem('cf_lang', saved);
+        hideLangSelect();
+        if (typeof applyI18n === 'function') applyI18n();
+        if (typeof renderStamps === 'function') renderStamps();
+      } catch (e) {}
+      try { ensureDockVisible(); } catch (e) {}
       setTimeout(ensureGreeting, 50);
       setTimeout(ensureGreeting, 400);
       return result;
     }
-    wrapped._dockFixed505 = true;
+    wrapped._cf505 = true;
     startApp = wrapped;
     window.startApp = wrapped;
   }
 
+  /** Full null-safe submit with immediate dock feedback + auto lang detect */
+  function patchSubmit() {
+    async function safeSubmit() {
+      var input = document.getElementById('float-chat-input');
+      if (!input) return;
+      var q = (input.value || '').trim();
+      if (!q) return;
+      input.value = '';
+      // language detect
+      var spokenLang = (typeof detectLang === 'function') ? detectLang(q) : 'en';
+      var newLang = spokenLang === 'es-ES' ? 'es' : (spokenLang || 'en');
+      try {
+        if (typeof setAppLanguage === 'function') setAppLanguage(newLang);
+        else {
+          currentLang = newLang;
+          localStorage.setItem('cf_lang', newLang);
+          if (typeof applyI18n === 'function') applyI18n();
+        }
+      } catch (e) {}
+      hideLangSelect();
+      // immediate feedback
+      safeAppend(q, 'user');
+      try {
+        if (typeof setFloatStatus === 'function') setFloatStatus('Q: ' + q);
+      } catch (e) {}
+      var ansEl = document.getElementById('float-answer');
+      if (ansEl) ansEl.textContent = 'Loading answer...';
+      var speakBtn = document.getElementById('float-speak-btn');
+      if (speakBtn) speakBtn.style.display = 'none';
+      var tasksBtn = document.getElementById('float-tasks-btn');
+      if (tasksBtn) tasksBtn.style.display = 'none';
+      try {
+        if (typeof removeCoachBox === 'function') removeCoachBox();
+      } catch (e) {}
+      var answer = null;
+      try {
+        if (typeof askGrok === 'function') answer = await askGrok(q);
+      } catch (e) {
+        console.warn('askGrok', e);
+        answer = null;
+      }
+      if (answer) {
+        try {
+          if (typeof showAnswerInPanel === 'function') showAnswerInPanel(q, answer);
+        } catch (e) {}
+        safeAppend(answer, 'bot');
+        if (typeof speakText === 'function') {
+          setTimeout(function () {
+            try { speakText(answer, null); } catch (e) { console.warn('auto-speak', e); }
+          }, 300);
+        }
+      } else {
+        var fail = (currentLang === 'ko')
+          ? '답변을 받지 못했습니다. 다시 시도해 주세요.'
+          : 'No answer received. Please try again.';
+        if (ansEl) ansEl.textContent = fail;
+        try { if (typeof setFloatStatus === 'function') setFloatStatus(fail); } catch (e) {}
+        safeAppend(fail, 'bot');
+      }
+    }
+    submitFloatChat = safeSubmit;
+    window.submitFloatChat = safeSubmit;
+  }
+
+  function patchLangVisibility() {
+    if (typeof updateLangSelectVisibility === 'function') {
+      updateLangSelectVisibility = function () { hideLangSelect(); };
+      window.updateLangSelectVisibility = updateLangSelectVisibility;
+    }
+  }
+
   function boot() {
     hideLangSelect();
+    patchLangVisibility();
     patchStartApp();
+    patchSubmit();
     try {
       var app = document.getElementById('app');
       if (app && !app.classList.contains('hidden')) {
