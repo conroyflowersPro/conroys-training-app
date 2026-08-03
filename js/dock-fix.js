@@ -3,7 +3,7 @@
   if (window.__cfTtsFixLoading) return;
   window.__cfTtsFixLoading = true;
   var s = document.createElement('script');
-  s.src = 'js/tts-fix.js?v=5.0.9';
+  s.src = 'js/tts-fix.js?v=5.0.10';
   s.async = false;
   (document.head || document.documentElement).appendChild(s);
 })();
@@ -12,12 +12,12 @@
   if (window.__cfMicFixLoading) return;
   window.__cfMicFixLoading = true;
   var s = document.createElement('script');
-  s.src = 'js/mic-fix.js?v=5.0.9';
+  s.src = 'js/mic-fix.js?v=5.0.10';
   s.async = false;
   (document.head || document.documentElement).appendChild(s);
 })();
 
-/* dock-fix.js v5.0.9 — coaching boot + loaders */
+/* dock-fix.js v5.0.10 — coaching boot + loaders */
 (function () {
   function getSavedLang() {
     try {
@@ -39,8 +39,8 @@
       var nodes = document.querySelectorAll('p, span, div');
       for (var i = 0; i < nodes.length; i++) {
         var t = nodes[i].textContent || '';
-        if (/^v5\.0\.[0-8]$/.test(t.trim())) nodes[i].textContent = 'v5.0.9';
-        else if (/v5\.0\.[0-8]/.test(t) && t.length < 48) nodes[i].textContent = t.replace(/v5\.0\.[0-8]/g, 'v5.0.9');
+        if (/^v5\.0\.\d+$/.test(t.trim())) nodes[i].textContent = 'v5.0.10';
+        else if (/v5\.0\.\d+/.test(t) && t.length < 48) nodes[i].textContent = t.replace(/v5\.0\.\d+/g, 'v5.0.10');
       }
     } catch (e) {}
   }
@@ -254,7 +254,7 @@
   function patchStartApp() {
     if (typeof window.startApp !== 'function' && typeof startApp !== 'function') return;
     var orig = window.startApp || startApp;
-    if (orig._cf509) return;
+    if (orig._cf510) return;
     function wrapped() {
       hideLangSelect();
       bindAudioUnlock();
@@ -280,7 +280,7 @@
       setTimeout(ensureGreeting, 500);
       return result;
     }
-    wrapped._cf509 = true;
+    wrapped._cf510 = true;
     startApp = wrapped;
     window.startApp = wrapped;
   }
