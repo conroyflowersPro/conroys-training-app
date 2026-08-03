@@ -1,4 +1,4 @@
-/* dock-fix.js v5.0.5 — language policy + chat/greeting hard recovery */
+/* dock-fix.js v5.0.6 — coaching boot: greeting, audio unlock, lang, null-safe chat */
 (function () {
   function getSavedLang() {
     try {
@@ -8,22 +8,47 @@
     return 'en';
   }
 
-  function bumpVersionLabel() {
-    try {
-      var nodes = document.querySelectorAll('p, span, div');
-      for (var i = 0; i < nodes.length; i++) {
-        var t = nodes[i].textContent || '';
-        if (t === 'v5.0.4' || t.trim() === 'v5.0.4') nodes[i].textContent = 'v5.0.5';
-        else if (t.indexOf('v5.0.4') >= 0 && t.length < 40) nodes[i].textContent = t.replace('v5.0.4', 'v5.0.5');
-      }
-    } catch (e) {}
-  }
-
   function hideLangSelect() {
     try {
       var sel = document.getElementById('lang-select');
       if (sel) sel.style.display = 'none';
     } catch (e) {}
+  }
+
+  function bumpVersionLabel() {
+    try {
+      var nodes = document.querySelectorAll('p, span, div');
+      for (var i = 0; i < nodes.length; i++) {
+        var t = nodes[i].textContent || '';
+        if (/^v5\.0\.[0-5]$/.test(t.trim())) nodes[i].textContent = 'v5.0.6';
+        else if (/v5\.0\.[0-5]/.test(t) && t.length < 48) nodes[i].textContent = t.replace(/v5\.0\.[0-5]/g, 'v5.0.6');
+      }
+    } catch (e) {}
+  }
+
+  window.unlockAudio = function unlockAudio() {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (Ctx) {
+        if (!window._cfAudioCtx) window._cfAudioCtx = new Ctx();
+        if (window._cfAudioCtx.state === 'suspended') window._cfAudioCtx.resume();
+      }
+    } catch (e) {}
+    try { if (window.speechSynthesis) window.speechSynthesis.resume(); } catch (e) {}
+    try {
+      var a = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=');
+      a.volume = 0.01;
+      var p = a.play();
+      if (p && p.catch) p.catch(function () {});
+    } catch (e) {}
+  };
+
+  function bindAudioUnlock() {
+    if (window._cfAudioUnlockBound) return;
+    window._cfAudioUnlockBound = true;
+    var once = function () { window.unlockAudio(); };
+    document.addEventListener('touchstart', once, { passive: true });
+    document.addEventListener('click', once, { passive: true });
   }
 
   function ensureDockVisible() {
@@ -55,30 +80,26 @@
       if (box.querySelector('.grok-msg')) return;
       var name = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : '';
       if (!name) return;
-      var L = getSavedLang();
-      try { currentLang = L; } catch (e) {}
+      try { currentLang = getSavedLang(); } catch (e) {}
       if (typeof showWelcomeInDock === 'function') {
         try { showWelcomeInDock(); return; } catch (e) { console.warn(e); }
       }
-      var hello = {
-        ko: name + '님 안녕하세요. 출근하셨으면 도와드리겠습니다.',
-        en: 'Hello ' + name + ". If you're in for your shift, I'm here to help.",
-        ja: name + 'さん、こんにちは。出勤されたらお手伝いします。',
-        es: 'Hola ' + name + '. Si ya entró a su turno, estoy aquí para ayudar.'
-      }[L] || ('Hello ' + name);
-      safeAppend(hello, 'bot');
+      var L = getSavedLang();
+      var nextLine = (typeof buildDailyRoutineSpeech === 'function') ? buildDailyRoutineSpeech() : '';
+      var msg = (L === 'ko' ? (name + '님 안녕하세요. ') : ('Hello ' + name + '. ')) + (nextLine || '');
+      safeAppend(msg.trim(), 'bot');
     } catch (e) { console.warn('ensureGreeting', e); }
   }
 
   function patchStartApp() {
     if (typeof window.startApp !== 'function' && typeof startApp !== 'function') return;
     var orig = window.startApp || startApp;
-    if (orig._cf505) return;
+    if (orig._cf506) return;
     function wrapped() {
       hideLangSelect();
-      var saved = 'en';
+      bindAudioUnlock();
+      var saved = getSavedLang();
       try {
-        saved = getSavedLang();
         currentLang = saved;
         localStorage.setItem('cf_lang', saved);
       } catch (e) {}
@@ -93,17 +114,18 @@
       } catch (e) {}
       try { ensureDockVisible(); } catch (e) {}
       bumpVersionLabel();
-      setTimeout(ensureGreeting, 50);
-      setTimeout(ensureGreeting, 400);
+      setTimeout(ensureGreeting, 80);
+      setTimeout(ensureGreeting, 500);
       return result;
     }
-    wrapped._cf505 = true;
+    wrapped._cf506 = true;
     startApp = wrapped;
     window.startApp = wrapped;
   }
 
   function patchSubmit() {
     async function safeSubmit() {
+      window.unlockAudio();
       var input = document.getElementById('float-chat-input');
       if (!input) return;
       var q = (input.value || '').trim();
@@ -121,29 +143,20 @@
       } catch (e) {}
       hideLangSelect();
       safeAppend(q, 'user');
-      try {
-        if (typeof setFloatStatus === 'function') setFloatStatus('Q: ' + q);
-      } catch (e) {}
+      try { if (typeof setFloatStatus === 'function') setFloatStatus('Q: ' + q); } catch (e) {}
       var ansEl = document.getElementById('float-answer');
       if (ansEl) ansEl.textContent = 'Loading answer...';
       var speakBtn = document.getElementById('float-speak-btn');
       if (speakBtn) speakBtn.style.display = 'none';
       var tasksBtn = document.getElementById('float-tasks-btn');
       if (tasksBtn) tasksBtn.style.display = 'none';
-      try {
-        if (typeof removeCoachBox === 'function') removeCoachBox();
-      } catch (e) {}
+      try { if (typeof removeCoachBox === 'function') removeCoachBox(); } catch (e) {}
       var answer = null;
       try {
         if (typeof askGrok === 'function') answer = await askGrok(q);
-      } catch (e) {
-        console.warn('askGrok', e);
-        answer = null;
-      }
+      } catch (e) { console.warn('askGrok', e); }
       if (answer) {
-        try {
-          if (typeof showAnswerInPanel === 'function') showAnswerInPanel(q, answer);
-        } catch (e) {}
+        try { if (typeof showAnswerInPanel === 'function') showAnswerInPanel(q, answer); } catch (e) {}
         safeAppend(answer, 'bot');
         if (typeof speakText === 'function') {
           setTimeout(function () {
@@ -173,6 +186,7 @@
   function boot() {
     hideLangSelect();
     bumpVersionLabel();
+    bindAudioUnlock();
     patchLangVisibility();
     patchStartApp();
     patchSubmit();
