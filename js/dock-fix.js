@@ -1,4 +1,14 @@
-/* dock-fix.js v5.0.6 — coaching boot self-contained */
+/* load tts-fix after voice modules */
+(function(){
+  if (window.__cfTtsFixLoading) return;
+  window.__cfTtsFixLoading = true;
+  var s = document.createElement('script');
+  s.src = 'js/tts-fix.js?v=5.0.7';
+  s.async = false;
+  (document.head || document.documentElement).appendChild(s);
+})();
+
+/* dock-fix.js v5.0.7 — coaching boot self-contained */
 (function () {
   function getSavedLang() {
     try {
@@ -20,8 +30,8 @@
       var nodes = document.querySelectorAll('p, span, div');
       for (var i = 0; i < nodes.length; i++) {
         var t = nodes[i].textContent || '';
-        if (/^v5\.0\.[0-5]$/.test(t.trim())) nodes[i].textContent = 'v5.0.6';
-        else if (/v5\.0\.[0-5]/.test(t) && t.length < 48) nodes[i].textContent = t.replace(/v5\.0\.[0-5]/g, 'v5.0.6');
+        if (/^v5\.0\.[0-6]$/.test(t.trim())) nodes[i].textContent = 'v5.0.7';
+        else if (/v5\.0\.[0-6]/.test(t) && t.length < 48) nodes[i].textContent = t.replace(/v5\.0\.[0-6]/g, 'v5.0.7');
       }
     } catch (e) {}
   }
@@ -142,7 +152,7 @@
       if (typeof speakText === 'function') {
         setTimeout(function () {
           try { speakText(msg, null); } catch (e) { console.warn('welcome TTS', e); }
-        }, 400);
+        }, 500);
       }
       if (next) {
         setTimeout(function () {
@@ -235,7 +245,7 @@
   function patchStartApp() {
     if (typeof window.startApp !== 'function' && typeof startApp !== 'function') return;
     var orig = window.startApp || startApp;
-    if (orig._cf506) return;
+    if (orig._cf507) return;
     function wrapped() {
       hideLangSelect();
       bindAudioUnlock();
@@ -261,7 +271,7 @@
       setTimeout(ensureGreeting, 500);
       return result;
     }
-    wrapped._cf506 = true;
+    wrapped._cf507 = true;
     startApp = wrapped;
     window.startApp = wrapped;
   }
