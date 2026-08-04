@@ -1,19 +1,37 @@
+/* Load order: tts-fix, mic-fix, guide-speak before dock boot */
+(function () {
+  var s = document.createElement('script');
+  s.src = 'js/tts-fix.js?v=5.3.5';
+  s.async = false;
+  document.head.appendChild(s);
+})();
+(function () {
+  var s = document.createElement('script');
+  s.src = 'js/mic-fix.js?v=5.3.5';
+  s.async = false;
+  document.head.appendChild(s);
+})();
+(function () {
+  var s = document.createElement('script');
+  s.src = 'js/guide-speak.js?v=5.3.5';
+  s.async = false;
+  document.head.appendChild(s);
+})();
 /* dock-fix.js v5.3.5 — coaching boot + loaders + safeSubmit loading/coach-box */
 (function () {
-  function loadScript(src, id) {
+  function getSavedLang() {
     try {
-      if (id && document.getElementById(id)) return;
-      var s = document.createElement('script');
-      if (id) s.id = id;
-      s.src = src;
-      s.async = false;
-      document.head.appendChild(s);
+      return localStorage.getItem('cf_lang') || (typeof currentLang !== 'undefined' ? currentLang : 'en');
+    } catch (e) {
+      return 'en';
+    }
+  }
+  function hideLangSelect() {
+    try {
+      var sel = document.getElementById('lang-select');
+      if (sel) sel.style.display = 'none';
     } catch (e) {}
   }
-  loadScript('js/tts-fix.js?v=5.3.5', 'cf-tts-fix');
-  loadScript('js/mic-fix.js?v=5.3.5', 'cf-mic-fix');
-  loadScript('js/guide-speak.js?v=5.3.5', 'cf-guide-speak');
-
   function bumpVersionLabel() {
     try {
       var nodes = document.querySelectorAll('p, span, div');
@@ -24,72 +42,143 @@
       }
     } catch (e) {}
   }
-
-  function hideLangIfNeeded() {
-    try {
-      var sel = document.getElementById('lang-select');
-      if (sel) sel.style.display = 'none';
-    } catch (e) {}
-  }
-
   window.unlockAudio = function unlockAudio() {
     try {
       var Ctx = window.AudioContext || window.webkitAudioContext;
-      if (Ctx) {
-        if (!window._cfAudioCtx) window._cfAudioCtx = new Ctx();
-        if (window._cfAudioCtx.state === 'suspended') window._cfAudioCtx.resume();
-      }
+      if (!Ctx) return;
+      if (!window._cfAudioCtx) window._cfAudioCtx = new Ctx();
+      var p = window._cfAudioCtx.resume && window._cfAudioCtx.resume();
+      if (p && p.catch) p.catch(function () {});
     } catch (e) {}
   };
-
-  function appendGrokMessage(text, role) {
+  function bindAudioUnlock() {
+    var once = function () { window.unlockAudio(); };
+    document.addEventListener('click', once, { once: true, capture: true });
+    document.addEventListener('touchstart', once, { once: true, capture: true });
+  }
+  function ensureDockVisible() {
     try {
-      var box = document.getElementById('grok-messages');
-      if (!box) return;
-      var div = document.createElement('div');
-      div.className = 'grok-msg ' + (role === 'user' ? 'user' : 'bot');
-      div.textContent = text;
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
+      var dock = document.getElementById('grok-dock');
+      if (dock) dock.classList.remove('hidden');
     } catch (e) {}
   }
-
-  function isBadAnswer(answer) {
-    var a = String(answer || '');
-    if (!a) return true;
-    if (/서버 오류|API 오류|네트워크\/Functions|504|Inactivity Timeout|<!DOCTYPE|is not valid JSON/i.test(a)) return true;
-    return false;
-  }
-
-  function safeSubmit() {
-    var input = document.getElementById('float-chat-input');
-    var q = input ? String(input.value || '').trim() : '';
-    if (!q) return;
-    if (input) input.value = '';
-    try { if (typeof appendGrokMessage === 'function') appendGrokMessage(q, 'user'); } catch (e) {}
+  function safeAppend(text, type) {
     try {
-      if (typeof playLoadingSound === 'function') playLoadingSound();
-      else if (typeof playLoadingSoundOnce === 'function') playLoadingSoundOnce();
-      else if (typeof playBell === 'function') playBell();
-    } catch (e) {}
-    try {
-      if (typeof showLoadingStatus === 'function') showLoadingStatus();
-    } catch (e) {
-      try {
+      if (typeof appendGrokMessage === 'function') appendGrokMessage(text, type || 'bot');
+      else {
         var box = document.getElementById('grok-messages');
-        if (box && !document.getElementById('cf-loading-msg')) {
-          var el = document.createElement('div');
-          el.className = 'grok-msg bot';
-          el.id = 'cf-loading-msg';
-          el.style.opacity = '0.75';
-          el.textContent = 'Looking up…';
-          box.appendChild(el);
+        if (!box) return;
+        var div = document.createElement('div');
+        div.className = 'grok-msg ' + (type === 'user' ? 'user' : 'bot');
+        div.textContent = text;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+      }
+    } catch (e) {}
+  }
+  function installCoachWelcome() {
+    window.buildDailyRoutineSpeech = function () {
+      try {
+        if (typeof getNextIncompleteTask === 'function') {
+          var t = getNextIncompleteTask();
+          if (t && t.title) return t.title;
         }
-      } catch (e2) {}
+      } catch (e) {}
+      return '';
+    };
+    window.showWelcomeInDock = function () {
+      try {
+        var L = getSavedLang();
+        var next = '';
+        try { next = window.buildDailyRoutineSpeech() || ''; } catch (e) {}
+        var msg = '';
+        if (L === 'ko') msg = next ? ('안녕하세요. 다음 할 일은 ' + next + '입니다.') : '안녕하세요.';
+        else if (L === 'ja') msg = next ? ('こんにちは。次のタスクは「' + next + '」です。') : 'こんにちは。';
+        else if (L === 'es') msg = next ? ('Hola. La siguiente tarea es: ' + next) : 'Hola.';
+        else msg = next ? ('Hello. Next task: ' + next) : 'Hello.';
+        ensureDockVisible();
+        safeAppend(msg, 'bot');
+        setTimeout(function () { try { speakText(msg, null); } catch (e) {} }, 500);
+      } catch (e) {}
+    };
+    setTimeout(function () {
+      try {
+        if (typeof window._cfWelcomed === 'undefined') {
+          /* greeting handled by startApp patch */
+        }
+      } catch (e) {}
+    }, 300);
+  }
+  function installCoachBoxSpeak() {
+    function renderBox(section) {
+      try {
+        if (typeof showCoachBox === 'function') showCoachBox(section);
+      } catch (e) {}
     }
-    var ansEl = document.getElementById('float-answer');
-    if (ansEl) ansEl.textContent = 'Loading answer...';
-    (async function () {
+    var _origShow = window.showCoachBox;
+    if (typeof _origShow === 'function' && !_origShow._cfDock) {
+      window.showCoachBox = function (section) {
+        var r = _origShow.apply(this, arguments);
+        try {
+          var speakBtn = document.getElementById('float-coach-speak-btn');
+          var detailBtn = document.getElementById('float-coach-detail-btn');
+          if (speakBtn) speakBtn.onclick = function () {
+            try {
+              var sum = document.querySelector('.coach-box-summary');
+              if (sum) speakText(sum.textContent, speakBtn);
+            } catch (e) {}
+          };
+          if (detailBtn) detailBtn.onclick = function () {
+            try {
+              if (typeof goToRelatedSection === 'function') goToRelatedSection(window._lastRelatedSection || section);
+            } catch (e) {}
+          };
+        } catch (e) {}
+        return r;
+      };
+      window.showCoachBox._cfDock = true;
+    }
+  }
+  function ensureGreeting() {
+    try {
+      if (sessionStorage.getItem('cf_greeted') === '1') return;
+      sessionStorage.setItem('cf_greeted', '1');
+      if (typeof showWelcomeInDock === 'function') showWelcomeInDock();
+    } catch (e) {
+      try { if (typeof showWelcomeInDock === 'function') showWelcomeInDock(); } catch (e2) {}
+    }
+  }
+  function patchStartApp() {
+    if (typeof window.startApp !== 'function' || window.startApp._cfDock) return;
+    var orig = window.startApp;
+    function wrapped() {
+      var r = orig.apply(this, arguments);
+      try {
+        hideLangSelect();
+        bumpVersionLabel();
+        ensureDockVisible();
+        ensureGreeting();
+      } catch (e) {}
+      return r;
+    }
+    wrapped._cfDock = true;
+    window.startApp = wrapped;
+    try { startApp = wrapped; } catch (e) {}
+  }
+  function patchSubmit() {
+    async function safeSubmit() {
+      var input = document.getElementById('float-chat-input');
+      var q = input ? String(input.value || '').trim() : '';
+      if (!q) return;
+      if (input) input.value = '';
+      try { safeAppend(q, 'user'); } catch (e) {}
+      try {
+        if (typeof playLoadingSound === 'function') playLoadingSound();
+        else if (typeof playLoadingSoundOnce === 'function') playLoadingSoundOnce();
+      } catch (e) {}
+      try {
+        if (typeof showLoadingStatus === 'function') showLoadingStatus();
+      } catch (e) {}
       var answer = '';
       try {
         if (typeof askGrok === 'function') answer = await askGrok(q);
@@ -104,34 +193,51 @@
         } catch (e) {}
       }
       try {
-        if (isBadAnswer(answer)) {
+        var bad = !answer || /서버 오류|API 오류|네트워크\/Functions|504|Inactivity Timeout|<!DOCTYPE|is not valid JSON/i.test(String(answer));
+        if (bad) {
           var fail = '잠시 후 다시 시도해 주세요. (서버 응답 오류)';
-          if (typeof appendGrokMessage === 'function') appendGrokMessage(fail, 'bot');
-          if (ansEl) ansEl.textContent = fail;
+          safeAppend(fail, 'bot');
           return;
         }
         if (typeof showAnswerInPanel === 'function') showAnswerInPanel(q, answer);
-        else if (typeof appendGrokMessage === 'function') appendGrokMessage(answer, 'bot');
+        else safeAppend(answer, 'bot');
+        setTimeout(function () {
+          try {
+            if (typeof detectRelatedSection === 'function') {
+              var sec = detectRelatedSection(q, answer);
+              if (sec && typeof showCoachBox === 'function') showCoachBox(sec);
+            }
+          } catch (e) {}
+        }, 50);
       } catch (e) {
-        try { if (typeof appendGrokMessage === 'function') appendGrokMessage(String(answer || e), 'bot'); } catch (e2) {}
+        safeAppend(String(answer || e), 'bot');
       }
-    })();
+    }
+    submitFloatChat = safeSubmit;
+    window.submitFloatChat = safeSubmit;
   }
-
-  function patchSubmit() {
+  function patchLangVisibility() {
     try {
-      submitFloatChat = safeSubmit;
-      window.submitFloatChat = safeSubmit;
+      updateLangSelectVisibility = function () { hideLangSelect(); };
     } catch (e) {}
   }
-
   function boot() {
+    bindAudioUnlock();
     bumpVersionLabel();
-    hideLangIfNeeded();
+    hideLangSelect();
+    ensureDockVisible();
+    installCoachWelcome();
+    installCoachBoxSpeak();
+    patchStartApp();
     patchSubmit();
+    patchLangVisibility();
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 50); });
-  else setTimeout(boot, 50);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 0); });
+  } else {
+    setTimeout(boot, 0);
+  }
   setTimeout(boot, 400);
   setTimeout(boot, 1200);
+  setTimeout(function () { installCoachWelcome(); installCoachBoxSpeak(); }, 1200);
 })();
