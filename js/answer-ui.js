@@ -1,4 +1,4 @@
-/* answer-ui.js v5.2.0 — coach-box in dock, no jump button inside answer */
+/* answer-ui.js v5.3.1 — coach-box + manual evidence fallback */
 (function () {
   window.openPageGuideModal = function (pageId) {
     var titles = {
@@ -34,7 +34,6 @@
     }
   };
 
-  /** v5 coach UI: short answer text + titled coach-box in dock (not jump button inside answer) */
   window.showAnswerInPanel = function (question, answer) {
     const forDetect = (answer || '');
     const clean = (answer || '')
@@ -83,6 +82,11 @@
       if (typeof showCoachBox === 'function') {
         showCoachBox(section);
       }
+    } else if (window._lastManualSnippets && window._lastManualSnippets.length && typeof showManualEvidenceBox === 'function') {
+      if (typeof setFloatStatus === 'function') {
+        setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '📄 Manual');
+      }
+      showManualEvidenceBox(window._lastManualSnippets);
     } else if (typeof setFloatStatus === 'function') {
       setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '🔊 Read · 📋 Tasks');
     }
