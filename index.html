@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#1a3c34">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>Conroy's Training</title>
-  <link rel="manifest" href="manifest.json?v=5.3.1">
+  <link rel="manifest" href="manifest.json?v=5.3.2">
   <link rel="apple-touch-icon" href="images/ui/header.webp">
   <style>
     :root {
@@ -97,8 +97,7 @@
     .search-box input { flex: 1; padding: 12px 14px; border: 1.5px solid #e5e7eb; border-radius: 12px; font-size: 1rem; }
     .result-item { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow); }
     .voice-btn { width: 56px; height: 56px; border-radius: 50%; border: none; background: var(--primary); color: #fff; font-size: 1.4rem; cursor: pointer; }
-    .voice-btn.listening { background: var(--danger); animation: pulse 1s infinite; }
-    .alert { padding: 12px 14px; border-radius: 10px; font-size: 0.9rem; line-height: 1.45; }
+    .alert { padding: 12px 14px; border-radius: 10px; font-size: 0.9rem; }
     .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
     .eod-banner { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: none; }
     .eod-banner.show { display: block; }
@@ -119,7 +118,7 @@
   <div id="login-screen">
     <img src="images/ui/header.webp" alt="Conroy's Flowers Training" class="header-img" loading="lazy">
     <h1 data-i18n="login_title">Staff Login</h1>
-    <p style="font-size:0.78rem;color:var(--muted);margin-bottom:4px">v5.3.1</p>
+    <p style="font-size:0.78rem;color:var(--muted);margin-bottom:4px">v5.3.2</p>
     <p data-i18n="login_desc">Enter your username and password</p>
     <div class="login-form">
       <input type="text" id="login-username" placeholder="Username" data-i18n-placeholder="username_ph" autocomplete="username" autocapitalize="none">
@@ -131,7 +130,7 @@
   <div id="app" class="hidden">
     <header class="app-header">
       <div class="header-left">
-        <div class="header-title">Conroy's Training <span style="opacity:0.7;font-weight:500;font-size:0.75rem" onclick="onVersionTap()">v5.3.1</span></div>
+        <div class="header-title">Conroy's Training <span style="opacity:0.7;font-weight:500;font-size:0.75rem" onclick="onVersionTap()">v5.3.2</span></div>
         <div class="header-meta">
           <span id="header-date"></span>
           <span class="header-progress"><span id="progress-text">0 / 0</span><span class="header-progress-bar"><div id="progress-fill" style="width:0%"></div></span></span>
@@ -145,8 +144,8 @@
     <div class="main">
       <div id="page-home" class="page active">
         <div class="home-top">
-          <div id="eod-banner" class="eod-banner"><strong id="eod-title">End of day approaching</strong> <span id="eod-desc">Please review today's summary and complete End Day.</span><button class="btn btn-sm" id="eod-btn" style="margin-top:8px;background:#f59e0b;color:#111" onclick="showSummary()">View summary</button></div>
-          <div class="quick-chips" id="quick-chips">
+          <div id="eod-banner" class="eod-banner"><strong id="eod-title">End of day approaching</strong> <span id="eod-desc">Please review today's summary.</span><button class="btn btn-sm" id="eod-btn" style="margin-top:8px;background:#f59e0b;color:#111" onclick="showSummary()">View summary</button></div>
+          <div class="quick-chips">
             <button type="button" class="chip customer" onclick="quickGuideAsk('customer')">Customer</button>
             <button type="button" class="chip phone" onclick="quickGuideAsk('phone')">Phone</button>
             <button type="button" class="chip messages" onclick="quickGuideAsk('messages')">Messages</button>
@@ -154,7 +153,7 @@
           </div>
           <div class="routine-panel">
             <div class="routine-next" id="routine-next-row"><span class="routine-next-label" id="next-label">Next</span><span class="routine-next-text" id="next-task-text">—</span></div>
-            <div id="next-banner" class="next-banner hidden" aria-hidden="true"></div>
+            <div id="next-banner" class="next-banner hidden"></div>
             <button type="button" class="routine-accordion-btn" id="routine-accordion-btn" onclick="toggleRoutineList()"><span id="routine-accordion-label">View routine checklist</span><span class="chevron">▾</span></button>
             <div id="stamp-list"></div>
           </div>
@@ -176,8 +175,8 @@
       <div id="page-customer" class="page"><div class="page-scroll" id="page-customer-inner"></div></div>
       <div id="page-phone" class="page"><div class="page-scroll" id="page-phone-inner"></div></div>
       <div id="page-messages" class="page"><div class="page-scroll" id="page-messages-inner"></div></div>
-      <div id="page-search" class="page"><div class="page-scroll"><div class="card"><h2 data-i18n="search_title">Ask / Search</h2><div class="search-box"><input type="text" id="search-input" placeholder="e.g. SuperTicket..." data-i18n-placeholder="search_ph"><button class="btn" onclick="doSearch()" data-i18n="search_btn">Search</button></div><div style="text-align:center;margin:12px 0"><button class="voice-btn" id="voice-btn" onclick="toggleVoice()">🎤</button></div><div id="search-results"></div></div></div></div>
-      <div id="page-more" class="page"><div class="page-scroll"><div class="card"><h2 data-i18n="training_title">Training & guides</h2><button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('attachments')">Attachments</button><button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('bmsflow')">BMS workflow</button><button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('delivery')">Delivery guide</button><button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('golden')">Golden Rules</button><button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('customer')">Customer service</button></div><div class="card"><h2 data-i18n="day_end_summary">End of day</h2><button class="btn btn-outline" style="width:100%" onclick="showSummary()">View today's summary</button></div><div class="card hidden" id="admin-card"><h2>Admin</h2><button class="btn btn-outline" style="width:100%" onclick="openAdminPanel()">Admin Panel</button></div><div class="card"><h2 data-i18n="feedback_title">Feedback</h2><textarea id="feedback-text" rows="3" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:12px;margin-bottom:10px"></textarea><button class="btn" style="width:100%" onclick="saveFeedback()">Save</button></div><div class="card"><button class="btn btn-outline" style="width:100%;color:var(--danger);border-color:var(--danger)" onclick="doLogout()" data-i18n="logout">Logout</button></div></div></div>
+      <div id="page-search" class="page"><div class="page-scroll"><div class="card"><h2 data-i18n="search_title">Ask / Search</h2><div class="search-box"><input type="text" id="search-input" placeholder="e.g. SuperTicket..."><button class="btn" onclick="doSearch()">Search</button></div><div style="text-align:center;margin:12px 0"><button class="voice-btn" id="voice-btn" onclick="toggleVoice()">🎤</button></div><div id="search-results"></div></div></div></div>
+      <div id="page-more" class="page"><div class="page-scroll"><div class="card"><h2 data-i18n="training_title">Training & guides</h2><button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('attachments')">Attachments</button><button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('bmsflow')">BMS workflow</button><button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('delivery')">Delivery guide</button><button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('golden')">Golden Rules</button><button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="showContent('customer')">Customer service</button></div><div class="card"><h2 data-i18n="day_end_summary">End of day</h2><button class="btn btn-outline" style="width:100%" onclick="showSummary()">View today's summary</button></div><div class="card hidden" id="admin-card"><h2>Admin</h2><button class="btn btn-outline" style="width:100%" onclick="openAdminPanel()">Admin Panel</button></div><div class="card"><button class="btn btn-outline" style="width:100%;color:var(--danger);border-color:var(--danger)" onclick="doLogout()" data-i18n="logout">Logout</button></div></div></div>
     </div>
     <nav class="nav-bar">
       <button class="nav-item active" data-page="home" onclick="showPage('home')"><span class="icon">💬</span><span data-i18n="nav_home">Chat</span></button>
@@ -189,33 +188,32 @@
   </div>
   <div id="float-mic-panel" class="float-mic-panel" style="display:none" aria-hidden="true"></div>
   <div id="modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this) closeModal()"><div id="modal-content"></div></div>
-  <script src="js/data.js?v=5.3.1"></script>
-  <script src="js/core-a.js?v=5.3.1"></script>
-  <script src="js/core-b.js?v=5.3.1"></script>
-  <script src="js/core-c.js?v=5.3.1"></script>
-  <script src="js/guides-detail.js?v=5.3.1"></script>
-  <script src="js/system-prompt.js?v=5.3.1"></script>
-  <script src="js/voice-a.js?v=5.3.1"></script>
-  <script src="js/voice-b.js?v=5.3.1"></script>
-  <script src="js/voice-ui-fix.js?v=5.3.1"></script>
-  <script src="js/answer-ui.js?v=5.3.1"></script>
-  <script src="js/dock-fix.js?v=5.3.1"></script>
-  <script src="js/guide-router.js?v=5.3.1"></script>
-  <script src="js/guide-speak.js?v=5.3.1"></script>
-  <script src="js/admin.js?v=5.3.1"></script>
-  <script src="js/ui-layout.js?v=5.3.1"></script>
+  <script src="js/data.js?v=5.3.2"></script>
+  <script src="js/core-a.js?v=5.3.2"></script>
+  <script src="js/core-b.js?v=5.3.2"></script>
+  <script src="js/core-c.js?v=5.3.2"></script>
+  <script src="js/guides-detail.js?v=5.3.2"></script>
+  <script src="js/system-prompt.js?v=5.3.2"></script>
+  <script src="js/voice-a.js?v=5.3.2"></script>
+  <script src="js/voice-b.js?v=5.3.2"></script>
+  <script src="js/voice-ui-fix.js?v=5.3.2"></script>
+  <script src="js/answer-ui.js?v=5.3.2"></script>
+  <script src="js/v532-patch.js?v=5.3.2"></script>
+  <script src="js/dock-fix.js?v=5.3.2"></script>
+  <script src="js/guide-router.js?v=5.3.2"></script>
+  <script src="js/guide-speak.js?v=5.3.2"></script>
+  <script src="js/admin.js?v=5.3.2"></script>
+  <script src="js/ui-layout.js?v=5.3.2"></script>
   <script>
     (function() {
       var input = document.getElementById('float-chat-input');
       if (input) input.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); if (typeof submitFloatChat === 'function') submitFloatChat(); }
       });
-      function setHeaderDate() {
+      try {
         var el = document.getElementById('header-date');
-        if (!el) return;
-        try { el.textContent = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }); } catch (e) {}
-      }
-      setHeaderDate();
+        if (el) el.textContent = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+      } catch (e) {}
     })();
   </script>
 </body>
