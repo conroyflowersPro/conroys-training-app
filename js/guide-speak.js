@@ -1,38 +1,64 @@
-/* Guide modal Read aloud — goal only (v3.0.0) cost control */
+/* guide-speak.js v5.0.12 — single Read button, remove 읽어주기 */
 (function () {
+  function removeIreojugiButtons(root) {
+    if (!root) return;
+    var buttons = root.querySelectorAll('button');
+    for (var i = 0; i < buttons.length; i++) {
+      var b = buttons[i];
+      var t = (b.textContent || '').replace(/\s+/g, ' ').trim();
+      if (t.indexOf('읽어주기') >= 0 || t === 'Read aloud' || t.indexOf('読み上げ') >= 0) {
+        if (b.id !== 'guide-speak-btn' && b.id !== 'float-coach-speak-btn') {
+          b.remove();
+        }
+      }
+    }
+  }
+
   function attachGuideSpeakButton() {
-    const modal = document.getElementById('modal-content');
-    if (!modal || document.getElementById('guide-speak-btn')) return;
-    const wrap = document.createElement('div');
+    var modal = document.getElementById('modal-content');
+    if (!modal) return;
+    removeIreojugiButtons(modal);
+    if (document.getElementById('guide-speak-btn')) {
+      document.getElementById('guide-speak-btn').textContent = '🔊 Read';
+      return;
+    }
+    var wrap = document.createElement('div');
     wrap.style.cssText = 'margin-top:14px;display:flex;gap:8px;flex-wrap:wrap';
     wrap.innerHTML =
-      '<button class="btn" id="guide-speak-btn" style="flex:1;min-width:140px" onclick="speakGuideModal(this)">🔊 Read aloud</button>';
+      '<button class="btn" id="guide-speak-btn" style="flex:1;min-width:140px" onclick="speakGuideModal(this)">🔊 Read</button>';
     modal.appendChild(wrap);
   }
 
   window.speakGuideModal = function (btn) {
     if (typeof speakText !== 'function') return;
-    let text = '';
-    const goalEl = document.getElementById('guide-goal-text');
-    if (goalEl && goalEl.textContent) {
-      text = goalEl.textContent.trim();
-    }
+    var text = '';
+    var goalEl = document.getElementById('guide-goal-text');
+    if (goalEl && goalEl.textContent) text = goalEl.textContent.trim();
     if (!text) {
-      const modal = document.getElementById('modal-content');
-      if (!modal) return;
-      const box = modal.querySelector('.script-box');
-      if (box) text = (box.innerText || '').trim();
+      var modal = document.getElementById('modal-content');
+      if (modal) {
+        var box = modal.querySelector('.script-box');
+        if (box) text = (box.innerText || '').trim();
+        if (!text) {
+          var clone = modal.cloneNode(true);
+          var btns = clone.querySelectorAll('button');
+          for (var i = 0; i < btns.length; i++) btns[i].remove();
+          text = (clone.innerText || '').replace(/\s+/g, ' ').trim();
+        }
+      }
     }
     if (!text) return;
+    try { if (typeof unlockAudio === 'function') unlockAudio(); } catch (e) {}
     speakText(text, btn);
   };
 
   function wrap(fnName) {
-    const orig = window[fnName];
+    var orig = window[fnName];
     if (typeof orig !== 'function') return;
     window[fnName] = function () {
-      const result = orig.apply(this, arguments);
+      var result = orig.apply(this, arguments);
       setTimeout(attachGuideSpeakButton, 0);
+      setTimeout(attachGuideSpeakButton, 50);
       return result;
     };
   }

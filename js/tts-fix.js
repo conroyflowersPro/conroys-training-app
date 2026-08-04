@@ -1,4 +1,4 @@
-/* tts-fix.js v5.0.7 — Web Audio TTS + browser-first + visible errors */
+/* tts-fix.js v5.0.12 — server TTS first (no browser voice before xAI) */
 (function () {
   function ttsApiLang(code) {
     if (code === 'ko') return 'ko';
@@ -35,12 +35,8 @@
             src.buffer = audioBuf;
             src.connect(ctx.destination);
             window._ttsSource = src;
-            if (typeof currentAudio !== 'undefined') {
-              currentAudio = { pause: function () { try { src.stop(); } catch (e) {} } };
-              window.currentAudio = currentAudio;
-            } else {
-              window.currentAudio = { pause: function () { try { src.stop(); } catch (e) {} } };
-            }
+            window.currentAudio = { pause: function () { try { src.stop(); } catch (e) {} } };
+            try { currentAudio = window.currentAudio; } catch (e) {}
             src.onended = function () {
               window._ttsSource = null;
               window.currentAudio = null;
@@ -65,10 +61,7 @@
       try { currentAudio = audioEl; } catch (e) {}
       audioEl.onended = function () {
         window.currentAudio = null;
-        try { currentAudio = null; } catch (e) {}
         if (typeof setMicSpeaking === 'function') setMicSpeaking(false);
-        var stopBtn = document.getElementById('float-stop-btn');
-        if (stopBtn) stopBtn.style.display = 'none';
         URL.revokeObjectURL(url);
         resolve();
       };
@@ -82,7 +75,7 @@
     });
   }
 
-  function speakBrowserImmediate(text, ttsLang, statusEl, stopBtn) {
+  function speakBrowserFallback(text, ttsLang, statusEl, stopBtn) {
     if (!window.speechSynthesis) return false;
     try {
       try { window.speechSynthesis.resume(); } catch (e) {}
@@ -92,16 +85,15 @@
       utter.lang = browserLang;
       try {
         var voices = window.speechSynthesis.getVoices() || [];
-        var preferred = voices.find(function (v) { return v.lang && v.lang.toLowerCase().indexOf(browserLang.slice(0, 2).toLowerCase()) === 0; });
+        var preferred = voices.find(function (v) {
+          return v.lang && v.lang.toLowerCase().indexOf(browserLang.slice(0, 2).toLowerCase()) === 0;
+        });
         if (preferred) utter.voice = preferred;
       } catch (e) {}
       utter.onend = function () {
         if (typeof setMicSpeaking === 'function') setMicSpeaking(false);
         if (stopBtn) stopBtn.style.display = 'none';
         if (statusEl) statusEl.textContent = 'Done';
-      };
-      utter.onerror = function () {
-        if (typeof setMicSpeaking === 'function') setMicSpeaking(false);
       };
       if (typeof setMicSpeaking === 'function') setMicSpeaking(true);
       window.speechSynthesis.speak(utter);
@@ -119,7 +111,9 @@
     try {
       if (window._ttsSource) { try { window._ttsSource.stop(); } catch (e) {} window._ttsSource = null; }
     } catch (e) {}
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
     ensureTtsCtx();
+
     var ttsLang = (typeof detectLang === 'function') ? detectLang(plain) : 'en';
     var apiLang = ttsApiLang(ttsLang);
     var statusEl = document.getElementById('float-status');
@@ -128,14 +122,9 @@
     if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
     if (stopBtn) stopBtn.style.display = 'inline-block';
     if (typeof setMicSpeaking === 'function') setMicSpeaking(true);
+
     var played = false;
     var lastErr = '';
-
-    try {
-      if (speakBrowserImmediate(plain, ttsLang, statusEl, stopBtn)) played = true;
-    } catch (e) {
-      lastErr = 'browser: ' + (e.message || e);
-    }
 
     try {
       var cacheKey = (typeof ttsCacheKey === 'function') ? ttsCacheKey(plain, ttsLang) : (apiLang + ':' + plain.slice(0, 40));
@@ -172,17 +161,21 @@
         }
       }
       if (buf && buf.byteLength > 100) {
-        try {
-          if (window.speechSynthesis) window.speechSynthesis.cancel();
-          await playBufFixed(buf, mime);
-          played = true;
-          if (statusEl) statusEl.textContent = 'Done';
-        } catch (playErr) {
-          lastErr = (lastErr ? lastErr + ' | ' : '') + 'play: ' + (playErr.message || playErr);
-        }
+        await playBufFixed(buf, mime);
+        played = true;
+        if (statusEl) statusEl.textContent = 'Done';
       }
     } catch (e) {
-      lastErr = (lastErr ? lastErr + ' | ' : '') + 'TTS fetch: ' + (e.message || e);
+      lastErr = (lastErr ? lastErr + ' | ' : '') + 'TTS: ' + (e.message || e);
+    }
+
+    if (!played) {
+      try {
+        if (speakBrowserFallback(plain, ttsLang, statusEl, stopBtn)) played = true;
+        else lastErr = (lastErr ? lastErr + ' | ' : '') + 'browser TTS failed';
+      } catch (e) {
+        lastErr = (lastErr ? lastErr + ' | ' : '') + 'browser: ' + (e.message || e);
+      }
     }
 
     if (btn) {
@@ -206,7 +199,6 @@
     window.playBuf = playBufFixed;
     try { playBuf = playBufFixed; } catch (e) {}
   }
-
   install();
   setTimeout(install, 300);
   setTimeout(install, 1000);
