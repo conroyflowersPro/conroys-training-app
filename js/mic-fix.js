@@ -1,4 +1,4 @@
-/* mic-fix.js v5.0.10 — timeslice recording + requestData + STT to chat */
+/* mic-fix.js v5.0.11 — self-contained STT (no dependency on voice-b globals) */
 (function () {
   function showMicStatus(msg) {
     try { if (typeof setFloatStatus === 'function') setFloatStatus(msg || ''); } catch (e) {}
@@ -24,6 +24,51 @@
     window.__cfMicStream = null;
   }
 
+  function blobToBase64(blob) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onloadend = function () {
+        resolve(String(reader.result || '').split(',')[1] || '');
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function transcribeBlob(blob) {
+    if (typeof window.transcribeWithXAI === 'function' && window.transcribeWithXAI !== transcribeBlob) {
+      try { return await window.transcribeWithXAI(blob); } catch (e) { /* fall through */ }
+    }
+    var base64 = await blobToBase64(blob);
+    if (!base64) throw new Error('empty audio base64');
+    var lang = 'auto';
+    try {
+      if (typeof currentLang !== 'undefined') {
+        if (currentLang === 'ko') lang = 'ko';
+        else if (currentLang === 'ja') lang = 'ja';
+        else if (currentLang === 'es') lang = 'es';
+      }
+    } catch (e) {}
+    var res = await fetch('/.netlify/functions/stt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        audio: base64,
+        contentType: blob.type || 'audio/webm',
+        language: lang
+      })
+    });
+    var data = {};
+    try { data = await res.json(); } catch (e) { data = {}; }
+    if (!res.ok) {
+      throw new Error(data.error || ('STT ' + res.status));
+    }
+    return {
+      text: (data.text || data.transcript || '').trim(),
+      sttLang: data.language || data.lang || null
+    };
+  }
+
   function pushTranscriptToChat(text, sttLang) {
     text = (text || '').trim();
     if (!text) {
@@ -41,16 +86,26 @@
         handleTranscript(text, sttLang);
         return;
       }
+      if (typeof window.handleTranscript === 'function') {
+        window.handleTranscript(text, sttLang);
+        return;
+      }
     } catch (e) {
       console.warn('handleTranscript', e);
     }
     try {
       var input = document.getElementById('float-chat-input');
       if (input) input.value = text;
+      try {
+        if (typeof setAppLanguage === 'function' && typeof detectLang === 'function') {
+          var dl = detectLang(text);
+          var nl = dl === 'es-ES' ? 'es' : (dl || 'en');
+          setAppLanguage(nl);
+        }
+      } catch (e) {}
       if (typeof submitFloatChat === 'function') submitFloatChat();
-      else if (typeof appendGrokMessage === 'function') {
-        appendGrokMessage(text, 'user');
-      }
+      else if (typeof window.submitFloatChat === 'function') window.submitFloatChat();
+      else if (typeof appendGrokMessage === 'function') appendGrokMessage(text, 'user');
     } catch (e) {
       showMicStatus('Chat error: ' + (e.message || e));
     }
@@ -101,10 +156,6 @@
         if (e.data && e.data.size > 0) chunks.push(e.data);
       };
 
-      mr.onerror = function () {
-        showMicStatus('Mic recorder error');
-      };
-
       mr.onstop = async function () {
         window.__cfMicRecording = false;
         setMicListening(false);
@@ -114,10 +165,10 @@
         await new Promise(function (r) { setTimeout(r, 80); });
 
         if (!chunks.length) {
-          showMicStatus('No audio captured — speak longer, then tap mic again');
+          showMicStatus('No audio captured — speak, then tap mic again');
           try {
             if (typeof appendGrokMessage === 'function') {
-              appendGrokMessage('🎤 No audio captured. Speak, then tap the mic again to stop.', 'warn');
+              appendGrokMessage('🎤 No audio captured. Speak, then tap mic again to stop.', 'warn');
             }
           } catch (e) {}
           return;
@@ -131,18 +182,9 @@
 
         showMicStatus('Transcribing...');
         try {
-          if (typeof transcribeWithXAI === 'function') {
-            var result = await transcribeWithXAI(blob);
-            var text = (result && result.text) ? result.text : '';
-            pushTranscriptToChat(text, result && result.sttLang);
-          } else {
-            showMicStatus('STT not loaded');
-            try {
-              if (typeof appendGrokMessage === 'function') {
-                appendGrokMessage('🎤 STT not loaded', 'warn');
-              }
-            } catch (e) {}
-          }
+          var result = await transcribeBlob(blob);
+          var text = (result && result.text) ? result.text : '';
+          pushTranscriptToChat(text, result && result.sttLang);
         } catch (e) {
           showMicStatus('STT error: ' + (e.message || e));
           try {
@@ -153,12 +195,7 @@
         }
       };
 
-      // CRITICAL: timeslice so dataavailable fires during recording (mobile)
-      try {
-        mr.start(250);
-      } catch (e) {
-        mr.start();
-      }
+      try { mr.start(250); } catch (e) { mr.start(); }
 
       window.__cfMicTimer = setTimeout(function () {
         try {
