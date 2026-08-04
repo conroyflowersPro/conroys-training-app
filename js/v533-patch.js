@@ -1,5 +1,15 @@
-/* v5.3.3 patch — friendly errors + order-check routing + safeAppend filter */
+/* v5.3.3 patch — checklist CSS, friendly errors, order-check routing */
 (function () {
+  // Checklist layout fix
+  try {
+    if (!document.getElementById('cf-checklist-css')) {
+      var st = document.createElement('style');
+      st.id = 'cf-checklist-css';
+      st.textContent = '.checklist{margin:4px 0 12px}.checklist label{display:flex;align-items:flex-start;gap:10px;padding:8px 0;line-height:1.45;font-size:0.92rem;cursor:pointer;border-bottom:1px solid #f3f4f6}.checklist label:last-child{border-bottom:none}.checklist input[type=checkbox]{margin-top:3px;width:18px;height:18px;flex-shrink:0}';
+      (document.head || document.documentElement).appendChild(st);
+    }
+  } catch (e) {}
+
   function isBadAnswer(answer) {
     if (!answer) return true;
     var s = String(answer);
