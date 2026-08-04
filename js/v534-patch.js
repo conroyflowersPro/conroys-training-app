@@ -1,10 +1,45 @@
-/* v5.3.4 — multi-turn chat history + continuous loading force */
+/* v5.3.4 — multi-turn + continuous loading */
 (function () {
   if (!window._cfChatHistory) window._cfChatHistory = [];
 
+  function ensureContinuousLoading() {
+    var timerKey = '_cfLoadingSoundTimer';
+    function beep() {
+      try {
+        if (typeof unlockAudio === 'function') unlockAudio();
+        var Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        if (!window._cfAudioCtx) window._cfAudioCtx = new Ctx();
+        var ctx = window._cfAudioCtx;
+        if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        var t0 = ctx.currentTime;
+        osc.frequency.setValueAtTime(660, t0);
+        osc.frequency.setValueAtTime(880, t0 + 0.08);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.2);
+        osc.start(t0);
+        osc.stop(t0 + 0.22);
+      } catch (e) {}
+    }
+    window.playLoadingSound = function () {
+      try { if (window[timerKey]) clearInterval(window[timerKey]); } catch (e) {}
+      beep();
+      window[timerKey] = setInterval(beep, 900);
+    };
+    window.stopLoadingSound = function () {
+      try { if (window[timerKey]) clearInterval(window[timerKey]); } catch (e) {}
+      window[timerKey] = null;
+    };
+  }
+
   function wrapAskGrok() {
     if (typeof window.askGrok !== 'function' || window.askGrok._cf534) return;
-    var orig = window.askGrok;
     async function wrapped(question) {
       var systemPrompt = window.CF_SYSTEM_PROMPT || '';
       try {
@@ -50,17 +85,9 @@
     try { askGrok = wrapped; } catch (e) {}
   }
 
-  function forceContinuousLoading() {
-    if (typeof window.playLoadingSound !== 'function') return;
-    if (window.playLoadingSound._cf534) return;
-    var origPlay = window.playLoadingSound;
-    // Prefer interval loop if already present
-    window.playLoadingSound._cf534 = true;
-  }
-
   function boot() {
+    ensureContinuousLoading();
     wrapAskGrok();
-    forceContinuousLoading();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 80); });
   else setTimeout(boot, 80);
