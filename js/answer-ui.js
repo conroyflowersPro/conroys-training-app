@@ -1,4 +1,4 @@
-/* answer-ui.js v5.3.1 — coach-box + manual evidence fallback */
+/* answer-ui.js v5.3.3 — coach-box + error guard + manual evidence fallback */
 (function () {
   window.openPageGuideModal = function (pageId) {
     var titles = {
@@ -35,6 +35,18 @@
   };
 
   window.showAnswerInPanel = function (question, answer) {
+    if (answer && (/서버 오류|Inactivity Timeout|Too much time has passed|<html|<HTML|<!DOCTYPE/i.test(String(answer)))) {
+      try { if (typeof removeCoachBox === 'function') removeCoachBox(); } catch (e) {}
+      window._lastRelatedSection = null;
+      var fail = (typeof currentLang !== 'undefined' && currentLang === 'ko')
+        ? '연결이 지연되었거나 서버 오류가 났습니다. 잠시 후 다시 시도해 주세요.'
+        : 'Connection timed out or server error. Please try again.';
+      window._lastGrokAnswer = fail;
+      var ansEl = document.getElementById('float-answer');
+      if (ansEl) { ansEl.style.display = 'none'; ansEl.textContent = fail; }
+      if (typeof setFloatStatus === 'function') setFloatStatus(fail);
+      return;
+    }
     const forDetect = (answer || '');
     const clean = (answer || '')
       .replace(/\*\*(.*?)\*\*/g, '$1')
