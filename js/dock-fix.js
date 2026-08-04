@@ -3,7 +3,7 @@
   if (window.__cfTtsFixLoading) return;
   window.__cfTtsFixLoading = true;
   var s = document.createElement('script');
-  s.src = 'js/tts-fix.js?v=5.0.12';
+  s.src = 'js/tts-fix.js?v=5.3.2';
   s.async = false;
   (document.head || document.documentElement).appendChild(s);
 })();
@@ -12,7 +12,7 @@
   if (window.__cfMicFixLoading) return;
   window.__cfMicFixLoading = true;
   var s = document.createElement('script');
-  s.src = 'js/mic-fix.js?v=5.0.12';
+  s.src = 'js/mic-fix.js?v=5.3.2';
   s.async = false;
   (document.head || document.documentElement).appendChild(s);
 })();
@@ -21,12 +21,12 @@
   if (window.__cfGuideSpeakReload) return;
   window.__cfGuideSpeakReload = true;
   var s = document.createElement('script');
-  s.src = 'js/guide-speak.js?v=5.0.12';
+  s.src = 'js/guide-speak.js?v=5.3.2';
   s.async = false;
   (document.head || document.documentElement).appendChild(s);
 })();
 
-/* dock-fix.js v5.0.12 — coaching boot + loaders */
+/* dock-fix.js v5.3.2 — coaching boot + loaders + safeSubmit loading/coach-box */
 (function () {
   function getSavedLang() {
     try {
@@ -46,8 +46,8 @@
       var nodes = document.querySelectorAll('p, span, div');
       for (var i = 0; i < nodes.length; i++) {
         var t = nodes[i].textContent || '';
-        if (/^v5\.0\.\d+$/.test(t.trim())) nodes[i].textContent = 'v5.0.12';
-        else if (/v5\.0\.\d+/.test(t) && t.length < 48) nodes[i].textContent = t.replace(/v5\.0\.\d+/g, 'v5.0.12');
+        if (/^v5\.\d+\.\d+$/.test(t.trim())) nodes[i].textContent = 'v5.3.2';
+        else if (/v5\.\d+\.\d+/.test(t) && t.length < 48) nodes[i].textContent = t.replace(/v5\.\d+\.\d+/g, 'v5.3.2');
       }
     } catch (e) {}
   }
@@ -80,16 +80,13 @@
   }
   function safeAppend(text, type) {
     try {
-      if (typeof appendGrokMessage === 'function') appendGrokMessage(text, type || 'bot');
-      else {
-        var box = document.getElementById('grok-messages');
-        if (!box) return;
-        var div = document.createElement('div');
-        div.className = 'grok-msg ' + (type || 'bot');
-        div.style.whiteSpace = 'pre-wrap';
-        div.textContent = text;
-        box.appendChild(div);
-      }
+      var box = document.getElementById('grok-messages');
+      if (!box) return;
+      var div = document.createElement('div');
+      div.className = 'grok-msg ' + (type || 'bot');
+      div.textContent = text;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
     } catch (e) { console.warn('safeAppend', e); }
   }
   function installCoachWelcome() {
@@ -140,23 +137,20 @@
       if (next) {
         setTimeout(function () {
           try { var el = document.getElementById('stamp-' + next.id); if (el) el.classList.add('next-task'); } catch (e) {}
-        }, 350);
+        }, 300);
       }
-      setTimeout(function () { try { if (typeof showFuneralInDock === 'function') showFuneralInDock(); } catch (e) {} }, 500);
     };
-    try { showWelcomeInDock = window.showWelcomeInDock; } catch (e) {}
   }
   function installCoachBoxSpeak() {
     function renderBox(section) {
       if (!section) return;
       var L = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
-      var title = (section.label && (section.label[L] || section.label.en)) || 'Guide';
-      var summary = (section.summary && (section.summary[L] || section.summary.en)) || '';
+      var title = (section.label && (section.label[L] || section.label.en || section.label.ko)) || 'Guide';
+      var summary = (section.summary && (section.summary[L] || section.summary.en || section.summary.ko)) || '';
       var speakLbl = ({ ko: '🔊 읽기', en: '🔊 Read', ja: '🔊 読む', es: '🔊 Leer' })[L] || '🔊 Read';
       var detailLbl = ({ ko: '자세히 보기', en: 'See details', ja: '詳細を見る', es: 'Ver detalles' })[L] || 'See details';
       var toSpeak = (section.speakText || (title + (summary ? '. ' + summary : ''))).trim();
       window._lastCoachSpeak = toSpeak;
-      window._lastRelatedSection = section;
       if (typeof removeCoachBox === 'function') removeCoachBox();
       else { var old = document.getElementById('float-coach-box'); if (old) old.remove(); }
       var box = document.createElement('div');
@@ -167,7 +161,7 @@
         (summary ? '<div class="coach-box-summary">' + summary + '</div>' : '') +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">' +
         '<button type="button" class="btn btn-sm" id="float-coach-speak-btn">' + speakLbl + '</button>' +
-        '<button type="button" class="btn btn-sm btn-outline" id="float-coach-detail-btn">' + detailLbl + '</button>' +
+        '<button type="button" class="btn btn-sm" id="float-coach-detail-btn" style="width:100%;margin-top:4px">' + detailLbl + '</button>' +
         '</div>';
       var messages = document.getElementById('grok-messages');
       if (messages) { messages.appendChild(box); messages.scrollTop = messages.scrollHeight; }
@@ -211,7 +205,7 @@
   function patchStartApp() {
     if (typeof window.startApp !== 'function' && typeof startApp !== 'function') return;
     var orig = window.startApp || startApp;
-    if (orig._cf512) return;
+    if (orig._cf532) return;
     function wrapped() {
       hideLangSelect();
       bindAudioUnlock();
@@ -219,28 +213,23 @@
       installCoachBoxSpeak();
       var saved = getSavedLang();
       try { currentLang = saved; localStorage.setItem('cf_lang', saved); } catch (e) {}
-      var result;
-      try { result = orig.apply(this, arguments); } catch (e) {}
+      var r = orig.apply(this, arguments);
       try {
-        currentLang = saved;
         localStorage.setItem('cf_lang', saved);
-        hideLangSelect();
-        if (typeof applyI18n === 'function') applyI18n();
-        if (typeof renderStamps === 'function') renderStamps();
+        if (typeof setAppLanguage === 'function') setAppLanguage(saved);
       } catch (e) {}
-      try { ensureDockVisible(); } catch (e) {}
-      bumpVersionLabel();
-      setTimeout(ensureGreeting, 80);
-      setTimeout(ensureGreeting, 500);
-      return result;
+      ensureDockVisible();
+      setTimeout(ensureGreeting, 200);
+      setTimeout(ensureGreeting, 800);
+      return r;
     }
-    wrapped._cf512 = true;
-    startApp = wrapped;
+    wrapped._cf532 = true;
     window.startApp = wrapped;
+    try { startApp = wrapped; } catch (e) {}
   }
   function patchSubmit() {
     async function safeSubmit() {
-      window.unlockAudio();
+      try { if (typeof unlockAudio === 'function') unlockAudio(); } catch (e) {}
       var input = document.getElementById('float-chat-input');
       if (!input) return;
       var q = (input.value || '').trim();
@@ -262,13 +251,53 @@
       var ansEl = document.getElementById('float-answer');
       if (ansEl) ansEl.textContent = 'Loading answer...';
       try { if (typeof removeCoachBox === 'function') removeCoachBox(); } catch (e) {}
+
+      try {
+        if (typeof playLoadingSoundOnce === 'function') playLoadingSoundOnce();
+        else if (typeof playBell === 'function') playBell();
+      } catch (e) {}
+      try {
+        var L = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
+        var loadingTxt = ({ ko: '찾는 중…', en: 'Looking up…', ja: '検索中…', es: 'Buscando…' })[L] || 'Looking up…';
+        safeAppend(loadingTxt, 'bot');
+        var msgs = document.getElementById('grok-messages');
+        if (msgs) {
+          var last = msgs.querySelector('.grok-msg.bot:last-child');
+          if (last) last.id = 'cf-loading-msg';
+        }
+      } catch (e) {}
+
       var answer = null;
-      try { if (typeof askGrok === 'function') answer = await askGrok(q); } catch (e) {}
+      try {
+        if (typeof askGrok === 'function') answer = await askGrok(q);
+      } catch (e) {
+        answer = null;
+      } finally {
+        try {
+          var loadEl = document.getElementById('cf-loading-msg');
+          if (loadEl && loadEl.parentNode) loadEl.parentNode.removeChild(loadEl);
+        } catch (e) {}
+      }
+
       if (answer) {
-        try { if (typeof showAnswerInPanel === 'function') showAnswerInPanel(q, answer); } catch (e) {}
-        safeAppend(answer, 'bot');
+        var displayAnswer = String(answer).replace(/\[SECTION:[^\]]+\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+        safeAppend(displayAnswer, 'bot');
+        try {
+          if (typeof showAnswerInPanel === 'function') showAnswerInPanel(q, answer);
+        } catch (e) {}
+        try {
+          var section = (typeof detectRelatedSection === 'function') ? detectRelatedSection(q, answer) : null;
+          window._lastRelatedSection = section;
+          if (section && typeof showCoachBox === 'function') {
+            showCoachBox(section);
+          } else if (!section && window._lastManualSnippets && window._lastManualSnippets.length && typeof showManualEvidenceBox === 'function') {
+            showManualEvidenceBox(window._lastManualSnippets);
+          }
+        } catch (e) {}
         if (typeof speakText === 'function') {
-          setTimeout(function () { try { speakText(answer, null); } catch (e) {} }, 300);
+          setTimeout(function () {
+            try { speakText(displayAnswer, null); } catch (e) {}
+          }, 300);
         }
       } else {
         var fail = (currentLang === 'ko') ? '답변을 받지 못했습니다. 다시 시도해 주세요.' : 'No answer received. Please try again.';
