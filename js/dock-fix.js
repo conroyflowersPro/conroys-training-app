@@ -104,11 +104,12 @@
     };
     try { buildDailyRoutineSpeech = window.buildDailyRoutineSpeech; } catch (e) {}
     window.showWelcomeInDock = function () {
-      var dayKey = 'cf_greeted_' + (currentUser || 'user') + '_' + (typeof todayKey === 'function' ? todayKey() : new Date().toISOString().slice(0, 10));
+      var name = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : '';
+      if (!name) return;
+      var dayKey = 'cf_greeted_' + name + '_' + (typeof todayKey === 'function' ? todayKey() : new Date().toISOString().slice(0, 10));
       var firstToday = localStorage.getItem(dayKey) !== '1';
       if (firstToday) localStorage.setItem(dayKey, '1');
       var L = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : getSavedLang();
-      var name = currentUser || '';
       var nextLine = window.buildDailyRoutineSpeech();
       var msg;
       if (firstToday) {
@@ -131,9 +132,14 @@
         };
         try { showCoachBox(window._lastRelatedSection); } catch (e) {}
       }
-      if (typeof speakText === 'function') {
-        setTimeout(function () { try { speakText(msg, null); } catch (e) {} }, 500);
-      }
+      (function speakWelcome(text, n) {
+        n = n || 0;
+        try { if (typeof unlockAudio === 'function') unlockAudio(); } catch (e) {}
+        if (typeof speakText === 'function') {
+          try { speakText(text, null); return; } catch (e) {}
+        }
+        if (n < 8) setTimeout(function () { speakWelcome(text, n + 1); }, 400);
+      })(msg, 0);
       if (next) {
         setTimeout(function () {
           try { var el = document.getElementById('stamp-' + next.id); if (el) el.classList.add('next-task'); } catch (e) {}
@@ -187,18 +193,23 @@
   }
   function ensureGreeting() {
     try {
+      if (window._cfGreetedSession) return;
       ensureDockVisible();
       hideLangSelect();
       var box = document.getElementById('grok-messages');
       if (!box) return;
-      if (box.querySelector('.grok-msg')) return;
+      if (box.querySelector('.grok-msg')) { window._cfGreetedSession = true; return; }
       var name = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : '';
       if (!name) return;
       try { currentLang = getSavedLang(); } catch (e) {}
       installCoachWelcome();
       installCoachBoxSpeak();
       if (typeof showWelcomeInDock === 'function') {
-        try { showWelcomeInDock(); return; } catch (e) {}
+        try {
+          window._cfGreetedSession = true;
+          showWelcomeInDock();
+          return;
+        } catch (e) { window._cfGreetedSession = false; }
       }
     } catch (e) {}
   }
@@ -219,8 +230,9 @@
         if (typeof setAppLanguage === 'function') setAppLanguage(saved);
       } catch (e) {}
       ensureDockVisible();
-      setTimeout(ensureGreeting, 200);
-      setTimeout(ensureGreeting, 800);
+      setTimeout(ensureGreeting, 300);
+      setTimeout(ensureGreeting, 900);
+      setTimeout(ensureGreeting, 1800);
       return r;
     }
     wrapped._cf532 = true;
@@ -285,7 +297,6 @@
 
       if (answer) {
         var displayAnswer = String(answer).replace(/\[SECTION:[^\]]+\]/gi, '').replace(/\s{2,}/g, ' ').trim();
-        // skip raw error HTML
         if (/서버 오류|504|Inactivity Timeout|<!DOCTYPE|is not valid JSON/i.test(displayAnswer)) {
           var failShort = (currentLang === 'ko') ? '잠시 후 다시 시도해 주세요. (서버 응답 오류)' : 'Please try again shortly. (server error)';
           safeAppend(failShort, 'bot');
@@ -304,11 +315,14 @@
             showManualEvidenceBox(window._lastManualSnippets);
           }
         } catch (e) {}
-        if (typeof speakText === 'function') {
-          setTimeout(function () {
-            try { speakText(displayAnswer, null); } catch (e) {}
-          }, 300);
-        }
+        (function speakRetry(text, n) {
+          n = n || 0;
+          try { if (typeof unlockAudio === 'function') unlockAudio(); } catch (e) {}
+          if (typeof speakText === 'function') {
+            try { speakText(text, null); return; } catch (e) {}
+          }
+          if (n < 8) setTimeout(function () { speakRetry(text, n + 1); }, 400);
+        })(displayAnswer, 0);
       } else {
         var fail = (currentLang === 'ko') ? '답변을 받지 못했습니다. 다시 시도해 주세요.' : 'No answer received. Please try again.';
         if (ansEl) ansEl.textContent = fail;
