@@ -3,7 +3,7 @@
   if (window.__cfTtsFixLoading) return;
   window.__cfTtsFixLoading = true;
   var s = document.createElement('script');
-  s.src = 'js/tts-fix.js?v=5.0.10';
+  s.src = 'js/tts-fix.js?v=5.0.11';
   s.async = false;
   (document.head || document.documentElement).appendChild(s);
 })();
@@ -12,12 +12,12 @@
   if (window.__cfMicFixLoading) return;
   window.__cfMicFixLoading = true;
   var s = document.createElement('script');
-  s.src = 'js/mic-fix.js?v=5.0.10';
+  s.src = 'js/mic-fix.js?v=5.0.11';
   s.async = false;
   (document.head || document.documentElement).appendChild(s);
 })();
 
-/* dock-fix.js v5.0.10 — coaching boot + loaders */
+/* dock-fix.js v5.0.11 — coaching boot + loaders */
 (function () {
   function getSavedLang() {
     try {
@@ -26,25 +26,22 @@
     } catch (e) {}
     return 'en';
   }
-
   function hideLangSelect() {
     try {
       var sel = document.getElementById('lang-select');
       if (sel) sel.style.display = 'none';
     } catch (e) {}
   }
-
   function bumpVersionLabel() {
     try {
       var nodes = document.querySelectorAll('p, span, div');
       for (var i = 0; i < nodes.length; i++) {
         var t = nodes[i].textContent || '';
-        if (/^v5\.0\.\d+$/.test(t.trim())) nodes[i].textContent = 'v5.0.10';
-        else if (/v5\.0\.\d+/.test(t) && t.length < 48) nodes[i].textContent = t.replace(/v5\.0\.\d+/g, 'v5.0.10');
+        if (/^v5\.0\.\d+$/.test(t.trim())) nodes[i].textContent = 'v5.0.11';
+        else if (/v5\.0\.\d+/.test(t) && t.length < 48) nodes[i].textContent = t.replace(/v5\.0\.\d+/g, 'v5.0.11');
       }
     } catch (e) {}
   }
-
   window.unlockAudio = function unlockAudio() {
     try {
       var Ctx = window.AudioContext || window.webkitAudioContext;
@@ -61,7 +58,6 @@
       if (p && p.catch) p.catch(function () {});
     } catch (e) {}
   };
-
   function bindAudioUnlock() {
     if (window._cfAudioUnlockBound) return;
     window._cfAudioUnlockBound = true;
@@ -69,12 +65,10 @@
     document.addEventListener('touchstart', once, { passive: true });
     document.addEventListener('click', once, { passive: true });
   }
-
   function ensureDockVisible() {
     var dock = document.getElementById('grok-dock');
     if (dock) dock.classList.remove('hidden');
   }
-
   function safeAppend(text, type) {
     try {
       if (typeof appendGrokMessage === 'function') appendGrokMessage(text, type || 'bot');
@@ -89,7 +83,6 @@
       }
     } catch (e) { console.warn('safeAppend', e); }
   }
-
   function installCoachWelcome() {
     window.buildDailyRoutineSpeech = function () {
       var L = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
@@ -114,7 +107,6 @@
       })[L] || ('Next task is 「' + title + '」.');
     };
     try { buildDailyRoutineSpeech = window.buildDailyRoutineSpeech; } catch (e) {}
-
     window.showWelcomeInDock = function () {
       var dayKey = 'cf_greeted_' + (currentUser || 'user') + '_' + (typeof todayKey === 'function' ? todayKey() : new Date().toISOString().slice(0, 10));
       var firstToday = localStorage.getItem(dayKey) !== '1';
@@ -177,7 +169,6 @@
     };
     try { showWelcomeInDock = window.showWelcomeInDock; } catch (e) {}
   }
-
   function installCoachBoxSpeak() {
     function renderBox(section) {
       if (!section) return;
@@ -232,7 +223,6 @@
     window.showCoachBox = renderBox;
     try { showCoachBox = renderBox; } catch (e) {}
   }
-
   function ensureGreeting() {
     try {
       ensureDockVisible();
@@ -250,21 +240,17 @@
       }
     } catch (e) { console.warn('ensureGreeting', e); }
   }
-
   function patchStartApp() {
     if (typeof window.startApp !== 'function' && typeof startApp !== 'function') return;
     var orig = window.startApp || startApp;
-    if (orig._cf510) return;
+    if (orig._cf511) return;
     function wrapped() {
       hideLangSelect();
       bindAudioUnlock();
       installCoachWelcome();
       installCoachBoxSpeak();
       var saved = getSavedLang();
-      try {
-        currentLang = saved;
-        localStorage.setItem('cf_lang', saved);
-      } catch (e) {}
+      try { currentLang = saved; localStorage.setItem('cf_lang', saved); } catch (e) {}
       var result;
       try { result = orig.apply(this, arguments); } catch (e) { console.warn('startApp', e); }
       try {
@@ -280,11 +266,10 @@
       setTimeout(ensureGreeting, 500);
       return result;
     }
-    wrapped._cf510 = true;
+    wrapped._cf511 = true;
     startApp = wrapped;
     window.startApp = wrapped;
   }
-
   function patchSubmit() {
     async function safeSubmit() {
       window.unlockAudio();
@@ -322,9 +307,7 @@
           }, 300);
         }
       } else {
-        var fail = (currentLang === 'ko')
-          ? '답변을 받지 못했습니다. 다시 시도해 주세요.'
-          : 'No answer received. Please try again.';
+        var fail = (currentLang === 'ko') ? '답변을 받지 못했습니다. 다시 시도해 주세요.' : 'No answer received. Please try again.';
         if (ansEl) ansEl.textContent = fail;
         try { if (typeof setFloatStatus === 'function') setFloatStatus(fail); } catch (e) {}
         safeAppend(fail, 'bot');
@@ -333,14 +316,12 @@
     submitFloatChat = safeSubmit;
     window.submitFloatChat = safeSubmit;
   }
-
   function patchLangVisibility() {
     if (typeof updateLangSelectVisibility === 'function') {
       updateLangSelectVisibility = function () { hideLangSelect(); };
       window.updateLangSelectVisibility = updateLangSelectVisibility;
     }
   }
-
   function boot() {
     hideLangSelect();
     bumpVersionLabel();
@@ -358,7 +339,6 @@
       }
     } catch (e) {}
   }
-
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 0); });
   } else {
