@@ -1,4 +1,4 @@
-/* answer-ui.js v5.0.3 — coach-box in dock, no jump button inside answer */
+/* answer-ui.js v5.2.0 — coach-box in dock, no jump button inside answer */
 (function () {
   window.openPageGuideModal = function (pageId) {
     var titles = {
@@ -36,10 +36,14 @@
 
   /** v5 coach UI: short answer text + titled coach-box in dock (not jump button inside answer) */
   window.showAnswerInPanel = function (question, answer) {
+    const forDetect = (answer || '');
     const clean = (answer || '')
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/\*(.*?)\*/g, '$1')
-      .replace(/^#+\s*/gm, '');
+      .replace(/^#+\s*/gm, '')
+      .replace(/\[SECTION:[^\]]+\]/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
     window._lastGrokAnswer = clean;
 
     const ansEl = document.getElementById('float-answer');
@@ -59,7 +63,7 @@
 
     const section =
       typeof detectRelatedSection === 'function'
-        ? detectRelatedSection(question, clean)
+        ? detectRelatedSection(question, forDetect)
         : null;
     window._lastRelatedSection = section;
 
