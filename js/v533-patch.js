@@ -1,4 +1,4 @@
-/* v5.3.3 patch — friendly errors + order-check routing override */
+/* v5.3.3 patch — friendly errors + order-check routing + safeAppend filter */
 (function () {
   function isBadAnswer(answer) {
     if (!answer) return true;
@@ -19,7 +19,6 @@
   window.isBadAnswer = isBadAnswer;
   window.friendlyError = friendlyError;
 
-  // Wrap detectRelatedSection for order-check priority
   function patchDetect() {
     if (typeof window.detectRelatedSection !== 'function') return;
     var orig = window.detectRelatedSection;
@@ -29,6 +28,7 @@
       if (/오더\s*확인|주문\s*확인|order\s*(status|check|lookup)|look\s*up\s*order|주문\s*조회|오더\s*조회|tracking|트래킹|where\s*is\s*(my\s*)?order|배송\s*상태|주문\s*상태/.test(text)) {
         if (typeof sectionById === 'function') return sectionById('bmsflow');
       }
+      if (isBadAnswer(answer)) return null;
       return orig(question, answer);
     }
     wrapped._cf533 = true;
@@ -36,36 +36,52 @@
     try { detectRelatedSection = wrapped; } catch (e) {}
   }
 
-  // Re-wrap submitFloatChat if already patched by dock-fix
-  function patchSubmitErrors() {
-    if (typeof window.submitFloatChat !== 'function') return;
-    var orig = window.submitFloatChat;
-    if (orig._cf533err) return;
-    async function wrapped() {
-      var input = document.getElementById('float-chat-input');
-      // Let orig run, but we can't intercept mid-flight easily.
-      // Instead monkey-patch showAnswerInPanel path is enough via answer-ui.
-      return orig.apply(this, arguments);
+  function filterBotText(text) {
+    if (isBadAnswer(text)) {
+      try { if (typeof removeCoachBox === 'function') removeCoachBox(); } catch (e) {}
+      window._lastRelatedSection = null;
+      return friendlyError();
     }
-    // Patch safeAppend path: override after boot by wrapping askGrok return handling is in dock-fix.
-    // Add post-filter on appendGrokMessage for bad HTML
+    return text;
+  }
+
+  function patchAppend() {
     if (typeof window.appendGrokMessage === 'function' && !window.appendGrokMessage._cf533) {
       var ao = window.appendGrokMessage;
       window.appendGrokMessage = function (text, type) {
-        if (type === 'bot' && isBadAnswer(text)) {
-          text = friendlyError();
-          try { if (typeof removeCoachBox === 'function') removeCoachBox(); } catch (e) {}
-          window._lastRelatedSection = null;
-        }
+        if (type === 'bot') text = filterBotText(text);
         return ao.call(this, text, type);
       };
       window.appendGrokMessage._cf533 = true;
     }
   }
 
+  function watchMessages() {
+    var box = document.getElementById('grok-messages');
+    if (!box || box._cf533obs) return;
+    box._cf533obs = true;
+    var obs = new MutationObserver(function (mutations) {
+      mutations.forEach(function (m) {
+        m.addedNodes.forEach(function (node) {
+          if (!node || node.nodeType !== 1) return;
+          if (!node.classList || !node.classList.contains('grok-msg')) return;
+          if (!node.classList.contains('bot')) return;
+          var t = node.textContent || '';
+          if (isBadAnswer(t)) {
+            node.textContent = friendlyError();
+            try { if (typeof removeCoachBox === 'function') removeCoachBox(); } catch (e) {}
+            window._lastRelatedSection = null;
+          }
+        });
+      });
+    });
+    obs.observe(box, { childList: true });
+  }
+
   function boot() {
     patchDetect();
-    patchSubmitErrors();
+    patchAppend();
+    watchMessages();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 50); });
   else setTimeout(boot, 50);
