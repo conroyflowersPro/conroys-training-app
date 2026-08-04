@@ -10,7 +10,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Conroy's Training</title>
-  <link rel="manifest" href="manifest.json?v=5.1.0">
+  <link rel="manifest" href="manifest.json?v=5.2.0">
   <link rel="apple-touch-icon" href="images/ui/header.webp">
   <style>
     :root {
@@ -156,6 +156,13 @@
       display: flex; flex-direction: column; max-height: 42vh;
     }
     .grok-dock.hidden { display: none !important; }
+    .coach-box {
+      margin: 6px 0 10px; padding: 12px 14px; border-radius: 12px;
+      background: #fffbeb; border: 1.5px solid #f59e0b; max-width: 95%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .coach-box-title { font-weight: 700; font-size: 0.92rem; color: #92400e; margin-bottom: 4px; }
+    .coach-box-summary { font-size: 0.88rem; color: #78350f; line-height: 1.4; margin-bottom: 8px; }
     .grok-messages {
       flex: 1; overflow-y: auto; padding: 10px 14px; font-size: 0.92rem; line-height: 1.45;
       min-height: 0; max-height: 28vh;
@@ -163,20 +170,6 @@
     .grok-msg { margin-bottom: 8px; padding: 8px 12px; border-radius: 12px; max-width: 95%; }
     .grok-msg.bot { background: #f0fdf4; color: #14532d; border: 1px solid #bbf7d0; }
     .grok-msg.user { background: #eff6ff; color: #1e3a8a; margin-left: auto; border: 1px solid #bfdbfe; }
-    .grok-msg.warn { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
-    .coach-box {
-      margin: 6px 0 10px; padding: 12px 14px; border-radius: 12px;
-      background: #fffbeb; border: 1.5px solid #f59e0b; max-width: 95%;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    }
-    .coach-box-title {
-      font-weight: 700; font-size: 0.92rem; color: #92400e; margin-bottom: 4px;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .coach-box-summary {
-      font-size: 0.88rem; color: #78350f; line-height: 1.4; margin-bottom: 8px;
-    }
-    .coach-box .btn { margin-top: 2px; }
     .grok-input-row {
       display: flex; gap: 8px; padding: 10px 12px 12px; align-items: center;
       border-top: 1px solid #f3f4f6; background: #fafafa;
@@ -185,17 +178,12 @@
       flex: 1; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 22px;
       font-size: 0.95rem; background: #fff;
     }
-    .grok-input-row input:focus { outline: none; border-color: var(--primary); }
     .grok-mic {
       width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--primary);
       color: #fff; font-size: 1.2rem; cursor: pointer; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
     }
     .grok-mic.listening { background: var(--danger); animation: pulse 1s infinite; }
-    .grok-mic.speaking {
-      background: #c4a35a; animation: none;
-      box-shadow: 0 0 0 3px rgba(196,163,90,0.45);
-    }
+    .grok-mic.speaking { background: #c4a35a; box-shadow: 0 0 0 3px rgba(196,163,90,0.45); }
     .grok-send {
       padding: 10px 16px; border-radius: 22px; border: none; background: var(--primary);
       color: #fff; font-weight: 600; font-size: 0.9rem; cursor: pointer; flex-shrink: 0;
@@ -206,7 +194,7 @@
   <div id="login-screen">
     <img src="images/ui/header.webp" alt="Conroy's Flowers Training" class="header-img" loading="lazy">
     <h1 data-i18n="login_title">Staff Login</h1>
-    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:4px">v5.1.0</p>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:4px">v5.2.0</p>
     <p data-i18n="login_desc">Enter your username and password</p>
     <div class="login-form">
       <input type="text" id="login-username" placeholder="Username" data-i18n-placeholder="username_ph" autocomplete="username" autocapitalize="none">
@@ -219,7 +207,7 @@
   <div id="app" class="hidden">
     <header class="app-header">
       <div>
-        <div style="font-weight:700;font-size:1.05rem;">Conroy's Training <span style="font-size:0.75rem;opacity:0.8;font-weight:500" onclick="onVersionTap()">v5.1.0</span></div>
+        <div style="font-weight:700;font-size:1.05rem;">Conroy's Training <span style="font-size:0.75rem;opacity:0.8;font-weight:500" onclick="onVersionTap()">v5.2.0</span></div>
         <div class="user-info" id="header-user"></div>
       </div>
       <select class="lang-select" id="lang-select" onchange="changeLang(this.value)" aria-label="Language">
@@ -343,20 +331,20 @@
     <div id="modal-content"></div>
   </div>
 
-  <script src="js/data.js?v=5.1.0"></script>
-  <script src="js/core-a.js?v=5.1.0"></script>
-  <script src="js/core-b.js?v=5.1.0"></script>
-  <script src="js/core-c.js?v=5.1.0"></script>
-  <script src="js/guides-detail.js?v=5.1.0"></script>
-  <script src="js/system-prompt.js?v=5.1.0"></script>
-  <script src="js/voice-a.js?v=5.1.0"></script>
-  <script src="js/voice-b.js?v=5.1.0"></script>
-  <script src="js/voice-ui-fix.js?v=5.1.0"></script>
-  <script src="js/answer-ui.js?v=5.1.0"></script>
-  <script src="js/dock-fix.js?v=5.1.0"></script>
-  <script src="js/guide-router.js?v=5.1.0"></script>
-  <script src="js/guide-speak.js?v=5.1.0"></script>
-  <script src="js/admin.js?v=5.1.0"></script>
+  <script src="js/data.js?v=5.2.0"></script>
+  <script src="js/core-a.js?v=5.2.0"></script>
+  <script src="js/core-b.js?v=5.2.0"></script>
+  <script src="js/core-c.js?v=5.2.0"></script>
+  <script src="js/guides-detail.js?v=5.2.0"></script>
+  <script src="js/system-prompt.js?v=5.2.0"></script>
+  <script src="js/voice-a.js?v=5.2.0"></script>
+  <script src="js/voice-b.js?v=5.2.0"></script>
+  <script src="js/voice-ui-fix.js?v=5.2.0"></script>
+  <script src="js/answer-ui.js?v=5.2.0"></script>
+  <script src="js/dock-fix.js?v=5.2.0"></script>
+  <script src="js/guide-router.js?v=5.2.0"></script>
+  <script src="js/guide-speak.js?v=5.2.0"></script>
+  <script src="js/admin.js?v=5.2.0"></script>
   <script>
     (function() {
       var input = document.getElementById('float-chat-input');
