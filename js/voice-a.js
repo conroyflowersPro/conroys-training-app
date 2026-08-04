@@ -1,5 +1,5 @@
-/* voice.js v5.0.3 */
-/* Conroy's Training App - voice module 5.0.3
+/* voice.js v5.2.0 */
+/* Conroy's Training App - voice module 5.2.0
    coach box in dock, sales-priority titles, short speech + detail box
 */
     function saveApiKey() {
@@ -50,39 +50,108 @@
     }
 
     function detectRelatedSection(question, answer) {
-      const text = ((question || '') + ' ' + (answer || '')).toLowerCase();
-      if (/customer|손님|greeting|인사|color|색상|size|사이즈|romance|sympathy|needs|니즈|가이드|guide|스크립트|script|walk-?in|응대|sales|세일즈|medium|large|suggest|제안|occasion|카드\s*메시지|card\s*message/.test(text)) {
-        return {
+      const raw = ((answer || '') + ' ' + (question || ''));
+      const text = raw.toLowerCase();
+
+      // Prefer explicit tag from Grok: [SECTION:delivery] etc.
+      const tagMatch = raw.match(/\[SECTION:\s*(sales|customer|delivery|attachments?|attach|bmsflow|bms|phone|messages?|golden|decision|home|routine)\s*\]/i);
+      if (tagMatch) {
+        const key = tagMatch[1].toLowerCase();
+        const map = {
+          sales: 'customer', customer: 'customer',
+          delivery: 'delivery',
+          attachment: 'attachments', attachments: 'attachments', attach: 'attachments',
+          bmsflow: 'bmsflow', bms: 'bmsflow',
+          phone: 'phone',
+          message: 'messages', messages: 'messages',
+          golden: 'golden', decision: 'decision',
+          home: 'home', routine: 'home'
+        };
+        const id = map[key] || key;
+        return sectionById(id);
+      }
+
+      // Specific topics BEFORE broad sales keywords
+      if (/attach|첨부|cardisle|balloon|풍선|chocolate|초콜릿|plush|인형|white\s*sheet|product\s*detail|awaiting\s*delivery/.test(text)) {
+        return sectionById('attachments');
+      }
+      if (/deliver|배달|配達|entrega|uber|golocal|walmart|3hr|asap\s*trip|out\s*for\s*delivery|배달\s*확인/.test(text)) {
+        return sectionById('delivery');
+      }
+      if (/bms|workflow|super\s*ticket|superticket|accept|reject|in\s*wire|mark\s*read|design\s*ticket/.test(text)) {
+        return sectionById('bmsflow');
+      }
+      if (/phone|전화|電話|teléfono|hold|홀드|on\s*hold/.test(text)) {
+        return sectionById('phone');
+      }
+      if (/message|messages|wire\s*in|funeral|긴급|funeral\s*order/.test(text) && !/card\s*message|카드\s*메시지/.test(text)) {
+        return sectionById('messages');
+      }
+      if (/golden|rule|due\s*time|매니저|manager\s*first|확신/.test(text)) {
+        return sectionById('golden');
+      }
+      if (/unsure|모르겠|decision|어떻게\s*하|what\s*should|매니저한테|ask\s*manager/.test(text)) {
+        return sectionById('decision');
+      }
+      if (/start\s*day|end\s*day|cash|현금|드로어|drawer|\$200|200\.00|루틴|routine|다음\s*할\s*일|next\s*task/.test(text)) {
+        return sectionById('home');
+      }
+      // Sales last — removed overly broad "가이드|guide"
+      if (/customer|손님|greeting|인사|color|색상|size|사이즈|romance|sympathy|needs|니즈|walk-?in|응대|sales|세일즈|medium|large|suggest|제안|occasion|카드\s*메시지|card\s*message|세일즈\s*가이드/.test(text)) {
+        return sectionById('customer');
+      }
+      return null;
+    }
+
+    function sectionById(id) {
+      const catalog = {
+        customer: {
           type: 'page', id: 'customer',
           label: { ko: '세일즈 가이드', en: 'Sales Guide', ja: 'セールスガイド', es: 'Guía de ventas' },
           summary: { ko: 'Medium부터 제안하고, 카드 메시지로 니즈를 읽으세요.', en: 'Lead with Medium. Read needs from the card message.', ja: 'Mediumから提案。カード文からニーズを読む。', es: 'Empiece con Medium. Lea necesidades del mensaje de la tarjeta.' }
-        };
-      }
-      if (/attach|첨부|cardisle|balloon|풍선|chocolate|초콜릿|plush|인형|white\s*sheet|product\s*detail|awaiting\s*delivery/.test(text)) {
-        return { type: 'content', id: 'attachments', label: { ko: '첨부물 가이드', en: 'Attachments guide', ja: '添付物ガイド', es: 'Guía de adjuntos' }, summary: { ko: 'White Sheet가 끝날 때까지 첨부물을 완료하세요.', en: 'Finish attachments until White Sheet is clear.', ja: 'White Sheetが終わるまで添付物を完了。', es: 'Complete adjuntos hasta que White Sheet esté listo.' } };
-      }
-      if (/deliver|배달|配達|entrega|uber|golocal|walmart|3hr|asap\s*trip|out\s*for\s*delivery/.test(text)) {
-        return { type: 'content', id: 'delivery', label: { ko: '배달 가이드', en: 'Delivery guide', ja: '配達ガイド', es: 'Guía de entrega' }, summary: { ko: '표준은 Walmart GoLocal 3Hr, 장례는 Uber ASAP.', en: 'Standard: Walmart GoLocal 3Hr. Funeral: Uber ASAP.', ja: '標準はWalmart GoLocal 3Hr、葬儀はUber ASAP。', es: 'Estándar: Walmart GoLocal 3Hr. Funeral: Uber ASAP.' } };
-      }
-      if (/bms|workflow|super\s*ticket|superticket|accept|reject|in\s*wire|mark\s*read|design\s*ticket/.test(text)) {
-        return { type: 'content', id: 'bmsflow', label: { ko: 'BMS 흐름', en: 'BMS workflow', ja: 'BMSフロー', es: 'Flujo BMS' }, summary: { ko: 'Mark Read → In Wire → Accept → SuperTicket.', en: 'Mark Read → In Wire → Accept → SuperTicket.', ja: 'Mark Read → In Wire → Accept → SuperTicket。', es: 'Mark Read → In Wire → Accept → SuperTicket.' } };
-      }
-      if (/message|messages|wire\s*in|funeral|긴급|funeral\s*order/.test(text)) {
-        return { type: 'page', id: 'messages', label: { ko: 'Messages', en: 'Messages', ja: 'Messages', es: 'Messages' }, summary: { ko: 'Messages에서 Mark Read 후 In Wire 처리하세요.', en: 'Mark Read in Messages, then process In Wire.', ja: 'MessagesでMark Read後、In Wire処理。', es: 'Mark Read en Messages, luego procese In Wire.' } };
-      }
-      if (/golden|rule|due\s*time|매니저|manager\s*first|확신/.test(text)) {
-        return { type: 'content', id: 'golden', label: { ko: 'Golden Rules', en: 'Golden Rules', ja: 'Golden Rules', es: 'Golden Rules' }, summary: { ko: 'Due Time 우선. 확신이 없으면 매니저에게 먼저 물어보세요.', en: 'Prioritize by Due Time. If unsure, ask a manager first.', ja: 'Due Time優先。確信がなければマネージャーに先に聞く。', es: 'Priorice por Due Time. Si no está seguro, pregunte al gerente primero.' } };
-      }
-      if (/phone|전화|電話|teléfono|hold|홀드|on\s*hold/.test(text)) {
-        return { type: 'page', id: 'phone', label: { ko: 'Phone Script', en: 'Phone Script', ja: 'Phone Script', es: 'Phone Script' }, summary: { ko: '카드 메시지를 먼저 받고, Medium부터 제안하세요.', en: 'Take the card message first, then lead with Medium.', ja: 'カード文を先に受け取り、Mediumから提案。', es: 'Tome el mensaje de la tarjeta primero, luego ofrezca Medium.' } };
-      }
-      if (/unsure|모르겠|decision|어떻게\s*하|what\s*should|매니저한테|ask\s*manager/.test(text)) {
-        return { type: 'content', id: 'decision', label: { ko: '모르겠을 때', en: 'If unsure', ja: '迷ったとき', es: 'Si no está seguro' }, summary: { ko: 'Golden Rule #5: 확신이 없으면 매니저에게 먼저 물어보세요.', en: 'Golden Rule #5: If unsure, ask a manager first.', ja: 'Golden Rule #5: 確信がなければマネージャーに先に聞く。', es: 'Golden Rule #5: Si no está seguro, pregunte al gerente primero.' } };
-      }
-      if (/start\s*day|end\s*day|cash|현금|드로어|drawer|\$200|200\.00|루틴|routine/.test(text)) {
-        return { type: 'page', id: 'home', label: { ko: '오늘 루틴', en: 'Today routine', ja: '今日のルーティン', es: 'Rutina de hoy' }, summary: { ko: '다음 미완료 루틴을 확인하고 순서대로 진행하세요.', en: 'Check the next incomplete routine and proceed in order.', ja: '次の未完了ルーティンを確認して順番に進める。', es: 'Revise la siguiente rutina incompleta y avance en orden.' } };
-      }
-      return null;
+        },
+        attachments: {
+          type: 'content', id: 'attachments',
+          label: { ko: '첨부물 가이드', en: 'Attachments guide', ja: '添付物ガイド', es: 'Guía de adjuntos' },
+          summary: { ko: 'White Sheet가 끝날 때까지 첨부물을 완료하세요.', en: 'Finish attachments until White Sheet is clear.', ja: 'White Sheetが終わるまで添付物を完了。', es: 'Complete adjuntos hasta que White Sheet esté listo.' }
+        },
+        delivery: {
+          type: 'content', id: 'delivery',
+          label: { ko: '배달 가이드', en: 'Delivery guide', ja: '配達ガイド', es: 'Guía de entrega' },
+          summary: { ko: '표준은 Walmart GoLocal 3Hr, 장례는 Uber ASAP.', en: 'Standard: Walmart GoLocal 3Hr. Funeral: Uber ASAP.', ja: '標準はWalmart GoLocal 3Hr、葬儀はUber ASAP。', es: 'Estándar: Walmart GoLocal 3Hr. Funeral: Uber ASAP.' }
+        },
+        bmsflow: {
+          type: 'content', id: 'bmsflow',
+          label: { ko: 'BMS 흐름', en: 'BMS workflow', ja: 'BMSフロー', es: 'Flujo BMS' },
+          summary: { ko: 'Mark Read → In Wire → Accept → SuperTicket.', en: 'Mark Read → In Wire → Accept → SuperTicket.', ja: 'Mark Read → In Wire → Accept → SuperTicket。', es: 'Mark Read → In Wire → Accept → SuperTicket.' }
+        },
+        messages: {
+          type: 'page', id: 'messages',
+          label: { ko: 'Messages', en: 'Messages', ja: 'Messages', es: 'Messages' },
+          summary: { ko: 'Messages에서 Mark Read 후 In Wire 처리하세요.', en: 'Mark Read in Messages, then process In Wire.', ja: 'MessagesでMark Read後、In Wire処理。', es: 'Mark Read en Messages, luego procese In Wire.' }
+        },
+        golden: {
+          type: 'content', id: 'golden',
+          label: { ko: 'Golden Rules', en: 'Golden Rules', ja: 'Golden Rules', es: 'Golden Rules' },
+          summary: { ko: 'Due Time 우선. 확신이 없으면 매니저에게 먼저 물어보세요.', en: 'Prioritize by Due Time. If unsure, ask a manager first.', ja: 'Due Time優先。確信がなければマネージャーに先に聞く。', es: 'Priorice por Due Time. Si no está seguro, pregunte al gerente primero.' }
+        },
+        phone: {
+          type: 'page', id: 'phone',
+          label: { ko: 'Phone Script', en: 'Phone Script', ja: 'Phone Script', es: 'Phone Script' },
+          summary: { ko: '카드 메시지를 먼저 받고, Medium부터 제안하세요.', en: 'Take the card message first, then lead with Medium.', ja: 'カード文を先に受け取り、Mediumから提案。', es: 'Tome el mensaje de la tarjeta primero, luego ofrezca Medium.' }
+        },
+        decision: {
+          type: 'content', id: 'decision',
+          label: { ko: '모르겠을 때', en: 'If unsure', ja: '迷ったとき', es: 'Si no está seguro' },
+          summary: { ko: 'Golden Rule #5: 확신이 없으면 매니저에게 먼저 물어보세요.', en: 'Golden Rule #5: If unsure, ask a manager first.', ja: 'Golden Rule #5: 確信がなければマネージャーに先に聞く。', es: 'Golden Rule #5: Si no está seguro, pregunte al gerente primero.' }
+        },
+        home: {
+          type: 'page', id: 'home',
+          label: { ko: '오늘 루틴', en: 'Today routine', ja: '今日のルーティン', es: 'Rutina de hoy' },
+          summary: { ko: '다음 미완료 루틴을 확인하고 순서대로 진행하세요.', en: 'Check the next incomplete routine and proceed in order.', ja: '次の未完了ルーティンを確認して順番に進める。', es: 'Revise la siguiente rutina incompleta y avance en orden.' }
+        }
+      };
+      return catalog[id] || null;
     }
 
     function goToRelatedSection(section) {
@@ -165,7 +234,7 @@
     }
 
     function showAnswerInPanel(question, answer) {
-      const clean = (answer || '').replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '');
+      const clean = (answer || '').replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '').replace(/\[SECTION:[^\]]+\]/gi, '').replace(/\s{2,}/g, ' ').trim();
       window._lastGrokAnswer = clean;
       const ansEl = document.getElementById('float-answer');
       if (ansEl) ansEl.textContent = clean;
@@ -174,7 +243,7 @@
       const tasksBtn = document.getElementById('float-tasks-btn');
       if (tasksBtn) tasksBtn.style.display = 'inline-block';
       removeCoachBox();
-      const section = detectRelatedSection(question, clean);
+      const section = detectRelatedSection(question, answer);
       window._lastRelatedSection = section;
       if (section) {
         const lbl = (section.label && (section.label[currentLang] || section.label.en)) || 'Guide';
@@ -212,16 +281,24 @@
         const oldBox = document.getElementById('float-coach-box');
         if (oldBox) oldBox.remove();
       }
+      // Loading signal (like Grok thinking tone)
+      try {
+        if (typeof unlockAudio === 'function') unlockAudio();
+        if (typeof playBell === 'function') playBell();
+        else if (typeof playMicBeep === 'function') playMicBeep();
+      } catch (e) {}
       const answer = await askGrok(q);
       if (answer) {
-        showAnswerInPanel(q, answer);
+        // Strip internal SECTION tags from display/speech
+        const displayAnswer = String(answer).replace(/\[SECTION:[^\]]+\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+        showAnswerInPanel(q, answer); // keep tags for detectRelatedSection
         if (typeof appendGrokMessage === 'function') {
           appendGrokMessage(q, 'user');
-          appendGrokMessage(answer, 'bot');
+          appendGrokMessage(displayAnswer, 'bot');
         }
         if (typeof speakText === 'function') {
           setTimeout(function () {
-            try { speakText(answer, null); } catch (e) { console.warn('auto-speak', e); }
+            try { speakText(displayAnswer, null); } catch (e) { console.warn('auto-speak', e); }
           }, 300);
         }
       }
@@ -239,11 +316,12 @@
       const detected = detectLang(q);
       const newLang = detected === 'es-ES' ? 'es' : detected;
       if (typeof setAppLanguage === 'function') setAppLanguage(newLang);
+      try { if (typeof playBell === 'function') playBell(); } catch (e) {}
       const grokAnswer = await askGrok(q);
       if (grokAnswer) {
-        const cleanAnswer = grokAnswer.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '').replace(/^\s*[-•]\s*/gm, '');
+        const cleanAnswer = grokAnswer.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '').replace(/^\s*[-•]\s*/gm, '').replace(/\[SECTION:[^\]]+\]/gi, '').trim();
         window._lastGrokAnswer = cleanAnswer;
-        const section = detectRelatedSection(q, cleanAnswer);
+        const section = detectRelatedSection(q, grokAnswer);
         window._lastRelatedSection = section;
         let jumpBtn = '';
         if (section) {
@@ -264,17 +342,40 @@
       logQuestion(q);
     }
 
+    function isRoutineQuestion(question) {
+      const t = String(question || '').toLowerCase();
+      return /다음\s*할\s*일|next\s*task|오늘\s*(할\s*)?일|루틴|routine|what\s*next|다음에\s*뭐|지금\s*뭐\s*해|start\s*day|end\s*day/.test(t);
+    }
+
     function buildUserMessage(question) {
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-      const next = getNextTask();
-      const nextTitle = next ? (next.title.ko + ' / ' + next.title.en) : '모든 루틴 완료';
-      let doneList = routineTasks.filter(t => stamps[t.id]?.done).map(t => t.title.ko).join(', ') || '없음';
       let qLang = detectLang(question);
       if (/\[User spoke Korean/i.test(question)) qLang = 'ko';
       if (/\[User spoke Japanese/i.test(question)) qLang = 'ja';
       const langName = qLang === 'ko' ? 'Korean' : qLang === 'ja' ? 'Japanese' : qLang === 'es-ES' ? 'Spanish' : 'English';
-      return 'Current time: ' + timeStr + '. Next incomplete task: ' + nextTitle + '. Already completed today: ' + doneList + '.\nDetected question language: ' + qLang + '.\nCRITICAL: You MUST answer 100% in ' + langName + '. Do not answer in English unless the question is English.\nPrefer short guide-first answers when an in-app guide applies. Do NOT invent UI button names or colors.\nExplanations in the question language; any customer-facing script lines must be English only.\nQuestion: ' + question;
+      let context = 'Current time: ' + timeStr + '.\n';
+      if (isRoutineQuestion(question)) {
+        const next = (typeof getNextTask === 'function') ? getNextTask() : null;
+        const nextTitle = next ? ((next.title && (next.title.ko || next.title.en)) || next.id) : '모든 루틴 완료';
+        let doneList = '없음';
+        try {
+          if (typeof routineTasks !== 'undefined' && typeof stamps !== 'undefined') {
+            doneList = routineTasks.filter(t => stamps[t.id]?.done).map(t => (t.title && t.title.ko) || t.id).join(', ') || '없음';
+          }
+        } catch (e) {}
+        context += 'Next incomplete task: ' + nextTitle + '. Already completed today: ' + doneList + '.\n';
+        context += 'This is a ROUTINE question — you may state the next task.\n';
+      } else {
+        context += 'This is NOT a routine question. Do NOT mention daily routine or "next task". Only answer the guide/procedure question.\n';
+      }
+      context += 'Detected question language: ' + qLang + '.\n';
+      context += 'CRITICAL: You MUST answer 100% in ' + langName + '. Do not answer in English unless the question is English.\n';
+      context += 'When pointing to an in-app guide, end with a tag like [SECTION:delivery] or [SECTION:sales] or [SECTION:attachments] or [SECTION:bmsflow].\n';
+      context += 'Prefer short guide-first answers when an in-app guide applies. Do NOT invent UI button names or colors.\n';
+      context += 'Explanations in the question language; any customer-facing script lines must be English only.\n';
+      context += 'Question: ' + question;
+      return context;
     }
 
     let currentAudio = null;
@@ -335,6 +436,7 @@
     window.showAnswerInPanel = showAnswerInPanel;
     window.speakRemainingTasks = speakRemainingTasks;
     window.detectRelatedSection = detectRelatedSection;
+    window.sectionById = sectionById;
     window.showCoachBox = showCoachBox;
     window.removeCoachBox = removeCoachBox;
     window.buildRemainingTasksText = buildRemainingTasksText;
