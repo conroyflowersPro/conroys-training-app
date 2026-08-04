@@ -1,6 +1,6 @@
-/* voice.js v5.2.0 */
-/* Conroy's Training App - voice module 5.2.0
-   coach box in dock, sales-priority titles, short speech + detail box
+/* voice.js v5.3.1 */
+/* Conroy's Training App - voice module 5.3.1
+   loading sound, manual evidence, SECTION routing
 */
     function saveApiKey() {
       const key = document.getElementById('api-key-input').value.trim();
@@ -37,14 +37,18 @@
           const err = await res.text();
           let detail = err;
           try { detail = JSON.parse(err).error || err; } catch (_) {}
+          window._lastManualSnippets = [];
           return '서버 오류 (' + res.status + '): ' + (detail || 'Functions 응답 실패');
         }
         const data = await res.json();
         if (data.error) {
+          window._lastManualSnippets = [];
           return 'API 오류: ' + (typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
         }
+        window._lastManualSnippets = Array.isArray(data.manual_snippets) ? data.manual_snippets : [];
         return data.choices?.[0]?.message?.content || '답변을 받지 못했습니다.';
       } catch (e) {
+        window._lastManualSnippets = [];
         return '네트워크/Functions 오류: ' + (e.message || e);
       }
     }
@@ -52,8 +56,6 @@
     function detectRelatedSection(question, answer) {
       const raw = ((answer || '') + ' ' + (question || ''));
       const text = raw.toLowerCase();
-
-      // Prefer explicit tag from Grok: [SECTION:delivery] etc.
       const tagMatch = raw.match(/\[SECTION:\s*(sales|customer|delivery|attachments?|attach|bmsflow|bms|phone|messages?|golden|decision|home|routine)\s*\]/i);
       if (tagMatch) {
         const key = tagMatch[1].toLowerCase();
@@ -67,130 +69,55 @@
           golden: 'golden', decision: 'decision',
           home: 'home', routine: 'home'
         };
-        const id = map[key] || key;
-        return sectionById(id);
+        return sectionById(map[key] || key);
       }
-
-      // Specific topics BEFORE broad sales keywords
-      if (/attach|첨부|cardisle|balloon|풍선|chocolate|초콜릿|plush|인형|white\s*sheet|product\s*detail|awaiting\s*delivery/.test(text)) {
-        return sectionById('attachments');
-      }
-      if (/deliver|배달|配達|entrega|uber|golocal|walmart|3hr|asap\s*trip|out\s*for\s*delivery|배달\s*확인/.test(text)) {
-        return sectionById('delivery');
-      }
-      if (/bms|workflow|super\s*ticket|superticket|accept|reject|in\s*wire|mark\s*read|design\s*ticket/.test(text)) {
-        return sectionById('bmsflow');
-      }
-      if (/phone|전화|電話|teléfono|hold|홀드|on\s*hold/.test(text)) {
-        return sectionById('phone');
-      }
-      if (/message|messages|wire\s*in|funeral|긴급|funeral\s*order/.test(text) && !/card\s*message|카드\s*메시지/.test(text)) {
-        return sectionById('messages');
-      }
-      if (/golden|rule|due\s*time|매니저|manager\s*first|확신/.test(text)) {
-        return sectionById('golden');
-      }
-      if (/unsure|모르겠|decision|어떻게\s*하|what\s*should|매니저한테|ask\s*manager/.test(text)) {
-        return sectionById('decision');
-      }
-      if (/start\s*day|end\s*day|cash|현금|드로어|drawer|\$200|200\.00|루틴|routine|다음\s*할\s*일|next\s*task/.test(text)) {
-        return sectionById('home');
-      }
-      // Sales last — removed overly broad "가이드|guide"
-      if (/customer|손님|greeting|인사|color|색상|size|사이즈|romance|sympathy|needs|니즈|walk-?in|응대|sales|세일즈|medium|large|suggest|제안|occasion|카드\s*메시지|card\s*message|세일즈\s*가이드/.test(text)) {
-        return sectionById('customer');
-      }
+      if (/attach|첨부|cardisle|balloon|풍선|chocolate|초콜릿|plush|인형|white\s*sheet|product\s*detail|awaiting\s*delivery/.test(text)) return sectionById('attachments');
+      if (/deliver|배달|配達|entrega|uber|golocal|walmart|3hr|asap\s*trip|out\s*for\s*delivery|배달\s*확인|awaiting\s*delivery|아웃포/.test(text)) return sectionById('delivery');
+      if (/bms|workflow|super\s*ticket|superticket|accept|reject|in\s*wire|mark\s*read|design\s*ticket/.test(text)) return sectionById('bmsflow');
+      if (/phone|전화|電話|teléfono|hold|홀드|on\s*hold/.test(text)) return sectionById('phone');
+      if (/message|messages|wire\s*in|funeral|긴급|funeral\s*order/.test(text) && !/card\s*message|카드\s*메시지/.test(text)) return sectionById('messages');
+      if (/golden|rule|due\s*time|매니저|manager\s*first|확신/.test(text)) return sectionById('golden');
+      if (/unsure|모르겠|decision|어떻게\s*하|what\s*should|매니저한테|ask\s*manager/.test(text)) return sectionById('decision');
+      if (/start\s*day|end\s*day|cash|현금|드로어|drawer|\$200|200\.00|루틴|routine|다음\s*할\s*일|next\s*task/.test(text)) return sectionById('home');
+      if (/customer|손님|greeting|인사|color|색상|size|사이즈|romance|sympathy|needs|니즈|walk-?in|응대|sales|세일즈|medium|large|suggest|제안|occasion|카드\s*메시지|card\s*message|세일즈\s*가이드/.test(text)) return sectionById('customer');
       return null;
     }
 
     function sectionById(id) {
       const catalog = {
-        customer: {
-          type: 'page', id: 'customer',
-          label: { ko: '세일즈 가이드', en: 'Sales Guide', ja: 'セールスガイド', es: 'Guía de ventas' },
-          summary: { ko: 'Medium부터 제안하고, 카드 메시지로 니즈를 읽으세요.', en: 'Lead with Medium. Read needs from the card message.', ja: 'Mediumから提案。カード文からニーズを読む。', es: 'Empiece con Medium. Lea necesidades del mensaje de la tarjeta.' }
-        },
-        attachments: {
-          type: 'content', id: 'attachments',
-          label: { ko: '첨부물 가이드', en: 'Attachments guide', ja: '添付物ガイド', es: 'Guía de adjuntos' },
-          summary: { ko: 'White Sheet가 끝날 때까지 첨부물을 완료하세요.', en: 'Finish attachments until White Sheet is clear.', ja: 'White Sheetが終わるまで添付物を完了。', es: 'Complete adjuntos hasta que White Sheet esté listo.' }
-        },
-        delivery: {
-          type: 'content', id: 'delivery',
-          label: { ko: '배달 가이드', en: 'Delivery guide', ja: '配達ガイド', es: 'Guía de entrega' },
-          summary: { ko: '표준은 Walmart GoLocal 3Hr, 장례는 Uber ASAP.', en: 'Standard: Walmart GoLocal 3Hr. Funeral: Uber ASAP.', ja: '標準はWalmart GoLocal 3Hr、葬儀はUber ASAP。', es: 'Estándar: Walmart GoLocal 3Hr. Funeral: Uber ASAP.' }
-        },
-        bmsflow: {
-          type: 'content', id: 'bmsflow',
-          label: { ko: 'BMS 흐름', en: 'BMS workflow', ja: 'BMSフロー', es: 'Flujo BMS' },
-          summary: { ko: 'Mark Read → In Wire → Accept → SuperTicket.', en: 'Mark Read → In Wire → Accept → SuperTicket.', ja: 'Mark Read → In Wire → Accept → SuperTicket。', es: 'Mark Read → In Wire → Accept → SuperTicket.' }
-        },
-        messages: {
-          type: 'page', id: 'messages',
-          label: { ko: 'Messages', en: 'Messages', ja: 'Messages', es: 'Messages' },
-          summary: { ko: 'Messages에서 Mark Read 후 In Wire 처리하세요.', en: 'Mark Read in Messages, then process In Wire.', ja: 'MessagesでMark Read後、In Wire処理。', es: 'Mark Read en Messages, luego procese In Wire.' }
-        },
-        golden: {
-          type: 'content', id: 'golden',
-          label: { ko: 'Golden Rules', en: 'Golden Rules', ja: 'Golden Rules', es: 'Golden Rules' },
-          summary: { ko: 'Due Time 우선. 확신이 없으면 매니저에게 먼저 물어보세요.', en: 'Prioritize by Due Time. If unsure, ask a manager first.', ja: 'Due Time優先。確信がなければマネージャーに先に聞く。', es: 'Priorice por Due Time. Si no está seguro, pregunte al gerente primero.' }
-        },
-        phone: {
-          type: 'page', id: 'phone',
-          label: { ko: 'Phone Script', en: 'Phone Script', ja: 'Phone Script', es: 'Phone Script' },
-          summary: { ko: '카드 메시지를 먼저 받고, Medium부터 제안하세요.', en: 'Take the card message first, then lead with Medium.', ja: 'カード文を先に受け取り、Mediumから提案。', es: 'Tome el mensaje de la tarjeta primero, luego ofrezca Medium.' }
-        },
-        decision: {
-          type: 'content', id: 'decision',
-          label: { ko: '모르겠을 때', en: 'If unsure', ja: '迷ったとき', es: 'Si no está seguro' },
-          summary: { ko: 'Golden Rule #5: 확신이 없으면 매니저에게 먼저 물어보세요.', en: 'Golden Rule #5: If unsure, ask a manager first.', ja: 'Golden Rule #5: 確信がなければマネージャーに先に聞く。', es: 'Golden Rule #5: Si no está seguro, pregunte al gerente primero.' }
-        },
-        home: {
-          type: 'page', id: 'home',
-          label: { ko: '오늘 루틴', en: 'Today routine', ja: '今日のルーティン', es: 'Rutina de hoy' },
-          summary: { ko: '다음 미완료 루틴을 확인하고 순서대로 진행하세요.', en: 'Check the next incomplete routine and proceed in order.', ja: '次の未完了ルーティンを確認して順番に進める。', es: 'Revise la siguiente rutina incompleta y avance en orden.' }
-        }
+        customer: { type: 'page', id: 'customer', label: { ko: '세일즈 가이드', en: 'Sales Guide', ja: 'セールスガイド', es: 'Guía de ventas' }, summary: { ko: 'Medium부터 제안하고, 카드 메시지로 니즈를 읽으세요.', en: 'Lead with Medium. Read needs from the card message.', ja: 'Mediumから提案。カード文からニーズを読む。', es: 'Empiece con Medium. Lea necesidades del mensaje de la tarjeta.' } },
+        attachments: { type: 'content', id: 'attachments', label: { ko: '첨부물 가이드', en: 'Attachments guide', ja: '添付物ガイド', es: 'Guía de adjuntos' }, summary: { ko: 'White Sheet가 끝날 때까지 첨부물을 완료하세요.', en: 'Finish attachments until White Sheet is clear.', ja: 'White Sheetが終わるまで添付物を完了。', es: 'Complete adjuntos hasta que White Sheet esté listo.' } },
+        delivery: { type: 'content', id: 'delivery', label: { ko: '배달 가이드', en: 'Delivery guide', ja: '配達ガイド', es: 'Guía de entrega' }, summary: { ko: '표준은 Walmart GoLocal 3Hr, 장례는 Uber ASAP.', en: 'Standard: Walmart GoLocal 3Hr. Funeral: Uber ASAP.', ja: '標準はWalmart GoLocal 3Hr、葬儀はUber ASAP。', es: 'Estándar: Walmart GoLocal 3Hr. Funeral: Uber ASAP.' } },
+        bmsflow: { type: 'content', id: 'bmsflow', label: { ko: 'BMS 흐름', en: 'BMS workflow', ja: 'BMSフロー', es: 'Flujo BMS' }, summary: { ko: 'Mark Read → In Wire → Accept → SuperTicket.', en: 'Mark Read → In Wire → Accept → SuperTicket.', ja: 'Mark Read → In Wire → Accept → SuperTicket。', es: 'Mark Read → In Wire → Accept → SuperTicket.' } },
+        messages: { type: 'page', id: 'messages', label: { ko: 'Messages', en: 'Messages', ja: 'Messages', es: 'Messages' }, summary: { ko: 'Messages에서 Mark Read 후 In Wire 처리하세요.', en: 'Mark Read in Messages, then process In Wire.', ja: 'MessagesでMark Read後、In Wire処理。', es: 'Mark Read en Messages, luego procese In Wire.' } },
+        golden: { type: 'content', id: 'golden', label: { ko: 'Golden Rules', en: 'Golden Rules', ja: 'Golden Rules', es: 'Golden Rules' }, summary: { ko: 'Due Time 우선. 확신이 없으면 매니저에게 먼저 물어보세요.', en: 'Prioritize by Due Time. If unsure, ask a manager first.', ja: 'Due Time優先。確信がなければマネージャーに先に聞く。', es: 'Priorice por Due Time. Si no está seguro, pregunte al gerente primero.' } },
+        phone: { type: 'page', id: 'phone', label: { ko: 'Phone Script', en: 'Phone Script', ja: 'Phone Script', es: 'Phone Script' }, summary: { ko: '카드 메시지를 먼저 받고, Medium부터 제안하세요.', en: 'Take the card message first, then lead with Medium.', ja: 'カード文を先に受け取り、Mediumから提案。', es: 'Tome el mensaje de la tarjeta primero, luego ofrezca Medium.' } },
+        decision: { type: 'content', id: 'decision', label: { ko: '모르겠을 때', en: 'If unsure', ja: '迷ったとき', es: 'Si no está seguro' }, summary: { ko: 'Golden Rule #5: 확신이 없으면 매니저에게 먼저 물어보세요.', en: 'Golden Rule #5: If unsure, ask a manager first.', ja: 'Golden Rule #5: 確信がなければマネージャーに先に聞く。', es: 'Golden Rule #5: Si no está seguro, pregunte al gerente primero.' } },
+        home: { type: 'page', id: 'home', label: { ko: '오늘 루틴', en: 'Today routine', ja: '今日のルーティン', es: 'Rutina de hoy' }, summary: { ko: '다음 미완료 루틴을 확인하고 순서대로 진행하세요.', en: 'Check the next incomplete routine and proceed in order.', ja: '次の未完了ルーティンを確認して順番に進める。', es: 'Revise la siguiente rutina incompleta y avance en orden.' } }
       };
       return catalog[id] || null;
     }
 
     function goToRelatedSection(section) {
       if (!section) return;
-      if (section.type === 'content' && typeof showContent === 'function') {
-        showContent(section.id);
-      } else if (section.type === 'page' && typeof showPage === 'function') {
+      if (section.type === 'content' && typeof showContent === 'function') showContent(section.id);
+      else if (section.type === 'page' && typeof showPage === 'function') {
         try { closeFloatPanel(); } catch (e) {}
         showPage(section.id);
-      } else if (section.type === 'task' && typeof showTaskDetail === 'function') {
-        showTaskDetail(section.id);
-      }
+      } else if (section.type === 'task' && typeof showTaskDetail === 'function') showTaskDetail(section.id);
     }
 
     function buildRemainingTasksText() {
       const lang = currentLang || 'en';
       let next = null;
-      if (typeof getNextTask === 'function') {
-        try { next = getNextTask(); } catch (e) { next = null; }
-      }
+      if (typeof getNextTask === 'function') { try { next = getNextTask(); } catch (e) { next = null; } }
       if (!next && typeof routineTasks !== 'undefined') {
         const pending = routineTasks.filter(t => !stamps[t.id]?.done);
         next = pending.length ? pending[0] : null;
       }
-      if (!next) {
-        return {
-          ko: '오늘 남은 할 일이 없습니다. 모든 루틴을 완료했습니다.',
-          en: 'No remaining tasks today. All routines are done.',
-          ja: '今日の残りのタスクはありません。すべて完了です。',
-          es: 'No quedan tareas hoy. Todas las rutinas están hechas.'
-        }[lang] || 'No remaining tasks today.';
-      }
+      if (!next) return ({ ko: '오늘 남은 할 일이 없습니다. 모든 루틴을 완료했습니다.', en: 'No remaining tasks today. All routines are done.', ja: '今日の残りのタスクはありません。すべて完了です。', es: 'No quedan tareas hoy. Todas las rutinas están hechas.' })[lang] || 'No remaining tasks today.';
       const title = (next.title && (next.title[lang] || next.title.en)) || next.id;
-      return {
-        ko: '다음 할 일은 ' + title + '입니다.',
-        en: 'Next: ' + title + '.',
-        ja: '次は' + title + 'です。',
-        es: 'Siguiente: ' + title + '.'
-      }[lang] || ('Next: ' + title + '.');
+      return ({ ko: '다음 할 일은 ' + title + '입니다.', en: 'Next: ' + title + '.', ja: '次は' + title + 'です。', es: 'Siguiente: ' + title + '.' })[lang] || ('Next: ' + title + '.');
     }
 
     function speakRemainingTasks(btn) {
@@ -221,16 +148,77 @@
         (summary ? '<div class="coach-box-summary">' + summary + '</div>' : '') +
         '<button type="button" class="btn btn-sm" id="float-coach-detail-btn">' + detailLbl + '</button>';
       const messages = document.getElementById('grok-messages');
-      if (messages) {
-        messages.appendChild(box);
-        messages.scrollTop = messages.scrollHeight;
-      }
+      if (messages) { messages.appendChild(box); messages.scrollTop = messages.scrollHeight; }
       const detailBtn = document.getElementById('float-coach-detail-btn');
-      if (detailBtn) {
-        detailBtn.onclick = function () {
-          goToRelatedSection(window._lastRelatedSection);
-        };
+      if (detailBtn) detailBtn.onclick = function () { goToRelatedSection(window._lastRelatedSection); };
+    }
+
+    let _cfLoadingSoundTimer = null;
+    let _cfLoadingMsgEl = null;
+    function playLoadingSound() {
+      stopLoadingSound();
+      function beep() {
+        try {
+          var Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return;
+          if (!window._cfAudioCtx) window._cfAudioCtx = new Ctx();
+          var ctx = window._cfAudioCtx;
+          if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sine';
+          var t0 = ctx.currentTime;
+          osc.frequency.setValueAtTime(660, t0);
+          osc.frequency.setValueAtTime(880, t0 + 0.08);
+          gain.gain.setValueAtTime(0.0001, t0);
+          gain.gain.exponentialRampToValueAtTime(0.2, t0 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.2);
+          osc.start(t0);
+          osc.stop(t0 + 0.22);
+        } catch (e) {}
       }
+      try { if (typeof unlockAudio === 'function') unlockAudio(); } catch (e) {}
+      beep();
+      _cfLoadingSoundTimer = setInterval(beep, 1200);
+    }
+    function stopLoadingSound() {
+      if (_cfLoadingSoundTimer) { clearInterval(_cfLoadingSoundTimer); _cfLoadingSoundTimer = null; }
+      if (_cfLoadingMsgEl && _cfLoadingMsgEl.parentNode) { try { _cfLoadingMsgEl.parentNode.removeChild(_cfLoadingMsgEl); } catch (e) {} }
+      _cfLoadingMsgEl = null;
+    }
+    function showLoadingStatus() {
+      try {
+        var box = document.getElementById('grok-messages');
+        if (!box) return;
+        var L = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : 'en';
+        var txt = ({ ko: '찾는 중…', en: 'Looking up…', ja: '検索中…', es: 'Buscando…' })[L] || 'Looking up…';
+        var el = document.createElement('div');
+        el.className = 'grok-msg bot';
+        el.id = 'cf-loading-msg';
+        el.style.opacity = '0.75';
+        el.textContent = txt;
+        box.appendChild(el);
+        box.scrollTop = box.scrollHeight;
+        _cfLoadingMsgEl = el;
+      } catch (e) {}
+    }
+    function showManualEvidenceBox(snippets) {
+      removeCoachBox();
+      if (!snippets || !snippets.length) return;
+      const L = currentLang || 'en';
+      const title = ({ ko: '메뉴얼 근거', en: 'From the manual', ja: 'マニュアル根拠', es: 'Del manual' })[L] || 'From the manual';
+      const box = document.createElement('div');
+      box.id = 'float-coach-box';
+      box.className = 'coach-box';
+      const body = snippets.slice(0, 2).map(function (s) {
+        return '<div class="coach-box-summary" style="margin-bottom:8px;white-space:pre-wrap">' +
+          String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+      }).join('');
+      box.innerHTML = '<div class="coach-box-title">📄 ' + title + '</div>' + body;
+      const messages = document.getElementById('grok-messages');
+      if (messages) { messages.appendChild(box); messages.scrollTop = messages.scrollHeight; }
     }
 
     function showAnswerInPanel(question, answer) {
@@ -249,6 +237,9 @@
         const lbl = (section.label && (section.label[currentLang] || section.label.en)) || 'Guide';
         setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '🏷️ ' + lbl);
         showCoachBox(section);
+      } else if (window._lastManualSnippets && window._lastManualSnippets.length) {
+        setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '📄 Manual');
+        showManualEvidenceBox(window._lastManualSnippets);
       } else {
         setFloatStatus((question ? 'Q: ' + question + ' · ' : '') + '🔊 Read · 📋 Tasks');
       }
@@ -281,28 +272,20 @@
         const oldBox = document.getElementById('float-coach-box');
         if (oldBox) oldBox.remove();
       }
-      // Loading signal (like Grok thinking tone)
-      try {
-        if (typeof unlockAudio === 'function') unlockAudio();
-        if (typeof playBell === 'function') playBell();
-        else if (typeof playMicBeep === 'function') playMicBeep();
-      } catch (e) {}
-      const answer = await askGrok(q);
+      try { playLoadingSound(); showLoadingStatus(); } catch (e) {}
+      let answer = null;
+      try { answer = await askGrok(q); } finally { try { stopLoadingSound(); } catch (e) {} }
       if (answer) {
-        // Strip internal SECTION tags from display/speech
         const displayAnswer = String(answer).replace(/\[SECTION:[^\]]+\]/gi, '').replace(/\s{2,}/g, ' ').trim();
-        showAnswerInPanel(q, answer); // keep tags for detectRelatedSection
         if (typeof appendGrokMessage === 'function') {
           appendGrokMessage(q, 'user');
           appendGrokMessage(displayAnswer, 'bot');
         }
+        showAnswerInPanel(q, answer);
         if (typeof speakText === 'function') {
-          setTimeout(function () {
-            try { speakText(displayAnswer, null); } catch (e) { console.warn('auto-speak', e); }
-          }, 300);
+          setTimeout(function () { try { speakText(displayAnswer, null); } catch (e) { console.warn('auto-speak', e); } }, 300);
         }
-      }
-      else {
+      } else {
         document.getElementById('float-answer').textContent = 'No answer received.';
         setFloatStatus('Please try again.');
       }
@@ -316,8 +299,9 @@
       const detected = detectLang(q);
       const newLang = detected === 'es-ES' ? 'es' : detected;
       if (typeof setAppLanguage === 'function') setAppLanguage(newLang);
-      try { if (typeof playBell === 'function') playBell(); } catch (e) {}
-      const grokAnswer = await askGrok(q);
+      try { playLoadingSound(); } catch (e) {}
+      let grokAnswer = null;
+      try { grokAnswer = await askGrok(q); } finally { try { stopLoadingSound(); } catch (e) {} }
       if (grokAnswer) {
         const cleanAnswer = grokAnswer.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s*/gm, '').replace(/^\s*[-•]\s*/gm, '').replace(/\[SECTION:[^\]]+\]/gi, '').trim();
         window._lastGrokAnswer = cleanAnswer;
@@ -334,10 +318,7 @@
       }
       const ql = q.toLowerCase();
       const results = knowledge.filter(k => k.keys.some(key => key.includes(ql) || ql.includes(key)));
-      if (results.length === 0) {
-        box.innerHTML = '<div class="alert alert-info">No results.</div>';
-        return;
-      }
+      if (results.length === 0) { box.innerHTML = '<div class="alert alert-info">No results.</div>'; return; }
       box.innerHTML = results.map(r => '<div class="result-item"><strong>' + (r.title[currentLang] || r.title.en) + '</strong><p style="font-size:0.9rem;margin-top:4px;color:var(--muted)">' + (r.body[currentLang] || r.body.en) + '</p></div>').join('');
       logQuestion(q);
     }
@@ -349,7 +330,7 @@
 
     function buildUserMessage(question) {
       const now = new Date();
-      const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       let qLang = detectLang(question);
       if (/\[User spoke Korean/i.test(question)) qLang = 'ko';
       if (/\[User spoke Japanese/i.test(question)) qLang = 'ja';
@@ -388,10 +369,7 @@
       for (let i = 0; i < str.length; i++) h = ((h << 5) + h) ^ str.charCodeAt(i);
       return (h >>> 0).toString(36);
     }
-
-    function ttsCacheKey(text, lang) {
-      return lang + ':' + hashText(text);
-    }
+    function ttsCacheKey(text, lang) { return lang + ':' + hashText(text); }
 
     function detectLang(text) {
       if (!text) return 'en';
@@ -409,12 +387,8 @@
     function setMicSpeaking(on) {
       const mic = document.getElementById('float-mic');
       if (!mic) return;
-      if (on) {
-        mic.classList.add('speaking');
-        mic.classList.remove('listening');
-      } else {
-        mic.classList.remove('speaking');
-      }
+      if (on) { mic.classList.add('speaking'); mic.classList.remove('listening'); }
+      else mic.classList.remove('speaking');
     }
 
     function stopSpeaking() {
@@ -431,6 +405,9 @@
       if (guideSpeak) { guideSpeak.disabled = false; guideSpeak.textContent = '🔊 Read'; }
     }
 
+    window.playLoadingSound = playLoadingSound;
+    window.stopLoadingSound = stopLoadingSound;
+    window.showManualEvidenceBox = showManualEvidenceBox;
     window.submitFloatChat = submitFloatChat;
     window.askGrok = askGrok;
     window.showAnswerInPanel = showAnswerInPanel;
