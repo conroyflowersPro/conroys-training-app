@@ -3,7 +3,7 @@
   if (window.__cfTtsFixLoading) return;
   window.__cfTtsFixLoading = true;
   var s = document.createElement('script');
-  s.src = 'js/tts-fix.js?v=5.0.11';
+  s.src = 'js/tts-fix.js?v=5.0.12';
   s.async = false;
   (document.head || document.documentElement).appendChild(s);
 })();
@@ -12,12 +12,21 @@
   if (window.__cfMicFixLoading) return;
   window.__cfMicFixLoading = true;
   var s = document.createElement('script');
-  s.src = 'js/mic-fix.js?v=5.0.11';
+  s.src = 'js/mic-fix.js?v=5.0.12';
+  s.async = false;
+  (document.head || document.documentElement).appendChild(s);
+})();
+/* reload guide-speak — single Read, remove 읽어주기 */
+(function(){
+  if (window.__cfGuideSpeakReload) return;
+  window.__cfGuideSpeakReload = true;
+  var s = document.createElement('script');
+  s.src = 'js/guide-speak.js?v=5.0.12';
   s.async = false;
   (document.head || document.documentElement).appendChild(s);
 })();
 
-/* dock-fix.js v5.0.11 — coaching boot + loaders */
+/* dock-fix.js v5.0.12 — coaching boot + loaders */
 (function () {
   function getSavedLang() {
     try {
@@ -37,8 +46,8 @@
       var nodes = document.querySelectorAll('p, span, div');
       for (var i = 0; i < nodes.length; i++) {
         var t = nodes[i].textContent || '';
-        if (/^v5\.0\.\d+$/.test(t.trim())) nodes[i].textContent = 'v5.0.11';
-        else if (/v5\.0\.\d+/.test(t) && t.length < 48) nodes[i].textContent = t.replace(/v5\.0\.\d+/g, 'v5.0.11');
+        if (/^v5\.0\.\d+$/.test(t.trim())) nodes[i].textContent = 'v5.0.12';
+        else if (/v5\.0\.\d+/.test(t) && t.length < 48) nodes[i].textContent = t.replace(/v5\.0\.\d+/g, 'v5.0.12');
       }
     } catch (e) {}
   }
@@ -91,20 +100,10 @@
         try { next = getNextRoutineTask(); } catch (e) { next = null; }
       }
       if (!next) {
-        return ({
-          ko: '오늘 데일리 루틴은 모두 끝났습니다.',
-          en: "Today's daily routine is all done.",
-          ja: '本日のデイリールーチンはすべて完了です。',
-          es: 'La rutina diaria de hoy ya está completa.'
-        })[L] || "Today's daily routine is all done.";
+        return ({ ko: '오늘 데일리 루틴은 모두 끝났습니다.', en: "Today's daily routine is all done.", ja: '本日のデイリールーチンはすべて完了です。', es: 'La rutina diaria de hoy ya está completa.' })[L] || "Today's daily routine is all done.";
       }
       var title = (next.title && (next.title[L] || next.title.en || next.title.ko)) || next.id;
-      return ({
-        ko: '다음 태스크는 「' + title + '」입니다.',
-        en: 'Next task is 「' + title + '」.',
-        ja: '次のタスクは「' + title + '」です。',
-        es: 'La siguiente tarea es 「' + title + '」.'
-      })[L] || ('Next task is 「' + title + '」.');
+      return ({ ko: '다음 태스크는 「' + title + '」입니다.', en: 'Next task is 「' + title + '」.', ja: '次のタスクは「' + title + '」です。', es: 'La siguiente tarea es 「' + title + '」.' })[L] || ('Next task is 「' + title + '」.');
     };
     try { buildDailyRoutineSpeech = window.buildDailyRoutineSpeech; } catch (e) {}
     window.showWelcomeInDock = function () {
@@ -116,56 +115,34 @@
       var nextLine = window.buildDailyRoutineSpeech();
       var msg;
       if (firstToday) {
-        var hello = ({
-          ko: name + '님 안녕하세요.',
-          en: 'Hello ' + name + '.',
-          ja: name + 'さん、こんにちは。',
-          es: 'Hola ' + name + '.'
-        })[L] || ('Hello ' + name + '.');
+        var hello = ({ ko: name + '님 안녕하세요.', en: 'Hello ' + name + '.', ja: name + 'さん、こんにちは。', es: 'Hola ' + name + '.' })[L] || ('Hello ' + name + '.');
         msg = hello + ' ' + nextLine;
-      } else {
-        msg = nextLine;
-      }
+      } else { msg = nextLine; }
       if (typeof appendGrokMessage === 'function') appendGrokMessage(msg, 'bot');
       else safeAppend(msg, 'bot');
       try { if (typeof playBell === 'function') playBell(); } catch (e) {}
       var next = null;
-      if (typeof getNextRoutineTask === 'function') {
-        try { next = getNextRoutineTask(); } catch (e) {}
-      }
+      if (typeof getNextRoutineTask === 'function') { try { next = getNextRoutineTask(); } catch (e) {} }
       if (next && typeof showCoachBox === 'function') {
         var title = (next.title && (next.title[L] || next.title.en || next.title.ko)) || next.id;
         var desc = (next.desc && (next.desc[L] || next.desc.en || next.desc.ko)) || '';
         window._lastRelatedSection = {
-          type: 'task',
-          id: next.id,
+          type: 'task', id: next.id,
           label: { ko: title, en: title, ja: title, es: title },
-          summary: {
-            ko: desc || ('다음 할 일: ' + title),
-            en: desc || ('Next: ' + title),
-            ja: desc || ('次: ' + title),
-            es: desc || ('Siguiente: ' + title)
-          },
+          summary: { ko: desc || ('다음 할 일: ' + title), en: desc || ('Next: ' + title), ja: desc || ('次: ' + title), es: desc || ('Siguiente: ' + title) },
           speakText: msg
         };
-        try { showCoachBox(window._lastRelatedSection); } catch (e) { console.warn(e); }
+        try { showCoachBox(window._lastRelatedSection); } catch (e) {}
       }
       if (typeof speakText === 'function') {
-        setTimeout(function () {
-          try { speakText(msg, null); } catch (e) { console.warn('welcome TTS', e); }
-        }, 500);
+        setTimeout(function () { try { speakText(msg, null); } catch (e) {} }, 500);
       }
       if (next) {
         setTimeout(function () {
-          try {
-            var el = document.getElementById('stamp-' + next.id);
-            if (el) el.classList.add('next-task');
-          } catch (e) {}
+          try { var el = document.getElementById('stamp-' + next.id); if (el) el.classList.add('next-task'); } catch (e) {}
         }, 350);
       }
-      setTimeout(function () {
-        try { if (typeof showFuneralInDock === 'function') showFuneralInDock(); } catch (e) {}
-      }, 500);
+      setTimeout(function () { try { if (typeof showFuneralInDock === 'function') showFuneralInDock(); } catch (e) {} }, 500);
     };
     try { showWelcomeInDock = window.showWelcomeInDock; } catch (e) {}
   }
@@ -181,10 +158,7 @@
       window._lastCoachSpeak = toSpeak;
       window._lastRelatedSection = section;
       if (typeof removeCoachBox === 'function') removeCoachBox();
-      else {
-        var old = document.getElementById('float-coach-box');
-        if (old) old.remove();
-      }
+      else { var old = document.getElementById('float-coach-box'); if (old) old.remove(); }
       var box = document.createElement('div');
       box.id = 'float-coach-box';
       box.className = 'coach-box';
@@ -196,10 +170,7 @@
         '<button type="button" class="btn btn-sm btn-outline" id="float-coach-detail-btn">' + detailLbl + '</button>' +
         '</div>';
       var messages = document.getElementById('grok-messages');
-      if (messages) {
-        messages.appendChild(box);
-        messages.scrollTop = messages.scrollHeight;
-      }
+      if (messages) { messages.appendChild(box); messages.scrollTop = messages.scrollHeight; }
       var speakBtn = document.getElementById('float-coach-speak-btn');
       if (speakBtn) {
         speakBtn.onclick = function () {
@@ -212,10 +183,7 @@
       if (detailBtn) {
         detailBtn.onclick = function () {
           var sec = window._lastRelatedSection || section;
-          if (sec && sec.type === 'task' && typeof showTaskDetail === 'function') {
-            showTaskDetail(sec.id);
-            return;
-          }
+          if (sec && sec.type === 'task' && typeof showTaskDetail === 'function') { showTaskDetail(sec.id); return; }
           if (typeof goToRelatedSection === 'function') goToRelatedSection(sec);
         };
       }
@@ -236,14 +204,14 @@
       installCoachWelcome();
       installCoachBoxSpeak();
       if (typeof showWelcomeInDock === 'function') {
-        try { showWelcomeInDock(); return; } catch (e) { console.warn(e); }
+        try { showWelcomeInDock(); return; } catch (e) {}
       }
-    } catch (e) { console.warn('ensureGreeting', e); }
+    } catch (e) {}
   }
   function patchStartApp() {
     if (typeof window.startApp !== 'function' && typeof startApp !== 'function') return;
     var orig = window.startApp || startApp;
-    if (orig._cf511) return;
+    if (orig._cf512) return;
     function wrapped() {
       hideLangSelect();
       bindAudioUnlock();
@@ -252,7 +220,7 @@
       var saved = getSavedLang();
       try { currentLang = saved; localStorage.setItem('cf_lang', saved); } catch (e) {}
       var result;
-      try { result = orig.apply(this, arguments); } catch (e) { console.warn('startApp', e); }
+      try { result = orig.apply(this, arguments); } catch (e) {}
       try {
         currentLang = saved;
         localStorage.setItem('cf_lang', saved);
@@ -266,7 +234,7 @@
       setTimeout(ensureGreeting, 500);
       return result;
     }
-    wrapped._cf511 = true;
+    wrapped._cf512 = true;
     startApp = wrapped;
     window.startApp = wrapped;
   }
@@ -295,16 +263,12 @@
       if (ansEl) ansEl.textContent = 'Loading answer...';
       try { if (typeof removeCoachBox === 'function') removeCoachBox(); } catch (e) {}
       var answer = null;
-      try {
-        if (typeof askGrok === 'function') answer = await askGrok(q);
-      } catch (e) { console.warn('askGrok', e); }
+      try { if (typeof askGrok === 'function') answer = await askGrok(q); } catch (e) {}
       if (answer) {
         try { if (typeof showAnswerInPanel === 'function') showAnswerInPanel(q, answer); } catch (e) {}
         safeAppend(answer, 'bot');
         if (typeof speakText === 'function') {
-          setTimeout(function () {
-            try { speakText(answer, null); } catch (e) { console.warn('auto-speak', e); }
-          }, 300);
+          setTimeout(function () { try { speakText(answer, null); } catch (e) {} }, 300);
         }
       } else {
         var fail = (currentLang === 'ko') ? '답변을 받지 못했습니다. 다시 시도해 주세요.' : 'No answer received. Please try again.';
