@@ -1,7 +1,8 @@
 /**
  * Netlify Function: ask (Functions v2)
  * Proxies to xAI chat completions for Grok answers
- * v5.1.0 — Collections RAG enabled
+ * v5.1.1 — temporary: Collections tool removed (chat/completions incompatible)
+ * TODO: re-enable via Responses API or correct tool schema
  */
 
 const corsHeaders = {
@@ -10,8 +11,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Content-Type": "application/json"
 };
-
-const COLLECTION_ID = "collection_eb291187-da4e-4c56-9d98-60459781dd38";
 
 function jsonResponse(status, body) {
   return new Response(JSON.stringify(body), {
@@ -47,29 +46,32 @@ export default async (req) => {
   }
 
   try {
-    const payload = {
-      model: "grok-4.5",
-      messages,
-      temperature: temperature ?? 0.3,
-      max_tokens: max_tokens ?? 800,
-      tools: [
-        {
-          type: "file_search",
-          vector_store_ids: [COLLECTION_ID]
-        }
-      ]
-    };
-
     const res = await fetch("https://api.x.ai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + apiKey
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        model: "grok-4.5",
+        messages,
+        temperature: temperature ?? 0.3,
+        max_tokens: max_tokens ?? 800
+      })
     });
 
-    const data = await res.json();
+    // Safe parse: if upstream returns non-JSON, return clear error
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      return jsonResponse(502, {
+        error: "Upstream returned non-JSON",
+        detail: text.slice(0, 200)
+      });
+    }
+
     return new Response(JSON.stringify(data), {
       status: res.status,
       headers: corsHeaders
