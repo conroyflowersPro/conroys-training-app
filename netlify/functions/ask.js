@@ -1,13 +1,12 @@
 /**
  * Netlify Function: ask (Functions v2)
- * v5.3.1 — RAG via Responses API + file_search; return manual_snippets
+ * v5.3.4 — RAG via Responses API + file_search; return manual_snippets
  */
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Content-Type": "application/json"
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Methods": "POST, OPTIONS"
 };
 
 const COLLECTION_ID = "collection_eb291187-da4e-4c56-9d98-60459781dd38";
@@ -15,73 +14,65 @@ const COLLECTION_ID = "collection_eb291187-da4e-4c56-9d98-60459781dd38";
 function jsonResponse(status, body) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: corsHeaders
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
   });
 }
 
-function extractTextFromResponses(data) {
+function extractText(data) {
   if (!data) return "";
-  if (typeof data.output_text === "string" && data.output_text.trim()) {
-    return data.output_text.trim();
-  }
-  if (Array.isArray(data.output)) {
-    const texts = [];
-    for (const item of data.output) {
-      if (item.type === "message" && Array.isArray(item.content)) {
-        for (const c of item.content) {
-          if (c.type === "output_text" && c.text) texts.push(c.text);
-          else if (typeof c.text === "string") texts.push(c.text);
+  if (typeof data.output_text === "string" && data.output_text.trim()) return data.output_text.trim();
+  const out = data.output || data.choices || [];
+  let text = "";
+  if (Array.isArray(out)) {
+    for (const item of out) {
+      if (!item) continue;
+      if (item.type === "message" && item.content) {
+        const parts = Array.isArray(item.content) ? item.content : [item.content];
+        for (const p of parts) {
+          if (typeof p === "string") text += p;
+          else if (p && (p.text || p.value)) text += (p.text || p.value);
+          else if (p && p.type === "output_text" && p.text) text += p.text;
         }
-      } else if (item.type === "output_text" && item.text) {
-        texts.push(item.text);
+      }
+      if (item.content && typeof item.content === "string") text += item.content;
+      if (item.message && item.message.content) {
+        const c = item.message.content;
+        if (typeof c === "string") text += c;
       }
     }
-    if (texts.length) return texts.join("\n").trim();
   }
-  if (data.choices && data.choices[0] && data.choices[0].message) {
-    return (data.choices[0].message.content || "").trim();
+  if (!text && data.choices && data.choices[0] && data.choices[0].message) {
+    text = data.choices[0].message.content || "";
   }
-  return "";
+  return (text || "").trim();
 }
 
 function extractManualSnippets(data) {
-  const out = [];
-  if (!data || !Array.isArray(data.output)) return out;
-  for (const item of data.output) {
-    if (item.type === "file_search_call" || item.type === "file_search") {
-      const results = item.results || (item.file_search_call && item.file_search_call.results) || [];
-      for (const r of results) {
-        const text = r.text || r.content || r.snippet || "";
-        if (text && String(text).trim()) out.push(String(text).trim().slice(0, 600));
+  const snippets = [];
+  try {
+    const out = data.output || [];
+    for (const item of out) {
+      if (!item) continue;
+      if (item.type === "file_search_call" || item.type === "file_search") {
+        const results = item.results || (item.file_search_call && item.file_search_call.results) || [];
+        for (const r of results) {
+          const t = (r.text || r.content || r.snippet || "").trim();
+          if (t) snippets.push(t.slice(0, 500));
+        }
       }
-    }
-    if (Array.isArray(item.content)) {
-      for (const c of item.content) {
-        if (c.type === "file_search_call" && Array.isArray(c.results)) {
-          for (const r of c.results) {
-            const text = r.text || r.content || "";
-            if (text && String(text).trim()) out.push(String(text).trim().slice(0, 600));
+      if (item.content && Array.isArray(item.content)) {
+        for (const c of item.content) {
+          if (c.type === "file_search_call" && Array.isArray(c.results)) {
+            for (const r of c.results) {
+              const t = (r.text || r.content || "").trim();
+              if (t) snippets.push(t.slice(0, 500));
+            }
           }
         }
       }
     }
-  }
-  if (!out.length && Array.isArray(data.citations)) {
-    for (const c of data.citations) {
-      if (typeof c === "string" && c.trim()) out.push(c.trim().slice(0, 400));
-      else if (c && (c.text || c.content)) out.push(String(c.text || c.content).trim().slice(0, 400));
-    }
-  }
-  const seen = new Set();
-  const unique = [];
-  for (const s of out) {
-    const key = s.slice(0, 80);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    unique.push(s);
-    if (unique.length >= 3) break;
-  }
-  return unique;
+  } catch (e) {}
+  return snippets.slice(0, 6);
 }
 
 export default async (req) => {
@@ -91,11 +82,11 @@ export default async (req) => {
   if (req.method !== "POST") {
     return jsonResponse(405, { error: "Method not allowed" });
   }
-  const apiKey = process.env.XAI_API_KEY;
+  const apiKey = process.env.XAI_API_KEY || process.env.xai_api_key || "";
   if (!apiKey) {
-    return jsonResponse(500, { error: "Server API key not configured" });
+    return jsonResponse(500, { error: "XAI_API_KEY not configured on server" });
   }
-  let body = {};
+  let body;
   try {
     body = await req.json();
   } catch (e) {
@@ -116,7 +107,7 @@ export default async (req) => {
     const payload = {
       model: "grok-4.5",
       input,
-      temperature: temperature ?? 0.3,
+      temperature: temperature ?? 0.2,
       max_output_tokens: max_tokens ?? 800,
       tools: [
         {
@@ -139,43 +130,19 @@ export default async (req) => {
     let data;
     try {
       data = JSON.parse(text);
-    } catch (parseErr) {
-      return jsonResponse(502, {
-        error: "Upstream returned non-JSON",
-        detail: text.slice(0, 300)
-      });
+    } catch (e) {
+      return jsonResponse(500, { error: "Invalid JSON from xAI: " + text.slice(0, 200) });
     }
     if (!res.ok) {
-      return jsonResponse(res.status, {
-        error: data.error || data.message || "Upstream error",
-        detail: data
-      });
+      return jsonResponse(res.status, { error: data.error || data.message || text.slice(0, 300) });
     }
-    const answer = extractTextFromResponses(data);
+    const content = extractText(data);
     const manual_snippets = extractManualSnippets(data);
-    const normalized = {
-      id: data.id || "resp_" + Date.now(),
-      object: "chat.completion",
-      created: Math.floor(Date.now() / 1000),
-      model: "grok-4.5",
-      choices: [
-        {
-          index: 0,
-          message: {
-            role: "assistant",
-            content: answer || "(no content)"
-          },
-          finish_reason: "stop"
-        }
-      ],
-      usage: data.usage || {},
+    return jsonResponse(200, {
+      choices: [{ message: { role: "assistant", content: content || "No answer." } }],
       manual_snippets
-    };
-    return new Response(JSON.stringify(normalized), {
-      status: 200,
-      headers: corsHeaders
     });
   } catch (e) {
-    return jsonResponse(500, { error: e.message || "Upstream error" });
+    return jsonResponse(500, { error: e.message || String(e) });
   }
 };
