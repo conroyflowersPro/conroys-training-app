@@ -1,11 +1,12 @@
-/* runtime-v6.js — v6.1.0 consolidated runtime
+/* runtime-v6.js — v6.1.1 consolidated runtime
    Absorbs: v532~v535 patches + dock-fix core
    Titles: language-aware (default English)
    + concrete coach-box summary, routine next on complete, sheet log
+   + speak next-task line after stamp complete
 */
 (function () {
   'use strict';
-  var CF_VERSION = '6.1.0';
+  var CF_VERSION = '6.1.1';
   window.CF_VERSION = CF_VERSION;
 
   function loadScriptOnce(src, flag) {
@@ -414,6 +415,14 @@
         };
         try { showCoachBox(window._lastRelatedSection); } catch (e) {}
       }
+      (function speakNext(text, n) {
+        n = n || 0;
+        try { if (typeof unlockAudio === 'function') unlockAudio(); } catch (e) {}
+        if (typeof speakText === 'function') {
+          try { speakText(text, null); return; } catch (e) {}
+        }
+        if (n < 8) setTimeout(function () { speakNext(text, n + 1); }, 400);
+      })(msg, 0);
     } catch (e) { console.warn('onRoutineTaskCompleted', e); }
   };
 
